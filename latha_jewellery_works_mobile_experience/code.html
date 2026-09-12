@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Latha Jewellery Works</title>
+<style>
+    @layer base {
+      html, body { margin: 0; padding: 0; }
+      body { overscroll-behavior: none; }
+      main>:first-child { margin-top: 0 !important; }
+      main>:last-child { margin-bottom: 0 !important; }
+    }
+    ::-webkit-scrollbar { display: none; }
+  </style>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#121212",
+            surface: "#1A1A1A",
+            "surface-container": "#242424",
+            "accent-gold": "#D4AF37",
+            "supporting-beige": "#C5A880",
+            "ivory-text": "#F9F6F0"
+          },
+          fontFamily: {
+            headline: ["Cormorant Garamond", "serif"],
+            body: ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#121212] font-body text-[#F9F6F0] antialiased selection:bg-accent-gold selection:text-primary">
+<!-- Mobile Header -->
+<header class="fixed top-0 w-full z-50 bg-[#121212]/95 backdrop-blur-md border-b border-[#2A2A2A]">
+<div class="h-16 max-w-7xl mx-auto px-4 flex items-center justify-between">
+<span class="font-headline font-bold tracking-wider text-accent-gold text-lg uppercase">Latha Jewellery</span>
+<div class="flex items-center gap-3">
+<a class="w-9 h-9 rounded-full bg-accent-gold/10 text-accent-gold flex items-center justify-center hover:bg-accent-gold hover:text-primary transition-colors" href="https://wa.me/919487056064" target="_blank">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+</a>
+<button class="w-9 h-9 rounded-full bg-surface border border-[#333] flex items-center justify-center text-accent-gold" id="menu-btn">
+<span class="material-symbols-outlined text-[20px]">menu</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Slide-in Mobile Menu Overlay -->
+<div class="fixed inset-0 z-50 bg-[#121212]/98 backdrop-blur-xl flex flex-col pt-20 px-6 pb-8 transform translate-x-full transition-transform duration-300" id="mobile-menu">
+<div class="flex justify-between items-center mb-8 pb-4 border-b border-[#2A2A2A]">
+<span class="font-headline font-bold text-accent-gold text-xl uppercase tracking-widest">Navigation</span>
+<button class="w-10 h-10 rounded-full bg-surface flex items-center justify-center text-accent-gold" id="close-menu">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<nav class="flex flex-col gap-4 text-lg font-headline">
+<a class="text-accent-gold font-bold tracking-wide" href="#">Home</a>
+<a class="text-[#F9F6F0]/80 hover:text-accent-gold transition-colors tracking-wide" href="#catalogue">Collections</a>
+<a class="text-[#F9F6F0]/80 hover:text-accent-gold transition-colors tracking-wide" href="#process">Craftsmanship Process</a>
+<a class="text-[#F9F6F0]/80 hover:text-accent-gold transition-colors tracking-wide" href="#enquiry">Custom Enquiry</a>
+<a class="text-[#F9F6F0]/80 hover:text-accent-gold transition-colors tracking-wide" href="#contact">Studio &amp; Location</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-[#2A2A2A]">
+<a class="w-full py-3.5 bg-accent-gold text-primary font-bold text-sm uppercase tracking-widest rounded-lg flex items-center justify-center gap-2" href="https://wa.me/919487056064" target="_blank">
+<span class="material-symbols-outlined text-[18px]">chat</span> WhatsApp 9487056064
+      </a>
+</div>
+</div>
+<main class="w-full pt-16">
+<!-- 1. Live Gold & Silver Rates Ticker -->
+<div class="w-full bg-[#1A1A1A] py-2.5 px-4 overflow-hidden flex items-center border-b border-[#2A2A2A]">
+<div class="flex items-center gap-2 mr-4 shrink-0">
+<span class="w-2 h-2 rounded-full bg-accent-gold animate-pulse"></span>
+<span class="text-xs text-accent-gold uppercase tracking-widest font-bold">Live Rates</span>
+</div>
+<div class="flex items-center gap-6 text-xs whitespace-nowrap overflow-x-auto no-scrollbar text-[#F9F6F0]/80">
+<span class="flex items-center gap-1">22K Gold (1g): <strong class="text-accent-gold">₹6,850</strong> <span class="text-emerald-400 text-[10px]">▲ +₹25</span></span>
+<span class="flex items-center gap-1">24K Gold (1g): <strong class="text-accent-gold">₹7,460</strong> <span class="text-emerald-400 text-[10px]">▲ +₹30</span></span>
+<span class="flex items-center gap-1">Silver (10g): <strong class="text-accent-gold">₹890</strong> <span class="text-rose-400 text-[10px]">▼ -₹5</span></span>
+</div>
+</div>
+<!-- 3. Hero Section -->
+<section class="relative w-full px-4 py-10 flex flex-col items-start bg-gradient-to-b from-[#1A1A1A] to-[#121212]">
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-accent-gold/10 rounded-full mb-4 border border-accent-gold/20">
+<span class="material-symbols-outlined text-[14px] text-accent-gold">verified</span>
+<span class="text-[11px] text-accent-gold uppercase tracking-wider font-medium">Heritage Goldsmiths Since 1990</span>
+</div>
+<h1 class="font-headline text-4xl font-bold text-accent-gold mb-3 leading-tight">
+        Crafting Unique Gold Ornaments Since 1990
+      </h1>
+<p class="text-sm text-[#F9F6F0]/70 mb-6 leading-relaxed">
+        Exquisite handcrafted temple jewellery, bespoke bridal sets, and timeless heirlooms forged with uncompromising precision in pure gold.
+      </p>
+<div class="flex flex-col w-full gap-3">
+<a class="w-full py-3.5 bg-accent-gold text-primary font-bold text-xs uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 shadow-lg hover:bg-[#C5A880] transition-colors" href="#enquiry">
+<span class="material-symbols-outlined text-[18px]">diamond</span>
+          Request Custom Design
+        </a>
+<a class="w-full py-3.5 bg-surface text-[#F9F6F0] font-bold text-xs uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 border border-[#333] hover:bg-[#2A2A2A] transition-colors" href="#catalogue">
+          Explore Collections
+          <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</section>
+<!-- 4. Curated Services & Specialties Grid -->
+<section class="w-full px-4 py-8 bg-[#161616]">
+<div class="mb-5">
+<span class="text-[11px] text-accent-gold uppercase tracking-widest block mb-1 font-semibold">Expertise</span>
+<h2 class="font-headline text-2xl font-bold text-[#F9F6F0]">Signature Specialties</h2>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="p-3.5 bg-surface rounded-xl flex flex-col justify-between border border-[#2A2A2A]">
+<div class="w-9 h-9 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 text-accent-gold">
+<span class="material-symbols-outlined text-[20px]">crown</span>
+</div>
+<div>
+<h3 class="font-headline text-base font-bold text-[#F9F6F0] mb-0.5">Temple Jewellery</h3>
+<p class="text-[11px] text-[#F9F6F0]/60 leading-tight">Traditional antique nagas &amp; deity motifs.</p>
+</div>
+</div>
+<div class="p-3.5 bg-surface rounded-xl flex flex-col justify-between border border-[#2A2A2A]">
+<div class="w-9 h-9 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 text-accent-gold">
+<span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+</div>
+<div>
+<h3 class="font-headline text-base font-bold text-[#F9F6F0] mb-0.5">Bridal Sets</h3>
+<p class="text-[11px] text-[#F9F6F0]/60 leading-tight">Complete customized wedding ornaments.</p>
+</div>
+</div>
+<div class="p-3.5 bg-surface rounded-xl flex flex-col justify-between border border-[#2A2A2A]">
+<div class="w-9 h-9 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 text-accent-gold">
+<span class="material-symbols-outlined text-[20px]">handyman</span>
+</div>
+<div>
+<h3 class="font-headline text-base font-bold text-[#F9F6F0] mb-0.5">Custom Casting</h3>
+<p class="text-[11px] text-[#F9F6F0]/60 leading-tight">Your sketches brought to life in pure gold.</p>
+</div>
+</div>
+<div class="p-3.5 bg-surface rounded-xl flex flex-col justify-between border border-[#2A2A2A]">
+<div class="w-9 h-9 rounded-lg bg-accent-gold/10 flex items-center justify-center mb-3 text-accent-gold">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</div>
+<div>
+<h3 class="font-headline text-base font-bold text-[#F9F6F0] mb-0.5">Purity Assured</h3>
+<p class="text-[11px] text-[#F9F6F0]/60 leading-tight">Hallmarked 916 gold with certification.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. 5-Step Craftsmanship Journey -->
+<section class="w-full px-4 py-8 bg-[#121212]" id="process">
+<div class="mb-6">
+<span class="text-[11px] text-accent-gold uppercase tracking-widest block mb-1 font-semibold">Process</span>
+<h2 class="font-headline text-2xl font-bold text-[#F9F6F0]">The Craftsmanship Journey</h2>
+</div>
+<div class="flex flex-col gap-4 relative">
+<div class="absolute left-4 top-2 bottom-2 w-0.5 bg-accent-gold/20"></div>
+<div class="flex items-start gap-3.5 relative z-10">
+<div class="w-7 h-7 rounded-full bg-accent-gold text-primary font-bold flex items-center justify-center shrink-0 text-xs shadow-md">1</div>
+<div class="bg-surface p-3.5 rounded-xl w-full border border-[#2A2A2A]">
+<h3 class="font-headline text-base font-bold text-accent-gold mb-0.5">Consultation &amp; Vision</h3>
+<p class="text-xs text-[#F9F6F0]/70 leading-relaxed">Share your inspiration, weight requirements, and budget over WhatsApp or in-studio.</p>
+</div>
+</div>
+<div class="flex items-start gap-3.5 relative z-10">
+<div class="w-7 h-7 rounded-full bg-accent-gold text-primary font-bold flex items-center justify-center shrink-0 text-xs shadow-md">2</div>
+<div class="bg-surface p-3.5 rounded-xl w-full border border-[#2A2A2A]">
+<h3 class="font-headline text-base font-bold text-accent-gold mb-0.5">CAD Design &amp; Approval</h3>
+<p class="text-xs text-[#F9F6F0]/70 leading-relaxed">Precision 3D rendering of your custom piece for exact proportions before casting.</p>
+</div>
+</div>
+<div class="flex items-start gap-3.5 relative z-10">
+<div class="w-7 h-7 rounded-full bg-accent-gold text-primary font-bold flex items-center justify-center shrink-0 text-xs shadow-md">3</div>
+<div class="bg-surface p-3.5 rounded-xl w-full border border-[#2A2A2A]">
+<h3 class="font-headline text-base font-bold text-accent-gold mb-0.5">Hand Forging &amp; Melting</h3>
+<p class="text-xs text-[#F9F6F0]/70 leading-relaxed">Expert artisans melt and alloy raw gold to your preferred 22K or 18K purity standard.</p>
+</div>
+</div>
+<div class="flex items-start gap-3.5 relative z-10">
+<div class="w-7 h-7 rounded-full bg-accent-gold text-primary font-bold flex items-center justify-center shrink-0 text-xs shadow-md">4</div>
+<div class="bg-surface p-3.5 rounded-xl w-full border border-[#2A2A2A]">
+<h3 class="font-headline text-base font-bold text-accent-gold mb-0.5">Stone Setting &amp; Polishing</h3>
+<p class="text-xs text-[#F9F6F0]/70 leading-relaxed">Meticulous gem setting, antique oxidization, and mirror-finish manual polishing.</p>
+</div>
+</div>
+<div class="flex items-start gap-3.5 relative z-10">
+<div class="w-7 h-7 rounded-full bg-accent-gold text-primary font-bold flex items-center justify-center shrink-0 text-xs shadow-md">5</div>
+<div class="bg-surface p-3.5 rounded-xl w-full border border-[#2A2A2A]">
+<h3 class="font-headline text-base font-bold text-accent-gold mb-0.5">Hallmark &amp; Delivery</h3>
+<p class="text-xs text-[#F9F6F0]/70 leading-relaxed">BIS Hallmarking verification and secure handover in a custom presentation box.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. Jewellery Catalogue -->
+<section class="w-full px-4 py-8 bg-[#161616]" id="catalogue">
+<div class="mb-5">
+<span class="text-[11px] text-accent-gold uppercase tracking-widest block mb-1 font-semibold">Gallery</span>
+<h2 class="font-headline text-2xl font-bold text-[#F9F6F0]">Signature Catalogue</h2>
+</div>
+<!-- Scrollable Category Filter -->
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-4">
+<button class="px-3.5 py-1.5 bg-accent-gold text-primary font-bold text-xs uppercase rounded-lg shrink-0">All</button>
+<button class="px-3.5 py-1.5 bg-surface text-[#F9F6F0] font-bold text-xs uppercase rounded-lg shrink-0 border border-[#333] hover:border-accent-gold">Chain</button>
+<button class="px-3.5 py-1.5 bg-surface text-[#F9F6F0] font-bold text-xs uppercase rounded-lg shrink-0 border border-[#333] hover:border-accent-gold">Kolus</button>
+<button class="px-3.5 py-1.5 bg-surface text-[#F9F6F0] font-bold text-xs uppercase rounded-lg shrink-0 border border-[#333] hover:border-accent-gold">Kammal</button>
+<button class="px-3.5 py-1.5 bg-surface text-[#F9F6F0] font-bold text-xs uppercase rounded-lg shrink-0 border border-[#333] hover:border-accent-gold">Bangles</button>
+<button class="px-3.5 py-1.5 bg-surface text-[#F9F6F0] font-bold text-xs uppercase rounded-lg shrink-0 border border-[#333] hover:border-accent-gold">Rings</button>
+</div>
+<!-- 2-Column Catalogue Grid -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Item 1 -->
+<div class="bg-surface rounded-xl overflow-hidden border border-[#2A2A2A] flex flex-col justify-between">
+<div>
+<div class="w-full h-36 bg-[#222] relative flex items-center justify-center">
+<span class="material-symbols-outlined text-[#444] text-4xl">diamond</span>
+</div>
+<div class="p-3">
+<span class="text-[10px] text-accent-gold uppercase tracking-widest block font-medium">Necklace</span>
+<h3 class="font-headline text-sm font-bold text-[#F9F6F0] leading-tight mb-1">Lakshmi Nagas Haram</h3>
+<p class="text-[11px] text-[#F9F6F0]/60">Min. Wt: <strong class="text-[#F9F6F0]">48.5g</strong></p>
+</div>
+</div>
+<div class="p-3 pt-0">
+<a class="w-full py-2 bg-accent-gold/10 text-accent-gold text-[11px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1 hover:bg-accent-gold hover:text-primary transition-colors" href="https://wa.me/919487056064?text=Hi,%20I%20am%20interested%20in%20Lakshmi%20Nagas%20Haram" target="_blank">
+<span class="material-symbols-outlined text-[14px]">chat</span> Enquire
+            </a>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface rounded-xl overflow-hidden border border-[#2A2A2A] flex flex-col justify-between">
+<div>
+<div class="w-full h-36 bg-[#222] relative flex items-center justify-center">
+<span class="material-symbols-outlined text-[#444] text-4xl">diamond</span>
+</div>
+<div class="p-3">
+<span class="text-[10px] text-accent-gold uppercase tracking-widest block font-medium">Kammal</span>
+<h3 class="font-headline text-sm font-bold text-[#F9F6F0] leading-tight mb-1">Peacock Kemp Jhumka</h3>
+<p class="text-[11px] text-[#F9F6F0]/60">Min. Wt: <strong class="text-[#F9F6F0]">18.2g</strong></p>
+</div>
+</div>
+<div class="p-3 pt-0">
+<a class="w-full py-2 bg-accent-gold/10 text-accent-gold text-[11px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1 hover:bg-accent-gold hover:text-primary transition-colors" href="https://wa.me/919487056064?text=Hi,%20I%20am%20interested%20in%20Peacock%20Kemp%20Jhumka" target="_blank">
+<span class="material-symbols-outlined text-[14px]">chat</span> Enquire
+            </a>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface rounded-xl overflow-hidden border border-[#2A2A2A] flex flex-col justify-between">
+<div>
+<div class="w-full h-36 bg-[#222] relative flex items-center justify-center">
+<span class="material-symbols-outlined text-[#444] text-4xl">diamond</span>
+</div>
+<div class="p-3">
+<span class="text-[10px] text-accent-gold uppercase tracking-widest block font-medium">Kolus</span>
+<h3 class="font-headline text-sm font-bold text-[#F9F6F0] leading-tight mb-1">Traditional Kolus</h3>
+<p class="text-[11px] text-[#F9F6F0]/60">Min. Wt: <strong class="text-[#F9F6F0]">65.0g</strong></p>
+</div>
+</div>
+<div class="p-3 pt-0">
+<a class="w-full py-2 bg-accent-gold/10 text-accent-gold text-[11px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1 hover:bg-accent-gold hover:text-primary transition-colors" href="https://wa.me/919487056064?text=Hi,%20I%20am%20interested%20in%20Traditional%20Kolus" target="_blank">
+<span class="material-symbols-outlined text-[14px]">chat</span> Enquire
+            </a>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="bg-surface rounded-xl overflow-hidden border border-[#2A2A2A] flex flex-col justify-between">
+<div>
+<div class="w-full h-36 bg-[#222] relative flex items-center justify-center">
+<span class="material-symbols-outlined text-[#444] text-4xl">diamond</span>
+</div>
+<div class="p-3">
+<span class="text-[10px] text-accent-gold uppercase tracking-widest block font-medium">Bangles</span>
+<h3 class="font-headline text-sm font-bold text-[#F9F6F0] leading-tight mb-1">Royal Kasu Bangles</h3>
+<p class="text-[11px] text-[#F9F6F0]/60">Min. Wt: <strong class="text-[#F9F6F0]">32.4g</strong></p>
+</div>
+</div>
+<div class="p-3 pt-0">
+<a class="w-full py-2 bg-accent-gold/10 text-accent-gold text-[11px] font-bold uppercase tracking-wider rounded-lg flex items-center justify-center gap-1 hover:bg-accent-gold hover:text-primary transition-colors" href="https://wa.me/919487056064?text=Hi,%20I%20am%20interested%20in%20Royal%20Kasu%20Bangles" target="_blank">
+<span class="material-symbols-outlined text-[14px]">chat</span> Enquire
+            </a>
+</div>
+</div>
+</div>
+</section>
+<!-- 7. Masterpiece Spotlight & Compact Testimonials -->
+<section class="w-full px-4 py-8 bg-[#121212]">
+<div class="mb-5">
+<span class="text-[11px] text-accent-gold uppercase tracking-widest block mb-1 font-semibold">Spotlight</span>
+<h2 class="font-headline text-2xl font-bold text-[#F9F6F0]">Masterpiece of the Month</h2>
+</div>
+<div class="bg-surface rounded-xl overflow-hidden border border-[#2A2A2A] mb-8">
+<div class="w-full h-52 bg-[#222] flex items-center justify-center relative">
+<span class="material-symbols-outlined text-accent-gold/40 text-5xl">military_tech</span>
+</div>
+<div class="p-4">
+<div class="flex items-center gap-2 mb-2">
+<span class="px-2 py-0.5 bg-accent-gold/20 text-accent-gold text-[10px] uppercase font-bold rounded">Limited Edition</span>
+<span class="text-[11px] text-[#F9F6F0]/60">120 hrs handcrafted</span>
+</div>
+<h3 class="font-headline text-lg font-bold text-accent-gold mb-1.5">The Mayura Royal Bridal Choker</h3>
+<p class="text-xs text-[#F9F6F0]/70 mb-4 leading-relaxed">
+            An architectural masterpiece featuring interlocking peacock motifs encrusted with hand-selected polki diamonds and emerald drops.
+          </p>
+<a class="w-full py-3 bg-accent-gold text-primary font-bold text-xs uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 shadow-md" href="https://wa.me/919487056064?text=Hi,%20I%20want%20to%20know%20more%20about%20The%20Mayura%20Royal%20Bridal%20Choker" target="_blank">
+<span class="material-symbols-outlined text-[16px]">chat</span> Claim This Piece
+          </a>
+</div>
+</div>
+<div class="mb-5">
+<span class="text-[11px] text-accent-gold uppercase tracking-widest block mb-1 font-semibold">Patrons</span>
+<h2 class="font-headline text-2xl font-bold text-[#F9F6F0]">Words from Our Patrons</h2>
+</div>
+<div class="flex flex-col gap-3">
+<div class="bg-surface p-4 rounded-xl border border-[#2A2A2A]">
+<div class="flex items-center gap-1 text-accent-gold mb-2">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-xs text-[#F9F6F0]/90 italic mb-3 leading-relaxed">
+            "Latha Jewellery Works crafted our entire wedding set. The intricate temple work and exact weight transparency gave us total peace of mind."
+          </p>
+<div class="flex items-center justify-between text-[11px]">
+<span class="font-bold text-accent-gold uppercase">Priya &amp; Karthik</span>
+<span class="text-[#F9F6F0]/50">Chennai</span>
+</div>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-[#2A2A2A]">
+<div class="flex items-center gap-1 text-accent-gold mb-2">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="text-xs text-[#F9F6F0]/90 italic mb-3 leading-relaxed">
+            "I wanted a custom antique nagas haram. They delivered ahead of schedule with flawless BIS hallmarking. Exceptional service."
+          </p>
+<div class="flex items-center justify-between text-[11px]">
+<span class="font-bold text-accent-gold uppercase">Ananya Sundaram</span>
+<span class="text-[#F9F6F0]/50">Coimbatore</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 8. Custom Jewellery Enquiry Form (48-54px inputs) -->
+<section class="w-full px-4 py-8 bg-[#161616]" id="enquiry">
+<div class="mb-5">
+<span class="text-[11px] text-accent-gold uppercase tracking-widest block mb-1 font-semibold">Bespoke</span>
+<h2 class="font-headline text-2xl font-bold text-[#F9F6F0]">Custom Jewellery Enquiry</h2>
+<p class="text-xs text-[#F9F6F0]/70 mt-1">Tell us your vision and we will connect via WhatsApp instantly.</p>
+</div>
+<form class="bg-surface p-4 rounded-xl border border-[#2A2A2A] flex flex-col gap-3.5" onsubmit="event.preventDefault(); alert('Enquiry submitted successfully! We will connect via WhatsApp.');">
+<div class="flex flex-col gap-1">
+<label class="text-[11px] text-accent-gold uppercase tracking-wider font-medium">Your Name</label>
+<input class="w-full bg-[#121212] text-[#F9F6F0] px-4 h-[48px] rounded-lg text-sm border border-[#333] outline-none focus:border-accent-gold" placeholder="e.g. Meenakshi Raman" required="" type="text"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-[11px] text-accent-gold uppercase tracking-wider font-medium">WhatsApp Number</label>
+<input class="w-full bg-[#121212] text-[#F9F6F0] px-4 h-[48px] rounded-lg text-sm border border-[#333] outline-none focus:border-accent-gold" placeholder="+91 98765 43210" required="" type="tel"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-[11px] text-accent-gold uppercase tracking-wider font-medium">Jewellery Type</label>
+<select class="w-full bg-[#121212] text-[#F9F6F0] px-4 h-[48px] rounded-lg text-sm border border-[#333] outline-none focus:border-accent-gold">
+<option>Bridal Haram / Necklace</option>
+<option>Kammal / Earrings</option>
+<option>Bangles / Bracelets</option>
+<option>Kolus / Anklets</option>
+<option>Custom Design / Other</option>
+</select>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-[11px] text-accent-gold uppercase tracking-wider font-medium">Approx. Target Weight (g)</label>
+<input class="w-full bg-[#121212] text-[#F9F6F0] px-4 h-[48px] rounded-lg text-sm border border-[#333] outline-none focus:border-accent-gold" placeholder="e.g. 30g - 50g" type="text"/>
+</div>
+<div class="flex flex-col gap-1">
+<label class="text-[11px] text-accent-gold uppercase tracking-wider font-medium">Design Details &amp; Vision</label>
+<textarea class="w-full bg-[#121212] text-[#F9F6F0] p-4 h-[100px] rounded-lg text-sm border border-[#333] outline-none focus:border-accent-gold resize-none" placeholder="Describe the motifs, antique finish, or references..."></textarea>
+</div>
+<button class="w-full h-[52px] bg-accent-gold text-primary font-bold text-xs uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 shadow-lg mt-1" type="submit">
+<span class="material-symbols-outlined text-[18px]">send</span>
+          Send Enquiry on WhatsApp
+        </button>
+</form>
+</section>
+<!-- 9. Studio Contact & Location -->
+<section class="w-full px-4 py-8 bg-[#121212]" id="contact">
+<div class="mb-5">
+<span class="text-[11px] text-accent-gold uppercase tracking-widest block mb-1 font-semibold">Visit Us</span>
+<h2 class="font-headline text-2xl font-bold text-[#F9F6F0]">Studio Location &amp; Contact</h2>
+</div>
+<div class="bg-surface p-4 rounded-xl border border-[#2A2A2A] mb-4">
+<div class="flex items-start gap-3 mb-3">
+<span class="material-symbols-outlined text-accent-gold text-[22px] shrink-0 mt-0.5">location_on</span>
+<div>
+<h3 class="font-headline text-base font-bold text-[#F9F6F0]">Latha Jewellery Works</h3>
+<p class="text-xs text-[#F9F6F0]/70 mt-0.5 leading-relaxed">Main Bazaar Road, Heritage Jewellery District, Tamil Nadu</p>
+</div>
+</div>
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-accent-gold text-[18px] shrink-0">schedule</span>
+<span class="text-xs text-[#F9F6F0]/70">Mon - Sat: 10:00 AM – 8:00 PM</span>
+</div>
+<div class="grid grid-cols-3 gap-2">
+<a class="py-2.5 bg-[#121212] text-[#F9F6F0] font-bold text-[10px] uppercase tracking-wider rounded-lg flex flex-col items-center justify-center gap-1 border border-[#333]" href="tel:9487056064">
+<span class="material-symbols-outlined text-[16px] text-accent-gold">call</span> Call Now
+          </a>
+<a class="py-2.5 bg-accent-gold text-primary font-bold text-[10px] uppercase tracking-wider rounded-lg flex flex-col items-center justify-center gap-1" href="https://wa.me/919487056064" target="_blank">
+<span class="material-symbols-outlined text-[16px]">chat</span> WhatsApp
+          </a>
+<a class="py-2.5 bg-[#121212] text-[#F9F6F0] font-bold text-[10px] uppercase tracking-wider rounded-lg flex flex-col items-center justify-center gap-1 border border-[#333]" href="https://maps.google.com/?q=Latha+Jewellery+Works" target="_blank">
+<span class="material-symbols-outlined text-[16px] text-accent-gold">directions</span> Directions
+          </a>
+</div>
+</div>
+<div class="w-full h-40 rounded-xl bg-[#222] border border-[#2A2A2A] flex items-center justify-center">
+<span class="text-xs text-[#F9F6F0]/40 uppercase tracking-wider">Studio Map Preview</span>
+</div>
+</section>
+<!-- Sticky Bottom Mobile Bar -->
+<div class="sticky bottom-0 left-0 w-full bg-[#1A1A1A]/95 backdrop-blur-md p-3 flex items-center justify-between z-40 border-t border-[#2A2A2A]">
+<div class="flex flex-col">
+<span class="text-[10px] text-accent-gold uppercase tracking-wider font-bold">Direct Assistance</span>
+<span class="text-xs text-[#F9F6F0]">Chat with Master Goldsmith</span>
+</div>
+<a class="px-4 py-2 bg-accent-gold text-primary font-bold text-xs uppercase tracking-widest rounded-lg flex items-center gap-1.5 shadow-md" href="https://wa.me/919487056064" target="_blank">
+<span class="material-symbols-outlined text-[16px]">chat</span> WhatsApp
+      </a>
+</div>
+</main>
+<footer class="w-full bg-[#0D0D0D] border-t border-[#2A2A2A] py-6 text-center text-[#F9F6F0]/50 text-[10px] uppercase tracking-widest">
+    © Latha Jewellery Works. Timeless Craftsmanship.
+  </footer>
+<script>
+    const menuBtn = document.getElementById('menu-btn');
+    const closeMenu = document.getElementById('close-menu');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.remove('translate-x-full');
+    });
+
+    closeMenu.addEventListener('click', () => {
+      mobileMenu.classList.add('translate-x-full');
+    });
+
+    document.querySelectorAll('#mobile-menu nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobileMenu.classList.add('translate-x-full');
+      });
+    });
+  </script>
+</body></html>

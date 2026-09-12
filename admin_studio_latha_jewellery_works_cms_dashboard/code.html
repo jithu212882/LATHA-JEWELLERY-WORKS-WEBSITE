@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&amp;family=Inter:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {"colors": {"inverse-primary": "#c8c6c5", "accent-gold": "#D4AF37", "on-error-container": "#93000a", "primary": "#000000", "on-primary-container": "#858383", "tertiary-container": "#1c1b1a", "primary-fixed-dim": "#c8c6c5", "on-secondary-container": "#656460", "surface-dim": "#ddd9d8", "on-primary-fixed-variant": "#474646", "on-tertiary": "#ffffff", "on-error": "#ffffff", "secondary-fixed": "#e5e2dc", "primary-container": "#1c1b1b", "on-primary-fixed": "#1c1b1b", "surface-container-low": "#f7f3f2", "on-secondary-fixed": "#1c1c18", "error-container": "#ffdad6", "on-tertiary-container": "#868381", "surface-variant": "#e5e2e1", "inverse-surface": "#313030", "inverse-on-surface": "#f4f0ef", "on-surface-variant": "#444748", "background": "#fdf8f8", "tertiary-fixed": "#e6e1df", "on-tertiary-fixed": "#1c1b1a", "error": "#ba1a1a", "outline-variant": "#c4c7c7", "surface-container-lowest": "#ffffff", "surface-tint": "#5f5e5e", "secondary-container": "#e5e2dc", "on-secondary": "#ffffff", "surface-container": "#f1edec", "surface": "#fdf8f8", "surface-container-highest": "#e5e2e1", "on-secondary-fixed-variant": "#474743", "on-background": "#1c1b1b", "supporting-beige": "#C5A880", "on-surface": "#1c1b1b", "on-primary": "#ffffff", "tertiary-fixed-dim": "#cac6c3", "on-tertiary-fixed-variant": "#484645", "outline": "#747878", "secondary": "#5f5e5a", "tertiary": "#000000", "surface-container-high": "#ebe7e6", "surface-bright": "#fdf8f8", "primary-fixed": "#e5e2e1", "secondary-fixed-dim": "#c9c6c1"}, "borderRadius": {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"}, "spacing": {"gutter-sm": "1rem", "gutter-md": "2rem", "margin-base": "2rem", "gutter-lg": "4rem"}, "fontFamily": {"label-sm": ["Inter"], "body-md": ["Inter"], "headline-lg": ["Cormorant Garamond"], "body-lg": ["Inter"], "headline-sm": ["Cormorant Garamond"], "headline-md": ["Cormorant Garamond"]}, "fontSize": {"label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}], "body-md": ["15px", {"lineHeight": "22px", "fontWeight": "400"}], "headline-lg": ["48px", {"lineHeight": "52px", "fontWeight": "600"}], "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}], "headline-sm": ["24px", {"lineHeight": "30px", "fontWeight": "500"}], "headline-md": ["32px", {"lineHeight": "38px", "fontWeight": "600"}]}}}};</script>
+</head>
+<body class="bg-[#121212] font-body-md text-[#F5F2EB]">
+<header class="fixed top-0 w-full z-50 bg-[#121212]/90 backdrop-blur-xl border-b border-[#2A2A2A]">
+<div class="h-20 max-w-7xl mx-auto px-4 md:px-gutter-md flex items-center justify-between">
+<div class="flex items-center gap-3">
+<button class="lg:hidden text-[#F5F2EB] hover:text-accent-gold p-1" id="mobile-menu-toggle">
+<span class="material-symbols-outlined text-[24px]">menu</span>
+</button>
+<span class="text-headline-sm font-headline font-bold tracking-widest text-accent-gold uppercase truncate">Latha Jewellery Works</span>
+</div>
+<nav class="hidden lg:flex items-center gap-2">
+<a class="text-label-sm text-[#F5F2EB]/70 hover:text-[#F5F2EB] uppercase tracking-wider transition-colors px-3 py-2 rounded-lg" href="#">Home</a>
+<a class="text-label-sm text-[#F5F2EB]/70 hover:text-[#F5F2EB] uppercase tracking-wider transition-colors px-3 py-2 rounded-lg" href="#">About</a>
+<a class="text-label-sm text-[#F5F2EB]/70 hover:text-[#F5F2EB] uppercase tracking-wider transition-colors px-3 py-2 rounded-lg" href="#">Services</a>
+<a class="text-label-sm text-[#F5F2EB]/70 hover:text-[#F5F2EB] uppercase tracking-wider transition-colors px-3 py-2 rounded-lg" href="#">Collections</a>
+<a class="text-label-sm text-[#F5F2EB]/70 hover:text-[#F5F2EB] uppercase tracking-wider transition-colors px-3 py-2 rounded-lg" href="#">Process</a>
+<a class="text-label-sm text-[#F5F2EB]/70 hover:text-[#F5F2EB] uppercase tracking-wider transition-colors px-3 py-2 rounded-lg" href="#">Testimonials</a>
+<a class="text-label-sm text-[#F5F2EB]/70 hover:text-[#F5F2EB] uppercase tracking-wider transition-colors px-3 py-2 rounded-lg" href="#">Contact</a>
+<a aria-current="page" class="uppercase tracking-wider transition-colors px-3 py-2 bg-accent-gold text-primary font-bold rounded-lg text-label-sm" href="#">Admin Studio</a>
+</nav>
+<div class="flex items-center gap-4">
+<a class="hidden sm:inline-flex items-center gap-2 bg-accent-gold text-primary px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-supporting-beige transition-colors font-bold" href="https://wa.me/919487056064" target="_blank"><span class="material-symbols-outlined text-[16px]">chat</span>9487056064</a>
+<div class="w-8 h-8 rounded-full bg-accent-gold flex items-center justify-center font-bold"><span class="material-symbols-outlined text-primary text-[18px]">person</span></div>
+</div>
+</div>
+</header>
+<main class="w-full pt-20 bg-[#121212]">
+<div class="flex flex-col w-full min-h-[calc(100vh-5rem)] bg-[#121212] text-[#F5F2EB] relative">
+<!-- Authentication Guard Overlay -->
+<div class="fixed inset-0 z-50 bg-[#121212] flex items-center justify-center transition-opacity duration-500 p-4" id="auth-guard">
+<div class="max-w-md w-full p-8 bg-[#181818] border border-[#2A2A2A] rounded-xl shadow-2xl text-center">
+<span class="material-symbols-outlined text-accent-gold text-4xl mb-4">lock</span>
+<h2 class="font-headline text-headline-sm text-accent-gold uppercase tracking-widest mb-2">Admin Studio Access</h2>
+<p class="text-body-md text-[#F5F2EB]/70 mb-6">Enter secure credentials to access the Latha Jewellery Works management dashboard.</p>
+<form class="space-y-4 text-left" id="login-form">
+<div>
+<label class="block text-label-sm text-supporting-beige uppercase tracking-wider mb-2">Master Key / Password</label>
+<input class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-3 text-[#F5F2EB] focus:border-accent-gold focus:outline-none" id="admin-pass" required="" type="password" value="LATHA2024"/>
+</div>
+<button class="w-full bg-accent-gold text-primary font-bold py-3 rounded-lg text-label-sm uppercase tracking-widest hover:bg-supporting-beige transition-colors" type="submit">Authenticate Studio</button>
+</form>
+</div>
+</div>
+<!-- Main Studio Layout -->
+<div class="flex w-full min-h-[calc(100vh-5rem)] relative">
+<!-- Mobile Drawer Backdrop -->
+<div class="fixed inset-0 bg-black/60 z-30 hidden lg:hidden" id="sidebar-backdrop"></div>
+<!-- Sidebar Navigation -->
+<aside class="fixed lg:static inset-y-0 left-0 z-40 w-72 bg-[#0D0D0D] border-r border-[#2A2A2A] flex flex-col shrink-0 transform -translate-x-full lg:translate-x-0 transition-transform duration-300" id="studio-sidebar">
+<div class="p-6 border-b border-[#2A2A2A] flex items-center justify-between">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest block font-bold">Studio Control</span>
+<span class="text-xs text-[#F5F2EB]/50">v4.8 Enterprise</span>
+</div>
+<button class="lg:hidden text-[#F5F2EB] hover:text-accent-gold" id="sidebar-close">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<nav class="flex-1 py-6 space-y-1 overflow-y-auto px-4" id="studio-nav">
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-accent-gold bg-accent-gold/10 font-bold transition-all" data-target="dash-overview"><span class="material-symbols-outlined text-[18px]">dashboard</span>Overview</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-[#F5F2EB]/70 hover:text-[#F5F2EB] hover:bg-[#2A2A2A]/50 transition-all" data-target="dash-models"><span class="material-symbols-outlined text-[18px]">diamond</span>Jewellery Models</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-[#F5F2EB]/70 hover:text-[#F5F2EB] hover:bg-[#2A2A2A]/50 transition-all" data-target="dash-categories"><span class="material-symbols-outlined text-[18px]">category</span>Categories</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-[#F5F2EB]/70 hover:text-[#F5F2EB] hover:bg-[#2A2A2A]/50 transition-all" data-target="dash-banners"><span class="material-symbols-outlined text-[18px]">view_carousel</span>Banners &amp; Logo</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-[#F5F2EB]/70 hover:text-[#F5F2EB] hover:bg-[#2A2A2A]/50 transition-all" data-target="dash-media"><span class="material-symbols-outlined text-[18px]">perm_media</span>Media Library</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-[#F5F2EB]/70 hover:text-[#F5F2EB] hover:bg-[#2A2A2A]/50 transition-all" data-target="dash-gold"><span class="material-symbols-outlined text-[18px]">trending_up</span>Gold Rates</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-[#F5F2EB]/70 hover:text-[#F5F2EB] hover:bg-[#2A2A2A]/50 transition-all" data-target="dash-reviews"><span class="material-symbols-outlined text-[18px]">reviews</span>Reviews &amp; Moderation</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-[#F5F2EB]/70 hover:text-[#F5F2EB] hover:bg-[#2A2A2A]/50 transition-all" data-target="dash-content"><span class="material-symbols-outlined text-[18px]">edit_document</span>Site Content</button>
+<button class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-label-sm uppercase tracking-wider text-[#F5F2EB]/70 hover:text-[#F5F2EB] hover:bg-[#2A2A2A]/50 transition-all" data-target="dash-settings"><span class="material-symbols-outlined text-[18px]">settings</span>Business &amp; SEO</button>
+</nav>
+<div class="p-4 border-t border-[#2A2A2A]">
+<button class="w-full flex items-center justify-center gap-2 bg-[#2A2A2A] text-[#F5F2EB] py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-error hover:text-white transition-colors" id="lock-studio"><span class="material-symbols-outlined text-[16px]">lock</span>Lock Studio</button>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 p-4 md:p-8 overflow-y-auto w-full">
+<!-- 1. OVERVIEW DASHBOARD -->
+<section class="space-y-8 studio-panel" id="dash-overview">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Executive Dashboard</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Studio Command Center</h1>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="bg-accent-gold text-primary font-bold px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-supporting-beige transition-colors" onclick="switchTab('dash-models')">+ Add Model</button>
+<button class="bg-[#1C1B1A] border border-[#2A2A2A] text-[#F5F2EB] px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:border-accent-gold transition-colors" onclick="switchTab('dash-gold')">Update Gold Rates</button>
+</div>
+</div>
+<!-- Metric Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl relative overflow-hidden">
+<span class="material-symbols-outlined absolute top-4 right-4 text-accent-gold/20 text-4xl">diamond</span>
+<span class="text-label-sm text-[#F5F2EB]/60 uppercase tracking-wider">Catalogue Items</span>
+<div class="text-3xl font-headline font-bold text-accent-gold mt-2">142</div>
+<span class="text-xs text-emerald-400 mt-2 block">+12 added this month</span>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl relative overflow-hidden">
+<span class="material-symbols-outlined absolute top-4 right-4 text-accent-gold/20 text-4xl">reviews</span>
+<span class="text-label-sm text-[#F5F2EB]/60 uppercase tracking-wider">Pending Reviews</span>
+<div class="text-3xl font-headline font-bold text-accent-gold mt-2">7</div>
+<span class="text-xs text-amber-400 mt-2 block">Requires moderation</span>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl relative overflow-hidden">
+<span class="material-symbols-outlined absolute top-4 right-4 text-accent-gold/20 text-4xl">trending_up</span>
+<span class="text-label-sm text-[#F5F2EB]/60 uppercase tracking-wider">Gold Rate (22K / 10g)</span>
+<div class="text-3xl font-headline font-bold text-accent-gold mt-2">₹68,450</div>
+<span class="text-xs text-emerald-400 mt-2 block">Updated 2h ago</span>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl relative overflow-hidden">
+<span class="material-symbols-outlined absolute top-4 right-4 text-accent-gold/20 text-4xl">chat</span>
+<span class="text-label-sm text-[#F5F2EB]/60 uppercase tracking-wider">Active Enquiries</span>
+<div class="text-3xl font-headline font-bold text-accent-gold mt-2">24</div>
+<span class="text-xs text-accent-gold mt-2 block">Via WhatsApp &amp; Form</span>
+</div>
+</div>
+<!-- Recent Activity & Quick Actions -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2 bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl">
+<h3 class="font-headline text-headline-sm text-accent-gold uppercase tracking-wider mb-4">Recent Enquiries &amp; Custom Orders</h3>
+<div class="space-y-4">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-[#121212] rounded-lg border border-[#2A2A2A] gap-3">
+<div>
+<h4 class="text-body-md font-bold text-[#F5F2EB]">Custom Antique Nakshi Necklace</h4>
+<p class="text-xs text-[#F5F2EB]/60">Client: Rajesh Kumar (+91 98450 XXXXX) • Min Wt: 45g</p>
+</div>
+<span class="px-3 py-1 bg-accent-gold/10 text-accent-gold text-label-sm rounded uppercase self-start sm:self-auto">In Progress</span>
+</div>
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-[#121212] rounded-lg border border-[#2A2A2A] gap-3">
+<div>
+<h4 class="text-body-md font-bold text-[#F5F2EB]">Temple Jewellery Jhumka Set</h4>
+<p class="text-xs text-[#F5F2EB]/60">Client: Priya Sharma (+91 94432 XXXXX) • Min Wt: 22g</p>
+</div>
+<span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 text-label-sm rounded uppercase self-start sm:self-auto">Ready for Delivery</span>
+</div>
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 bg-[#121212] rounded-lg border border-[#2A2A2A] gap-3">
+<div>
+<h4 class="text-body-md font-bold text-[#F5F2EB]">Bridal Kasu Mala &amp; Bangles</h4>
+<p class="text-xs text-[#F5F2EB]/60">Client: Karthik R. (+91 97890 XXXXX) • Min Wt: 80g</p>
+</div>
+<span class="px-3 py-1 bg-amber-500/10 text-amber-400 text-label-sm rounded uppercase self-start sm:self-auto">Consultation</span>
+</div>
+</div>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl flex flex-col justify-between">
+<div>
+<h3 class="font-headline text-headline-sm text-accent-gold uppercase tracking-wider mb-4">Quick Studio Status</h3>
+<ul class="space-y-3 text-body-md text-[#F5F2EB]/80">
+<li class="flex justify-between items-center"><span class="text-xs uppercase">Primary Logo</span> <span class="text-emerald-400 text-xs">Active</span></li>
+<li class="flex justify-between items-center"><span class="text-xs uppercase">Hero Carousel</span> <span class="text-emerald-400 text-xs">3 Banners Live</span></li>
+<li class="flex justify-between items-center"><span class="text-xs uppercase">SEO Meta Tags</span> <span class="text-emerald-400 text-xs">Optimized</span></li>
+<li class="flex justify-between items-center"><span class="text-xs uppercase">WhatsApp Widget</span> <span class="text-emerald-400 text-xs">Connected</span></li>
+<li class="flex justify-between items-center"><span class="text-xs uppercase">Database Sync</span> <span class="text-emerald-400 text-xs">Real-time</span></li>
+</ul>
+</div>
+<div class="mt-6 pt-4 border-t border-[#2A2A2A]">
+<span class="text-xs text-[#F5F2EB]/50 block text-center">Latha Jewellery Works Studio v4.8</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. JEWELLERY MODEL MANAGEMENT -->
+<section class="space-y-8 studio-panel hidden" id="dash-models">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Inventory Control</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Jewellery Model Management (CRUD)</h1>
+</div>
+<button class="bg-accent-gold text-primary font-bold px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-supporting-beige transition-colors">+ Add New Model</button>
+</div>
+<!-- Filter Bar -->
+<div class="flex flex-wrap gap-4 items-center justify-between bg-[#181818] p-4 rounded-xl border border-[#2A2A2A]">
+<div class="flex flex-wrap gap-2 w-full sm:w-auto">
+<input class="bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-2 text-sm text-[#F5F2EB] w-full sm:w-64 focus:outline-none focus:border-accent-gold" placeholder="Search models..." type="text"/>
+<select class="bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-2 text-sm text-[#F5F2EB] focus:outline-none focus:border-accent-gold w-full sm:w-auto">
+<option>All Categories</option>
+<option>Chains</option>
+<option>Kolus (Anklets)</option>
+<option>Kammal (Earrings)</option>
+<option>Bangles</option>
+<option>Rings</option>
+</select>
+</div>
+<span class="text-xs text-[#F5F2EB]/60 uppercase">Showing 142 items</span>
+</div>
+<!-- Models Table / Responsive Grid -->
+<div class="bg-[#181818] border border-[#2A2A2A] rounded-xl overflow-hidden hidden md:block">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-[#2A2A2A] text-label-sm text-supporting-beige uppercase">
+<th class="p-4">Preview</th>
+<th class="p-4">Model Name</th>
+<th class="p-4">Category</th>
+<th class="p-4">Min. Weight</th>
+<th class="p-4">Status</th>
+<th class="p-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[#2A2A2A] text-body-md">
+<tr class="hover:bg-[#1C1B1A]/50">
+<td class="p-4"><div class="w-12 h-12 bg-cover bg-center rounded bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB6_82XXuz7AZ0gePoehEWjXD2DJxjScBOV46MefoDljHGeDe4POdDLQIna5l2QlMkvSazhm_Jqx0_bflZEvkohz7fpYKVNy4eIdPcInS1OqTUQu95m72A-xNMaTsBaNTJrxO7-2nsqqfMHpHeCUEkms43aZIGghtLQf3Lu8dCtCta045KqHa95WPIw8IrYVqxVvcShO3aWDYl-7hKffF2l6E2rZs0kxHy0yRQZUHsbqGKa2svFOwVKaw')"></div></td>
+<td class="p-4 font-bold text-[#F5F2EB]">Royal Antique Nakshi Mala</td>
+<td class="p-4 text-xs uppercase text-accent-gold">Chains</td>
+<td class="p-4">48.5g</td>
+<td class="p-4"><span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded uppercase">Active</span></td>
+<td class="p-4 text-right space-x-2">
+<button class="text-[#F5F2EB]/70 hover:text-accent-gold" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="text-[#F5F2EB]/70 hover:text-accent-gold" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="text-[#F5F2EB]/70 hover:text-error" title="Delete"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-[#1C1B1A]/50">
+<td class="p-4"><div class="w-12 h-12 bg-cover bg-center rounded bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAG0r6OUD1TfqQJiw-yS_8DYXu1GWF1W3QZ7YKAZH0o7DJE9ST_H5xw9j4r1EOC07zkLU_l8bRaeeYyt3ryQLvWOcV3VsVw_0m3Txxe9Eqyvgx3L3ZuqwKJ9GGOP9b72gzO4oOvGEXq6v3s0LCFHeIHYT6u8URImup2ymJh9CxU90DylGIHDTG8ZXLqwFzpAIUBgKRLWnXcFRaFC-J3hN48E3EluXeVCfQZeeraj6wUryA8yzzt1epEKQ')"></div></td>
+<td class="p-4 font-bold text-[#F5F2EB]">Traditional Bridal Kolus</td>
+<td class="p-4 text-xs uppercase text-accent-gold">Kolus</td>
+<td class="p-4">32.0g</td>
+<td class="p-4"><span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded uppercase">Active</span></td>
+<td class="p-4 text-right space-x-2">
+<button class="text-[#F5F2EB]/70 hover:text-accent-gold" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="text-[#F5F2EB]/70 hover:text-accent-gold" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="text-[#F5F2EB]/70 hover:text-error" title="Delete"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</td>
+</tr>
+<tr class="hover:bg-[#1C1B1A]/50">
+<td class="p-4"><div class="w-12 h-12 bg-cover bg-center rounded bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCgDEYh62Cn6tHRO_LVBVZhFkEq1iBLiZVP2mQrcEatnUwo99_2FzIb7bp7AbO3Hikobu8hb3krDOHr_jaVNEQcia81gjejquV-wvtYlCaWITZEK68HWxfWITRl-bYxWAz73U-0B4kKeJiROqUvh3J_L_Obt0c9ZjHhL2aK4Hrus9LOwz0RbYdlIonVXaXP1bnzFdl50a_vPHbiBvk1pmSJtsPTf_axvuvJnQkZEX6lZJ6q3eu5-OlxvQ')"></div></td>
+<td class="p-4 font-bold text-[#F5F2EB]">Temple Jhumka Kammal</td>
+<td class="p-4 text-xs uppercase text-accent-gold">Kammal</td>
+<td class="p-4">18.2g</td>
+<td class="p-4"><span class="px-2 py-1 bg-amber-500/10 text-amber-400 text-xs rounded uppercase">Hidden</span></td>
+<td class="p-4 text-right space-x-2">
+<button class="text-[#F5F2EB]/70 hover:text-accent-gold" title="Edit"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="text-[#F5F2EB]/70 hover:text-accent-gold" title="Duplicate"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+<button class="text-[#F5F2EB]/70 hover:text-error" title="Delete"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Mobile Card View for Models -->
+<div class="grid grid-cols-1 gap-4 md:hidden">
+<div class="bg-[#181818] border border-[#2A2A2A] p-4 rounded-xl flex gap-4 items-center">
+<div class="w-16 h-16 bg-cover bg-center rounded shrink-0 bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDbqzG0r6ihi3O3Ho7xUdkVAJ6hxn22Xm7-lb5tl7NnMwxoWxp3BAJ4ABFuE2CbelAGPcR1ttFoUyOx02FdHHqtlAsA8zZlyF5S5qmTYEHsDc2Bzk206sYUimMvSoHNRsfOpqHZVHGN23JwLk1AmLhvCfnARbZS6sVzpoM-fSAT5WPNUG8smOxkhfrtuKbvDSWl--C9WHggWvFcCMPQnK0jX03T7LNfxBzWzl-jYulQvDvVZ3XnaFzw_Q')"></div>
+<div class="flex-1 min-w-0">
+<h4 class="font-bold text-[#F5F2EB] truncate">Royal Antique Nakshi Mala</h4>
+<p class="text-xs text-accent-gold uppercase">Chains • 48.5g</p>
+<span class="inline-block mt-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded uppercase">Active</span>
+</div>
+<div class="flex flex-col gap-2">
+<button class="text-[#F5F2EB]/70 hover:text-accent-gold"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="text-[#F5F2EB]/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-4 rounded-xl flex gap-4 items-center">
+<div class="w-16 h-16 bg-cover bg-center rounded shrink-0 bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBCI5Vml8ALnbjOpt_-tafHQuSeO1drfdkMFswx4T2k_W0oaJVb0vRx5MRVX4JO6pDyuW4OUEfFnqIQlDT3_j2RmTZn6pyCRaNck0dyTDKREU5r-_ARkwWYkk4bcj6OBVaSgd8Ubv5eP-OkxyGkruWCn1xg9rOQ45NMYd7a0DeF1rF__Psm4SU43SFzvLUk0-UEvfLoutRx7hYaurlcCg80IoMRTH2P3q0xU1_VAtqUcP1xDv3YETyWsw')"></div>
+<div class="flex-1 min-w-0">
+<h4 class="font-bold text-[#F5F2EB] truncate">Traditional Bridal Kolus</h4>
+<p class="text-xs text-accent-gold uppercase">Kolus • 32.0g</p>
+<span class="inline-block mt-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded uppercase">Active</span>
+</div>
+<div class="flex flex-col gap-2">
+<button class="text-[#F5F2EB]/70 hover:text-accent-gold"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+<button class="text-[#F5F2EB]/70 hover:text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. CATEGORY MANAGEMENT -->
+<section class="space-y-8 studio-panel hidden" id="dash-categories">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Taxonomy</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Category Manager</h1>
+</div>
+<button class="bg-accent-gold text-primary font-bold px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-supporting-beige transition-colors">+ Add Category</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl space-y-4">
+<div class="flex justify-between items-start">
+<h3 class="font-headline text-headline-sm text-accent-gold">Chains &amp; Necklaces</h3>
+<span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded uppercase">Active</span>
+</div>
+<p class="text-body-md text-[#F5F2EB]/70">Traditional and contemporary gold chain designs.</p>
+<div class="flex justify-between text-xs text-[#F5F2EB]/50 pt-4 border-t border-[#2A2A2A]">
+<span>45 Items</span>
+<div class="space-x-3">
+<button class="hover:text-accent-gold font-bold">Edit</button>
+<button class="hover:text-error font-bold">Delete</button>
+</div>
+</div>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl space-y-4">
+<div class="flex justify-between items-start">
+<h3 class="font-headline text-headline-sm text-accent-gold">Kolus (Anklets)</h3>
+<span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded uppercase">Active</span>
+</div>
+<p class="text-body-md text-[#F5F2EB]/70">Handcrafted silver and gold anklet craftsmanship.</p>
+<div class="flex justify-between text-xs text-[#F5F2EB]/50 pt-4 border-t border-[#2A2A2A]">
+<span>18 Items</span>
+<div class="space-x-3">
+<button class="hover:text-accent-gold font-bold">Edit</button>
+<button class="hover:text-error font-bold">Delete</button>
+</div>
+</div>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl space-y-4">
+<div class="flex justify-between items-start">
+<h3 class="font-headline text-headline-sm text-accent-gold">Kammal (Earrings)</h3>
+<span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded uppercase">Active</span>
+</div>
+<p class="text-body-md text-[#F5F2EB]/70">Jhumkas, studs, and chandelier drop earrings.</p>
+<div class="flex justify-between text-xs text-[#F5F2EB]/50 pt-4 border-t border-[#2A2A2A]">
+<span>34 Items</span>
+<div class="space-x-3">
+<button class="hover:text-accent-gold font-bold">Edit</button>
+<button class="hover:text-error font-bold">Delete</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. BANNERS & LOGO MANAGER -->
+<section class="space-y-8 studio-panel hidden" id="dash-banners">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Visual Presentation</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Banners &amp; Logo Manager</h1>
+</div>
+<button class="bg-accent-gold text-primary font-bold px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-supporting-beige transition-colors">+ Upload Banner</button>
+</div>
+<div class="space-y-6">
+<!-- Logo Manager Section -->
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl flex flex-col md:flex-row gap-6 items-center justify-between">
+<div class="flex items-center gap-6">
+<div class="w-16 h-16 rounded-full bg-accent-gold flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-3xl">diamond</span>
+</div>
+<div>
+<h3 class="font-headline text-headline-sm text-accent-gold">Primary Studio Logo</h3>
+<p class="text-body-md text-[#F5F2EB]/70">Header branding for Latha Jewellery Works (SVG / High-Res PNG)</p>
+</div>
+</div>
+<button class="px-4 py-2 bg-[#2A2A2A] text-[#F5F2EB] rounded-lg text-label-sm hover:bg-accent-gold hover:text-primary transition-colors font-bold whitespace-nowrap">Change Logo</button>
+</div>
+<!-- Banner Item -->
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl flex flex-col md:flex-row gap-6 items-center">
+<div class="w-full md:w-64 h-36 bg-cover bg-center rounded-lg bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCEGbFr-5O_qGj_vtpqt8EjIpBevE5QO3YchcXGdf2vgX2S24-IPeWHGMLYLv4Hfil9-dN684p1eBIRkAkTFi4avY_bd6dlZlFtBWuOgchOHm_t0ooAJw5fBOv4MhQOFNjx0XSrmpCyoU1nPPXXf64QNAtmvHJ0QRjiJjA3rnTqcVgH2y2A-5-s3vd1tGnRTkOkIhWSql9usHljjyQ7zdBOixxgzBm7_pwBJ8BENoD9F2pxmoHco-b5HQ')"></div>
+<div class="flex-1 space-y-2">
+<div class="flex justify-between">
+<h3 class="font-headline text-headline-sm text-accent-gold">Hero Main Showcase</h3>
+<span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs rounded uppercase">Live</span>
+</div>
+<p class="text-body-md text-[#F5F2EB]/80 font-bold">Timeless Gold Craftsmanship &amp; Custom Bespoke Designs</p>
+<p class="text-xs text-[#F5F2EB]/60">CTA: Explore Collection • Order via WhatsApp</p>
+</div>
+<div class="flex flex-col gap-2 w-full md:w-auto">
+<button class="px-4 py-2 bg-[#2A2A2A] text-[#F5F2EB] rounded text-label-sm hover:bg-accent-gold hover:text-primary transition-colors">Edit Banner</button>
+<button class="px-4 py-2 bg-[#2A2A2A] text-[#F5F2EB] rounded text-label-sm hover:bg-error hover:text-white transition-colors">Disable</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. MEDIA LIBRARY -->
+<section class="space-y-8 studio-panel hidden" id="dash-media">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Asset Manager</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Central Media Library</h1>
+</div>
+<button class="bg-accent-gold text-primary font-bold px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-supporting-beige transition-colors">Upload Assets</button>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+<div class="bg-[#181818] border border-[#2A2A2A] p-3 rounded-xl group relative">
+<div class="w-full h-32 bg-cover bg-center rounded-lg mb-2 bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDO8bU6qJhsE3Us6VQ8l_3tl5aEQttqbVpBT0bXeUCZPkYDi6Awz4e4HudRLnp4E_SOO1DcuOgo2yXA5m6gX0vfaOdDJt8HSuNsfueWHGg4bLg6B8IdHMVGnDY_KIP_tuqpqNBAqJYLkLLYsG5jxlyMgw2aCbPCqqxhZEsy1JhxORY1cxum6JXazJls0QJlcxC5NoRMLMdYHDvhf-jJ7bnpeNvLBMlAoJEuo6UZq-VNKiHL7llq8aamDw')"></div>
+<span class="text-xs text-[#F5F2EB]/70 truncate block">necklace_01.jpg</span>
+<span class="text-[10px] text-accent-gold block">2.4 MB</span>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-3 rounded-xl group relative">
+<div class="w-full h-32 bg-cover bg-center rounded-lg mb-2 bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCkYCM3UpZGmoTbP-HDBvLMHBF_VaSstuGR6T4Nylyx3L2NQES_MqD6Kvs05fDg6skvA-pY93x0fhGIYRSwi4Qkzada0FFngrJa7aANdpEltghBOxmPecs3AvFMNQC9Out8z_v76zvU9MREfTwlsTZ1SGlmp1z3FRsDHz_2utpNcvvSe2HQgd13fWMMkFz_6Bu2l5MJEJ3yE8QokdUE52G-ZAJXWOzsdIowJRFAhEXUcK2P_lsQzpjJPw')"></div>
+<span class="text-xs text-[#F5F2EB]/70 truncate block">bangles_02.jpg</span>
+<span class="text-[10px] text-accent-gold block">1.8 MB</span>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-3 rounded-xl group relative">
+<div class="w-full h-32 bg-cover bg-center rounded-lg mb-2 bg-[#2A2A2A]" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDQ2UJNHaMPoL9bApcLWSARy5NyD01hkWDCh4M4Fa0H8ACBiFwvZAGDXXs-R7c-dbAX428-o0TvJeOdz4liaa-Gv41UIF_968xSVBrfsOl9f-G1-621THgRpu0bYUHsTVMEaluDapPZNttBOUkoSTkDL8tioElgfVs4iGYbSo13RQ-sdfyPBXSPMFm2dkYhMYqVVEW10Fo0QIW5oUJFd5UgYFPfoll6byVGO-gDXi8JBKCFC6lTrIY6XA')"></div>
+<span class="text-xs text-[#F5F2EB]/70 truncate block">rings_03.jpg</span>
+<span class="text-[10px] text-accent-gold block">3.1 MB</span>
+</div>
+</div>
+</section>
+<!-- 6. GOLD RATE MANAGEMENT -->
+<section class="space-y-8 studio-panel hidden" id="dash-gold">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Bullion Pricing</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Gold Rate Manager</h1>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-[#181818] border border-[#2A2A2A] p-8 rounded-xl space-y-6">
+<h3 class="font-headline text-headline-sm text-accent-gold">Current Live Rates (Per 10 Grams)</h3>
+<form class="space-y-4">
+<div>
+<label class="block text-label-sm text-supporting-beige uppercase tracking-wider mb-2">22K Gold Rate (₹)</label>
+<input class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-3 text-[#F5F2EB] text-xl font-bold focus:border-accent-gold focus:outline-none" type="text" value="68,450"/>
+</div>
+<div>
+<label class="block text-label-sm text-supporting-beige uppercase tracking-wider mb-2">24K Gold Rate (₹)</label>
+<input class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-3 text-[#F5F2EB] text-xl font-bold focus:border-accent-gold focus:outline-none" type="text" value="74,600"/>
+</div>
+<div class="flex items-center gap-4 pt-2">
+<input checked="" class="w-5 h-5 accent-accent-gold" id="show-ticker" type="checkbox"/>
+<label class="text-body-md text-[#F5F2EB]" for="show-ticker">Display Live Gold Rate Ticker on Site</label>
+</div>
+<button class="w-full bg-accent-gold text-primary font-bold py-3 rounded-lg text-label-sm uppercase tracking-widest hover:bg-supporting-beige transition-colors" type="button">Publish Rates</button>
+</form>
+<span class="text-xs text-[#F5F2EB]/50 block">Last updated by Admin on Oct 24, 2024 at 10:30 AM</span>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-8 rounded-xl space-y-6">
+<h3 class="font-headline text-headline-sm text-accent-gold">Rate History Log</h3>
+<div class="space-y-3">
+<div class="flex justify-between items-center p-3 bg-[#121212] rounded border border-[#2A2A2A] text-sm">
+<span>Oct 23, 2024</span>
+<span class="text-accent-gold">22K: ₹68,200</span>
+<span class="text-emerald-400 text-xs">+₹250</span>
+</div>
+<div class="flex justify-between items-center p-3 bg-[#121212] rounded border border-[#2A2A2A] text-sm">
+<span>Oct 22, 2024</span>
+<span class="text-accent-gold">22K: ₹67,950</span>
+<span class="text-emerald-400 text-xs">+₹150</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 7. REVIEW & MODERATION QUEUE -->
+<section class="space-y-8 studio-panel hidden" id="dash-reviews">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Testimonial Moderation</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Review Moderation Queue</h1>
+</div>
+</div>
+<div class="space-y-4">
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div class="space-y-1">
+<div class="flex flex-wrap items-center gap-2">
+<h4 class="font-bold text-[#F5F2EB]">Anitha Sundaram</h4>
+<span class="text-accent-gold text-xs">★★★★★</span>
+<span class="px-2 py-0.5 bg-amber-500/10 text-amber-400 text-[10px] rounded uppercase">Pending Approval</span>
+</div>
+<p class="text-body-md text-[#F5F2EB]/80">"The bridal necklace set crafted by Latha Jewellery Works exceeded all our expectations. Exceptional purity and exquisite detail."</p>
+</div>
+<div class="flex gap-2 w-full sm:w-auto justify-end">
+<button class="px-4 py-2 bg-emerald-500/20 text-emerald-400 rounded text-label-sm uppercase font-bold">Approve</button>
+<button class="px-4 py-2 bg-error/20 text-error rounded text-label-sm uppercase font-bold">Reject</button>
+</div>
+</div>
+</div>
+</section>
+<!-- 8. CONTENT MANAGEMENT -->
+<section class="space-y-8 studio-panel hidden" id="dash-content">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Page Builder</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Site Content Management</h1>
+</div>
+<button class="bg-accent-gold text-primary font-bold px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-supporting-beige transition-colors">Save All Changes</button>
+</div>
+<div class="space-y-6">
+<div class="bg-[#181818] border border-[#2A2A2A] p-6 rounded-xl space-y-4">
+<h3 class="font-headline text-headline-sm text-accent-gold">About Section Copy</h3>
+<textarea class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg p-4 text-body-md text-[#F5F2EB] focus:border-accent-gold focus:outline-none" rows="4">Founded with an uncompromising vision of purity and heritage craftsmanship, Latha Jewellery Works has served discerning patrons for decades with handcrafted gold and silver masterpieces.</textarea>
+</div>
+</div>
+</section>
+<!-- 9. BUSINESS & SEO SETTINGS -->
+<section class="space-y-8 studio-panel hidden" id="dash-settings">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
+<div>
+<span class="text-label-sm text-accent-gold uppercase tracking-widest">Configuration</span>
+<h1 class="font-headline text-headline-lg text-[#F5F2EB] mt-1">Business &amp; SEO Settings</h1>
+</div>
+<button class="bg-accent-gold text-primary font-bold px-4 py-2 rounded-lg text-label-sm uppercase tracking-wider hover:bg-supporting-beige transition-colors">Save Settings</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div class="bg-[#181818] border border-[#2A2A2A] p-8 rounded-xl space-y-6">
+<h3 class="font-headline text-headline-sm text-accent-gold">Business Profile</h3>
+<div class="space-y-4">
+<div>
+<label class="block text-label-sm text-supporting-beige uppercase tracking-wider mb-2">Business Name</label>
+<input class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-3 text-[#F5F2EB] focus:border-accent-gold focus:outline-none" type="text" value="Latha Jewellery Works"/>
+</div>
+<div>
+<label class="block text-label-sm text-supporting-beige uppercase tracking-wider mb-2">WhatsApp Number</label>
+<input class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-3 text-[#F5F2EB] focus:border-accent-gold focus:outline-none" type="text" value="+91 9487056064"/>
+</div>
+<div>
+<label class="block text-label-sm text-supporting-beige uppercase tracking-wider mb-2">Official Email</label>
+<input class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-3 text-[#F5F2EB] focus:border-accent-gold focus:outline-none" type="email" value="contact@lathajewelleryworks.com"/>
+</div>
+</div>
+</div>
+<div class="bg-[#181818] border border-[#2A2A2A] p-8 rounded-xl space-y-6">
+<h3 class="font-headline text-headline-sm text-accent-gold">SEO &amp; Meta Tags</h3>
+<div class="space-y-4">
+<div>
+<label class="block text-label-sm text-supporting-beige uppercase tracking-wider mb-2">Meta Title</label>
+<input class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg px-4 py-3 text-[#F5F2EB] focus:border-accent-gold focus:outline-none" type="text" value="Latha Jewellery Works | Timeless Handcrafted Gold &amp; Silver Masterpieces"/>
+</div>
+<div>
+<label class="block text-label-sm text-supporting-beige uppercase tracking-wider mb-2">Meta Description</label>
+<textarea class="w-full bg-[#121212] border border-[#2A2A2A] rounded-lg p-4 text-body-md text-[#F5F2EB] focus:border-accent-gold focus:outline-none" rows="3">Discover authentic handcrafted gold jewelry, antique chains, kolus, and temple designs at Latha Jewellery Works.</textarea>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</div>
+</main>
+<!-- Floating WhatsApp Button -->
+<a class="fixed bottom-8 right-8 z-50 w-14 h-14 bg-accent-gold text-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 transition-transform font-bold" href="https://wa.me/919487056064" target="_blank"><span class="material-symbols-outlined text-[28px]">chat</span></a>
+<footer class="w-full bg-[#0D0D0D] border-t border-[#2A2A2A] py-8">
+<div class="max-w-7xl mx-auto px-4 md:px-gutter-md text-center text-[#F5F2EB]/60 text-label-sm tracking-widest uppercase">© Latha Jewellery Works. Timeless Craftsmanship.</div>
+</footer>
+<!-- Client-side Interactive Script -->
+<script>
+    // Authentication Guard Simulation
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const pass = document.getElementById('admin-pass').value;
+      if(pass === 'LATHA2024') {
+        const guard = document.getElementById('auth-guard');
+        guard.style.opacity = '0';
+        setTimeout(() => guard.remove(), 500);
+      } else {
+        alert('Invalid Master Key. Use LATHA2024');
+      }
+    });
+
+    document.getElementById('lock-studio').addEventListener('click', function() {
+      location.reload();
+    });
+
+    // Mobile Drawer Toggle
+    const sidebar = document.getElementById('studio-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const sidebarClose = document.getElementById('sidebar-close');
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('-translate-x-full');
+      backdrop.classList.toggle('hidden');
+    }
+
+    mobileMenuToggle.addEventListener('click', toggleSidebar);
+    sidebarClose.addEventListener('click', toggleSidebar);
+    backdrop.addEventListener('click', toggleSidebar);
+
+    // Sidebar Tab Switching
+    const navButtons = document.querySelectorAll('#studio-nav button');
+    const panels = document.querySelectorAll('.studio-panel');
+
+    function switchTab(targetId) {
+      panels.forEach(panel => panel.classList.add('hidden'));
+      const targetPanel = document.getElementById(targetId);
+      if(targetPanel) {
+        targetPanel.classList.remove('hidden');
+      }
+
+      navButtons.forEach(btn => {
+        if(btn.getAttribute('data-target') === targetId) {
+          btn.classList.add('text-accent-gold', 'bg-accent-gold/10', 'font-bold');
+          btn.classList.remove('text-[#F5F2EB]/70');
+        } else {
+          btn.classList.remove('text-accent-gold', 'bg-accent-gold/10', 'font-bold');
+          btn.classList.add('text-[#F5F2EB]/70');
+        }
+      });
+
+      // Close mobile drawer on selection
+      if(window.innerWidth < 1024) {
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    navButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const target = button.getAttribute('data-target');
+        switchTab(target);
+      });
+    });
+  </script>
+</body></html>
