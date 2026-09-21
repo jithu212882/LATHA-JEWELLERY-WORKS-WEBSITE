@@ -31,6 +31,21 @@ export function DataProvider({ children }) {
         const json = await res.json();
         setData(json);
         setError(null);
+
+        // Automatic Live GoldAPI.io Sync (Morning/Evening)
+        if (json.gold_rates?.mode !== 'MANUAL_OVERRIDE') {
+          fetch('/api/gold-rates/fetch-live', { method: 'POST' })
+            .then(r => r.json())
+            .then(liveJson => {
+              if (liveJson?.success && liveJson?.rates) {
+                setData(prev => ({
+                  ...prev,
+                  gold_rates: liveJson.rates
+                }));
+              }
+            })
+            .catch(() => {});
+        }
       } else {
         const staticRes = await fetch('/data/store.json');
         if (staticRes.ok) {
