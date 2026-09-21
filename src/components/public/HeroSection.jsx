@@ -25,25 +25,25 @@ export default function HeroSection() {
   return (
     <section
       ref={heroRef}
-      className="relative min-h-[80vh] sm:min-h-[85vh] lg:min-h-[90vh] flex items-center justify-center overflow-hidden pt-24 sm:pt-28 pb-12 sm:pb-16 bg-[#121212]"
+      className="relative flex items-center justify-center overflow-hidden pt-24 sm:pt-36 pb-10 sm:pb-20 sm:min-h-[80vh] lg:min-h-[88vh] bg-[#121212]"
     >
-      {/* Background Image with Dark Contrast Overlay */}
+      {/* Background Image with Controlled Focus & Luxury Visibility */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity scale-105 transition-transform duration-1000"
+        className="absolute inset-0 bg-cover bg-[center_30%] sm:bg-center opacity-40 sm:opacity-40 transition-opacity duration-1000"
         style={{ backgroundImage: `url('${bgImage}')` }}
       />
-      {/* Layered Gradient to guarantee legibility across all screen sizes */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#121212]/90 via-[#121212]/75 to-[#121212]" />
+      {/* Editorial Vignette Overlay for Crisp Contrast & Atmosphere */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#121212]/90 via-[#121212]/60 to-[#121212]" />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center z-10 w-full">
         <div ref={textRef} className="flex flex-col items-center w-full">
-          {/* Eyebrow badge */}
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-accent-gold mb-4 sm:mb-6 border border-accent-gold/40 bg-accent-gold/10 px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full font-medium inline-block">
+          {/* Established 1990 Badge */}
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.2em] text-accent-gold mb-3 sm:mb-6 border border-accent-gold/40 bg-[#121212]/90 backdrop-blur-md px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full font-medium inline-block shadow-md">
             {content?.hero_eyebrow || 'Established 1990 • Chathencode'}
           </span>
 
           {/* Headline */}
-          <h1 className="font-headline text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#F9F6F0] mb-4 sm:mb-6 leading-[1.2] sm:leading-[1.15] max-w-4xl">
+          <h1 className="font-headline text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#F9F6F0] mb-3 sm:mb-6 leading-[1.2] sm:leading-[1.15] max-w-4xl drop-shadow-sm px-1">
             {content?.hero_title || (
               <>
                 Crafting Unique Gold Ornaments <span className="italic font-normal text-accent-gold block sm:inline">Since 1990</span>
@@ -52,7 +52,7 @@ export default function HeroSection() {
           </h1>
 
           {/* Subtitle */}
-          <p className="font-body text-xs sm:text-base md:text-lg text-[#F5F2EB]/85 max-w-2xl mb-8 sm:mb-10 font-light leading-relaxed px-2">
+          <p className="font-body text-xs sm:text-base md:text-lg text-[#F5F2EB]/85 max-w-2xl mb-6 sm:mb-10 font-light leading-relaxed px-2">
             {content?.hero_subtitle || 'Where ancestral heritage meets uncompromising contemporary precision. Bespoke gold craftsmanship tailored to your most cherished milestones.'}
           </p>
 
@@ -60,13 +60,13 @@ export default function HeroSection() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto px-2">
             <a
               href="#custom-enquiry"
-              className="w-full sm:w-auto bg-accent-gold text-[#121212] font-bold px-8 py-3.5 sm:py-4 rounded-xl text-xs sm:text-sm uppercase tracking-widest hover:bg-supporting-beige transition-all shadow-xl text-center active:scale-95"
+              className="w-full sm:w-auto bg-accent-gold text-[#121212] font-bold px-7 py-3.5 sm:py-4 rounded-xl text-xs sm:text-sm uppercase tracking-widest hover:bg-supporting-beige transition-all shadow-xl text-center active:scale-95"
             >
               Request Custom Design
             </a>
             <a
-              href="#catalogue"
-              className="w-full sm:w-auto border border-[#F5F2EB]/30 text-[#F5F2EB] font-medium px-8 py-3.5 sm:py-4 rounded-xl text-xs sm:text-sm uppercase tracking-widest hover:bg-[#F5F2EB]/10 transition-all text-center active:scale-95"
+              href="#/collections/all"
+              className="w-full sm:w-auto border border-[#F5F2EB]/30 text-[#F5F2EB] font-medium px-7 py-3.5 sm:py-4 rounded-xl text-xs sm:text-sm uppercase tracking-widest hover:bg-[#F5F2EB]/10 transition-all text-center active:scale-95"
             >
               Explore Collections
             </a>

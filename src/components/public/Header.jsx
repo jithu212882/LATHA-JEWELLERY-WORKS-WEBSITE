@@ -42,80 +42,66 @@ export default function Header({ onOpenAdmin }) {
 
         {/* Main Header Container */}
         <div
-          className={`max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between transition-all duration-300 ${
+          className={`max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between transition-all duration-300 ${
             isScrolled ? 'h-14 sm:h-16' : 'h-16 sm:h-20'
           }`}
         >
-          {/* LEFT: Compact Brand Logo */}
-          <a href="#" className="flex flex-col group shrink-0 py-1">
-            <span className="font-headline font-bold text-accent-gold uppercase tracking-wider text-sm sm:text-base group-hover:text-white transition-colors leading-tight">
-              {businessName}
-            </span>
-            <span className="text-[9px] text-[#F5F2EB]/50 uppercase tracking-widest font-sans font-normal">
-              Est. 1990 • Chathencode
-            </span>
+          {/* LEFT: Official Brand Logo & Name */}
+          <a href="#/" className="flex items-center gap-3 group shrink-0 py-1">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border border-accent-gold/40 shadow-md bg-[#121212] p-0.5 shrink-0 group-hover:border-accent-gold transition-colors">
+              <img
+                src={settings?.logo_primary || '/assets/latha-jewellery-works-logo.jpeg'}
+                alt={businessName}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/assets/latha-jewellery-works-logo.jpeg';
+                }}
+                className="w-full h-full object-cover rounded-md"
+              />
+            </div>
+            <div className="flex flex-col justify-center">
+              <span className="font-headline font-bold text-accent-gold uppercase tracking-wider text-sm sm:text-base group-hover:text-white transition-colors leading-tight whitespace-nowrap">
+                {businessName}
+              </span>
+              <span className="text-[9px] sm:text-[10px] text-[#F5F2EB]/55 uppercase tracking-widest font-sans font-normal leading-none mt-0.5">
+                Est. 1990 • Chathencode
+              </span>
+            </div>
           </a>
 
-          {/* CENTER: Desktop Navigation (Shown ONLY on 1200px+ to ensure proper spacing without cramped overlap) */}
-          <nav className="hidden xl:flex items-center gap-5 sm:gap-6 text-xs font-medium uppercase tracking-[0.08em] text-[#F5F2EB]/80 shrink">
-            <a href="#" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+          {/* RIGHT: Desktop Navigation Links (Shown on lg+ / 1024px+ for clean, spacious presentation) */}
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-xs font-medium uppercase tracking-[0.1em] text-[#F5F2EB]/85 shrink-0">
+            <a href="#/" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Home
             </a>
-            <a href="#about" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              About
-            </a>
-            <a href="#services" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Services
-            </a>
-            <a href="#catalogue" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+            <a href="#/collections/all" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Collections
             </a>
-            <a href="#process" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Process
+            <a href="#/collections/kammal" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+              Kammal
             </a>
-            <a href="#testimonials" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Testimonials
+            <a href="#/collections/kolus" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+              Kolus
             </a>
-            <a href="#contact" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Contact
+            <a href="#/collections/chains-necklaces" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+              Chains & Necklaces
+            </a>
+            <a href="#/collections/bangles-bracelets" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+              Bangles & Bracelets
+            </a>
+            <a href="#/collections/rings" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+              Rings
             </a>
           </nav>
 
-          {/* RIGHT: Utility Controls */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-            {/* WhatsApp Contact CTA */}
-            <a
-              href={`https://wa.me/91${whatsappNum}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 border border-accent-gold/40 bg-accent-gold/5 text-accent-gold hover:bg-accent-gold hover:text-[#121212] px-2.5 sm:px-3.5 py-1.5 rounded-md text-[11px] sm:text-xs font-sans tracking-wide transition-all duration-200"
-              title="Chat on WhatsApp"
-            >
-              <span className="material-symbols-outlined text-[16px] sm:text-[18px]">chat</span>
-              <span className="hidden sm:inline font-medium">WhatsApp</span>
-              <span className="hidden sm:inline text-accent-gold/40">|</span>
-              <span className="hidden sm:inline font-semibold tracking-wider">{formattedPhone}</span>
-            </a>
-
-            {/* Admin Studio Control (Quiet Secondary Control for Desktop) */}
-            <button
-              onClick={onOpenAdmin}
-              className="hidden sm:inline-flex items-center gap-1.5 text-[11px] text-[#F5F2EB]/50 hover:text-accent-gold uppercase tracking-wider font-medium transition-colors py-1 px-1.5"
-              title="Open Admin Studio"
-            >
-              <span className="material-symbols-outlined text-[14px]">lock</span>
-              <span>Admin Studio</span>
-            </button>
-
-            {/* Mobile/Tablet Menu Button */}
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="xl:hidden w-9 h-9 rounded-md bg-[#181818] border border-[#2A2A2A] text-accent-gold flex items-center justify-center hover:bg-accent-gold hover:text-[#121212] transition-colors"
-              aria-label="Open Mobile Menu"
-            >
-              <span className="material-symbols-outlined text-[22px]">menu</span>
-            </button>
-          </div>
+          {/* MOBILE / TABLET: Responsive Hamburger Button (<1024px) */}
+          <button
+            onClick={() => setMobileMenuOpen(true)}
+            className="lg:hidden w-10 h-10 rounded-lg bg-[#181818] border border-[#2A2A2A] text-accent-gold flex items-center justify-center hover:bg-accent-gold hover:text-[#121212] transition-colors shrink-0 ml-auto"
+            aria-label="Open Mobile Menu"
+          >
+            <span className="material-symbols-outlined text-[22px]">menu</span>
+          </button>
         </div>
       </header>
 

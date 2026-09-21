@@ -29,13 +29,13 @@ export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
   }, [isOpen]);
 
   const navLinks = [
-    { label: 'Home', href: '#' },
-    { label: 'About', href: '#about' },
-    { label: 'Services', href: '#services' },
-    { label: 'Collections', href: '#catalogue' },
-    { label: 'Process', href: '#process' },
-    { label: 'Testimonials', href: '#testimonials' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'Home', href: '#/' },
+    { label: 'All Collections', href: '#/collections/all' },
+    { label: 'Kammal (Earrings)', href: '#/collections/kammal' },
+    { label: 'Kolus (Anklets)', href: '#/collections/kolus' },
+    { label: 'Chains & Necklaces', href: '#/collections/chains-necklaces' },
+    { label: 'Bangles & Bracelets', href: '#/collections/bangles-bracelets' },
+    { label: 'Rings', href: '#/collections/rings' },
   ];
 
   return (
@@ -44,11 +44,20 @@ export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
       className="fixed inset-0 z-[100] bg-[#121212]/98 backdrop-blur-xl flex flex-col pt-6 px-6 pb-8 transform translate-x-full transition-none"
     >
       <div className="flex justify-between items-center pb-4 border-b border-[#2A2A2A]">
-        <div className="flex flex-col leading-tight">
-          <span className="font-headline font-bold text-accent-gold text-lg uppercase tracking-widest">
-            Latha Jewellery
-          </span>
-          <span className="text-[11px] text-[#F5F2EB]/50 uppercase tracking-wider">Atelier • Est. 1990</span>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg overflow-hidden border border-accent-gold/40 shadow-md bg-[#121212] p-0.5 shrink-0">
+            <img
+              src="/assets/latha-jewellery-works-logo.jpeg"
+              alt="Latha Jewellery Works"
+              className="w-full h-full object-cover rounded-md"
+            />
+          </div>
+          <div className="flex flex-col leading-tight">
+            <span className="font-headline font-bold text-accent-gold text-base uppercase tracking-wider">
+              Latha Jewellery
+            </span>
+            <span className="text-[10px] text-[#F5F2EB]/50 uppercase tracking-wider">Atelier • Est. 1990</span>
+          </div>
         </div>
         <button
           onClick={onClose}
@@ -71,17 +80,6 @@ export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
             {link.label}
           </a>
         ))}
-        <button
-          ref={(el) => (itemsRef.current[navLinks.length] = el)}
-          onClick={() => {
-            onClose();
-            onOpenAdmin();
-          }}
-          className="text-left text-accent-gold hover:text-white transition-colors tracking-wide py-1 text-lg uppercase font-bold flex items-center gap-2 pt-2"
-        >
-          <span className="material-symbols-outlined text-[20px]">admin_panel_settings</span>
-          Admin Studio
-        </button>
       </nav>
 
       <div className="mt-auto pt-6 border-t border-[#2A2A2A] flex flex-col gap-3">

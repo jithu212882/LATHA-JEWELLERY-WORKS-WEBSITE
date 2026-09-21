@@ -31,8 +31,12 @@ export default function AdminLogin({ onClose }) {
           <span className="material-symbols-outlined">close</span>
         </button>
 
-        <div className="w-12 h-12 rounded-full bg-accent-gold/10 border border-accent-gold/30 text-accent-gold flex items-center justify-center mx-auto mb-4">
-          <span className="material-symbols-outlined text-2xl">lock</span>
+        <div className="w-16 h-16 rounded-xl overflow-hidden border border-accent-gold/40 shadow-xl bg-[#121212] p-0.5 mx-auto mb-4 shrink-0">
+          <img
+            src="/assets/latha-jewellery-works-logo.jpeg"
+            alt="Latha Jewellery Works"
+            className="w-full h-full object-cover rounded-lg"
+          />
         </div>
 
         <h2 className="font-headline text-2xl font-bold text-accent-gold uppercase tracking-wider mb-1">

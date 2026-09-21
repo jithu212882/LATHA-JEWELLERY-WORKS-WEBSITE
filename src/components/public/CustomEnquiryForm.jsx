@@ -55,10 +55,10 @@ export default function CustomEnquiryForm() {
   };
 
   return (
-    <section id="custom-enquiry" className="py-20 md:py-28 bg-[#181818] border-y border-[#2A2A2A]">
+    <section id="custom-enquiry" className="py-14 sm:py-20 md:py-28 bg-[#181818] border-y border-[#2A2A2A]">
       <div className="max-w-4xl mx-auto px-4 md:px-8">
         <div className="bg-[#121212] border border-[#2A2A2A] p-6 sm:p-10 lg:p-12 rounded-2xl shadow-2xl">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6 sm:mb-10">
             <span className="text-xs uppercase tracking-[0.2em] text-accent-gold mb-3 block font-semibold">
               Bespoke Atelier
             </span>
