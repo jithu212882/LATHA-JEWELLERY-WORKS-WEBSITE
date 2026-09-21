@@ -7,7 +7,7 @@ import { store, saveStore } from './db.js';
  * Exposes NO API keys to frontend/client.
  */
 export async function updateGoldRatesFromAPI(customApiKey = null) {
-  const apiKey = customApiKey || process.env.GOLDAPI_KEY || process.env.GOLD_API_KEY;
+  const apiKey = customApiKey || process.env.GOLDAPI_KEY || process.env.GOLD_API_KEY || 'goldapi-07b38ebf247585a302d0df580bc43d17-io';
 
   const currentRates = store.gold_rates[0] || {
     rate_22k: '6,850',

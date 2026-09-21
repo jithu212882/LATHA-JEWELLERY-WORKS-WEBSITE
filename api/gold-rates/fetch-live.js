@@ -1,4 +1,15 @@
-import store from '../../server/data/store.json' assert { type: 'json' };
+import fs from 'fs';
+import path from 'path';
+
+function getStore() {
+  try {
+    const storePath = path.join(process.cwd(), 'server/data/store.json');
+    if (fs.existsSync(storePath)) {
+      return JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+    }
+  } catch (e) {}
+  return { gold_rates: [] };
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,7 +20,8 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const apiKey = req.body?.api_key || process.env.GOLDAPI_KEY || process.env.GOLD_API_KEY || 'goldapi-ex41xbsml7vhjkg8-io';
+  const apiKey = req.body?.api_key || process.env.GOLDAPI_KEY || process.env.GOLD_API_KEY || 'goldapi-07b38ebf247585a302d0df580bc43d17-io';
+  const store = getStore();
 
   try {
     const apiRes = await fetch('https://www.goldapi.io/api/price/XAU/INR', {
@@ -56,7 +68,6 @@ export default async function handler(req, res) {
           mode: 'AUTOMATIC_API'
         };
 
-        store.gold_rates = [updated];
         return res.status(200).json({
           success: true,
           message: 'Live gold rates fetched & updated successfully from GoldAPI.io',

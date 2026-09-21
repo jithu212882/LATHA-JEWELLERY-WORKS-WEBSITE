@@ -9,14 +9,23 @@ export function DataProvider({ children }) {
     jewellery_models: initialStoreData.jewellery_models?.filter(m => m.active) || [],
     banners: initialStoreData.banners?.filter(b => b.active) || [],
     reviews: initialStoreData.reviews?.filter(r => r.status === 'APPROVED') || [],
-    gold_rates: initialStoreData.gold_rates?.[0] || {
-      rate_22k: '6,850',
-      rate_24k: '7,460',
-      rate_18k: '5,625',
-      rate_silver: '92',
-      ticker_visible: 1,
-      last_updated: 'Today, 10:30 AM'
-    },
+    gold_rates: (() => {
+      try {
+        const cached = localStorage.getItem('latha_live_gold_rates');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.rate_24k) return parsed;
+        }
+      } catch (e) {}
+      return initialStoreData.gold_rates?.[0] || {
+        rate_22k: '6,850',
+        rate_24k: '7,460',
+        rate_18k: '5,625',
+        rate_silver: '92',
+        ticker_visible: 1,
+        last_updated: 'Today, 10:30 AM'
+      };
+    })(),
     content: initialStoreData.site_content || {},
     settings: initialStoreData.business_settings || {}
   }));

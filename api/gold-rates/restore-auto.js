@@ -1,4 +1,15 @@
-import store from '../../server/data/store.json' assert { type: 'json' };
+import fs from 'fs';
+import path from 'path';
+
+function getStore() {
+  try {
+    const storePath = path.join(process.cwd(), 'server/data/store.json');
+    if (fs.existsSync(storePath)) {
+      return JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+    }
+  } catch (e) {}
+  return { gold_rates: [] };
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,14 +20,14 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  if (store.gold_rates?.[0]) {
-    store.gold_rates[0].mode = 'AUTOMATIC_API';
-    store.gold_rates[0].status = 'Connected';
-  }
+  const store = getStore();
+  const current = store.gold_rates?.[0] || {};
+  current.mode = 'AUTOMATIC_API';
+  current.status = 'Connected';
 
   return res.status(200).json({
     success: true,
     message: 'Restored automatic GoldAPI.io rate mode',
-    rates: store.gold_rates?.[0]
+    rates: current
   });
 }

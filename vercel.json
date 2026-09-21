@@ -1,7 +1,12 @@
 {
   "version": 2,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/api/gold-rates/fetch-live", "destination": "/api/gold-rates/fetch-live.js" },
+    { "source": "/api/gold-rates/override", "destination": "/api/gold-rates/override.js" },
+    { "source": "/api/gold-rates/restore-auto", "destination": "/api/gold-rates/restore-auto.js" },
+    { "source": "/api/auth/login", "destination": "/api/auth/login.js" },
+    { "source": "/api/auth/verify", "destination": "/api/auth/verify.js" },
+    { "source": "/api/public/data", "destination": "/api/public/data.js" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

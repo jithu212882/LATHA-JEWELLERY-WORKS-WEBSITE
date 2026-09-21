@@ -1,4 +1,15 @@
-import store from '../../server/data/store.json' assert { type: 'json' };
+import fs from 'fs';
+import path from 'path';
+
+function getStore() {
+  try {
+    const storePath = path.join(process.cwd(), 'server/data/store.json');
+    if (fs.existsSync(storePath)) {
+      return JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+    }
+  } catch (e) {}
+  return { gold_rates: [] };
+}
 
 export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,6 +23,7 @@ export default function handler(req, res) {
   try {
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
     const { rate_24k, rate_22k, rate_18k, rate_silver, ticker_visible } = body;
+    const store = getStore();
 
     const current = store.gold_rates?.[0] || {};
     const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -29,8 +41,6 @@ export default function handler(req, res) {
       mode: 'MANUAL_OVERRIDE',
       status: 'Emergency Manual Override Active'
     };
-
-    store.gold_rates = [updated];
 
     return res.status(200).json({
       success: true,

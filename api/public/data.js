@@ -1,8 +1,21 @@
-import store from '../../server/data/store.json' assert { type: 'json' };
+import fs from 'fs';
+import path from 'path';
+
+function getStore() {
+  try {
+    const storePath = path.join(process.cwd(), 'server/data/store.json');
+    if (fs.existsSync(storePath)) {
+      return JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+    }
+  } catch (e) {}
+  return {};
+}
 
 export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
+
+  const store = getStore();
 
   const activeCategories = (store.categories || [])
     .filter(c => c.active)
