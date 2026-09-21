@@ -4,50 +4,41 @@ import { useData } from '../../context/DataContext';
 export default function LiveRateTicker() {
   const { gold_rates } = useData();
 
-  if (!gold_rates || !gold_rates.ticker_visible) return null;
+  if (!gold_rates || gold_rates.ticker_visible === 0) return null;
+
+  const rateItems = [
+    { label: '22K GOLD', rate: gold_rates.rate_22k || '6,850', unit: '/g' },
+    { label: '24K GOLD', rate: gold_rates.rate_24k || '7,460', unit: '/g' },
+    { label: '18K GOLD', rate: gold_rates.rate_18k || '5,625', unit: '/g' },
+    { label: 'SILVER', rate: gold_rates.rate_silver || '92', unit: '/g' }
+  ];
+
+  // Repeat items 6 times to create a completely seamless infinite moving track
+  const repeatedItems = [...rateItems, ...rateItems, ...rateItems, ...rateItems, ...rateItems, ...rateItems];
 
   return (
-    <div className="w-full bg-[#111111] border-b border-[#222222] py-1.5 px-3 sm:px-8 text-[11px] font-sans">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-3 overflow-hidden">
-        {/* Left: Section Label */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="w-1.5 h-1.5 rounded-full bg-accent-gold/80 animate-pulse hidden sm:inline-block" />
-          <span className="text-accent-gold uppercase tracking-[0.16em] font-semibold text-[10px] sm:text-[11px]">
-            Today's Gold Rates
-          </span>
-          <span className="text-[#333333] hidden sm:inline">|</span>
-        </div>
-
-        {/* Center: Compact Rate Items Ticker */}
-        <div className="flex items-center gap-3 sm:gap-5 whitespace-nowrap overflow-x-auto no-scrollbar font-normal text-[#F5F2EB]/85 tracking-wider py-0.5">
-          <div className="flex items-center gap-1.5">
-            <span className="text-accent-gold/90 font-medium text-[10px] sm:text-[11px] uppercase">22K Gold:</span>
-            <strong className="text-[#F9F6F0] font-semibold text-[11px] sm:text-xs">₹{gold_rates.rate_22k}</strong>
-            <span className="text-[#F5F2EB]/50 text-[10px]">/g</span>
-          </div>
-
-          <span className="text-[#333333] text-[10px]">•</span>
-
-          <div className="flex items-center gap-1.5">
-            <span className="text-accent-gold/90 font-medium text-[10px] sm:text-[11px] uppercase">24K Gold:</span>
-            <strong className="text-[#F9F6F0] font-semibold text-[11px] sm:text-xs">₹{gold_rates.rate_24k}</strong>
-            <span className="text-[#F5F2EB]/50 text-[10px]">/g</span>
-          </div>
-
-          <span className="text-[#333333] text-[10px]">•</span>
-
-          <div className="flex items-center gap-1.5">
-            <span className="text-accent-gold/90 font-medium text-[10px] sm:text-[11px] uppercase">Silver:</span>
-            <strong className="text-[#F9F6F0] font-semibold text-[11px] sm:text-xs">₹{gold_rates.rate_silver}</strong>
-            <span className="text-[#F5F2EB]/50 text-[10px]">/g</span>
-          </div>
-        </div>
-
-        {/* Right: Updated Timestamp */}
-        <div className="hidden md:block shrink-0 text-[10px] text-[#F5F2EB]/40 tracking-wider">
-          Updated: {gold_rates.last_updated || 'Today'}
+    <div className="w-full bg-[#0E0E0E] border-b border-[#262626] py-2 overflow-hidden text-xs font-sans select-none relative z-40">
+      <div className="w-full overflow-hidden flex items-center">
+        <div className="animate-ticker-marquee flex items-center whitespace-nowrap">
+          {repeatedItems.map((item, idx) => (
+            <div key={idx} className="flex items-center shrink-0 px-4 sm:px-6">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent-gold animate-pulse mr-2" />
+              <span className="text-accent-gold uppercase font-bold tracking-wider text-[11px] sm:text-xs">
+                {item.label}:
+              </span>
+              <strong className="text-[#F9F6F0] font-bold text-xs sm:text-[13px] ml-1.5 tracking-wide">
+                ₹{item.rate}
+              </strong>
+              <span className="text-[#F5F2EB]/60 text-[10px] sm:text-[11px] font-normal ml-0.5">
+                {item.unit}
+              </span>
+              <span className="text-accent-gold/40 text-xs ml-4 sm:ml-6">•</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
   );
 }
+
+

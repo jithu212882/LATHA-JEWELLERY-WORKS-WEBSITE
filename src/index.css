@@ -37,6 +37,27 @@
   scrollbar-width: none;
 }
 
+/* Continuous Horizontal Marquee Animation */
+@keyframes ticker-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-ticker-marquee {
+  display: flex !important;
+  width: max-content !important;
+  animation: ticker-scroll 22s linear infinite !important;
+  will-change: transform;
+}
+
+.animate-ticker-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* Custom focus ring styling */
 *:focus-visible {
   outline: 2px solid #D4AF37;
