@@ -12,7 +12,7 @@ export default function ContactSection() {
   const workingHours = settings?.working_hours || 'Monday – Saturday: 9:30 AM – 8:00 PM\nSunday: By Appointment Only';
 
   return (
-    <section id="contact" className="py-20 md:py-28 max-w-7xl mx-auto px-4 md:px-8">
+    <section id="contact" className="py-20 md:py-28 max-w-7xl mx-auto px-4 md:px-8 scroll-mt-28 md:scroll-mt-36">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
         <div>
           <span className="text-xs uppercase tracking-[0.2em] text-accent-gold mb-3 block font-semibold">

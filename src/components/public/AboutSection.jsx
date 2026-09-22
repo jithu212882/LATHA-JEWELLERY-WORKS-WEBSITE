@@ -12,7 +12,7 @@ export default function AboutSection() {
   const image = content?.about_image || 'https://lh3.googleusercontent.com/aida-public/AB6AXuCCMMbqxjOFz1vdZSsKAC3MH8y3AApWLkwVUCI0QWAbbpe6WeLz0kP1d5n-7jpZ42Up_fIqLr_pwxIZCZvQAKh-v1HKvnBTlcbCdZLnSp9oYj0JVRPumTSMc8uiqsSlLho6htC7nRabJhBaXScQ1rZ302qLFRpfIL9jmdB_BOb5FtALnfDh5aUHDwTzPOzX4r-gHSO73GRWy-8hpQD3N1wvVWRg4TRaNngoC_Tjw3IeQxjyvymphe20nA';
 
   return (
-    <section id="about" className="pt-8 sm:pt-16 pb-14 sm:pb-20 md:pb-28 max-w-7xl mx-auto px-4 md:px-8">
+    <section id="about" className="pt-8 sm:pt-16 pb-14 sm:pb-20 md:pb-28 max-w-7xl mx-auto px-4 md:px-8 scroll-mt-28 md:scroll-mt-36">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
         {/* Left Column: Image Card */}
         <div className="relative">
