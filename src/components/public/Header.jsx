@@ -8,6 +8,7 @@ export default function Header({ onOpenAdmin }) {
   const { settings } = useData();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [headerSearch, setHeaderSearch] = useState('');
   const headerRef = useRef(null);
 
   useEffect(() => {
@@ -25,8 +26,12 @@ export default function Header({ onOpenAdmin }) {
   const businessName = settings?.business_name || 'Latha Jewellery Works';
   const whatsappNum = settings?.whatsapp || '9487056064';
 
-  // Indian Phone Number Formatting: +91 94870 56064
-  const formattedPhone = whatsappNum === '9487056064' ? '+91 94870 56064' : `+91 ${whatsappNum}`;
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (headerSearch.trim()) {
+      navigateTo(`/collections?search=${encodeURIComponent(headerSearch.trim())}`, e);
+    }
+  };
 
   return (
     <>
@@ -70,30 +75,46 @@ export default function Header({ onOpenAdmin }) {
             </div>
           </a>
 
-          {/* RIGHT: Desktop Navigation Links (Shown on lg+ / 1024px+ for clean, spacious presentation) */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-xs font-medium uppercase tracking-[0.1em] text-[#F5F2EB]/85 shrink-0">
-            <a href="/" onClick={(e) => navigateTo('/', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Home
-            </a>
-            <a href="/collections" onClick={(e) => navigateTo('/collections', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Collections
-            </a>
-            <a href="/collections/kammal" onClick={(e) => navigateTo('/collections/kammal', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Kammal
-            </a>
-            <a href="/collections/kolus" onClick={(e) => navigateTo('/collections/kolus', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Kolus
-            </a>
-            <a href="/collections/chains-necklaces" onClick={(e) => navigateTo('/collections/chains-necklaces', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Chains & Necklaces
-            </a>
-            <a href="/collections/bangles-bracelets" onClick={(e) => navigateTo('/collections/bangles-bracelets', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Bangles & Bracelets
-            </a>
-            <a href="/collections/rings" onClick={(e) => navigateTo('/collections/rings', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
-              Rings
-            </a>
-          </nav>
+          {/* RIGHT: Desktop Navigation Links & Quick Search */}
+          <div className="hidden lg:flex items-center gap-5 xl:gap-7 shrink-0">
+            <nav className="flex items-center gap-5 xl:gap-7 text-xs font-medium uppercase tracking-[0.1em] text-[#F5F2EB]/85">
+              <a href="/" onClick={(e) => navigateTo('/', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+                Home
+              </a>
+              <a href="/collections" onClick={(e) => navigateTo('/collections', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+                Collections
+              </a>
+              <a href="/collections/kammal" onClick={(e) => navigateTo('/collections/kammal', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+                Kammal
+              </a>
+              <a href="/collections/kolus" onClick={(e) => navigateTo('/collections/kolus', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+                Kolus
+              </a>
+              <a href="/collections/chains-necklaces" onClick={(e) => navigateTo('/collections/chains-necklaces', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+                Chains & Necklaces
+              </a>
+              <a href="/collections/bangles-bracelets" onClick={(e) => navigateTo('/collections/bangles-bracelets', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+                Bangles
+              </a>
+              <a href="/collections/rings" onClick={(e) => navigateTo('/collections/rings', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+                Rings
+              </a>
+            </nav>
+
+            {/* Desktop Quick Search Bar */}
+            <form onSubmit={handleSearchSubmit} className="flex items-center relative">
+              <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-accent-gold text-base pointer-events-none">
+                search
+              </span>
+              <input
+                type="text"
+                value={headerSearch}
+                onChange={(e) => setHeaderSearch(e.target.value)}
+                placeholder="Search models..."
+                className="bg-[#181818] border border-[#2A2A2A] focus:border-accent-gold rounded-full py-1.5 pl-8 pr-3 text-xs text-[#F9F6F0] outline-none transition-all w-36 focus:w-48 shadow-inner placeholder-[#F5F2EB]/40"
+              />
+            </form>
+          </div>
 
           {/* MOBILE / TABLET: Responsive Hamburger Button (<1024px) */}
           <button

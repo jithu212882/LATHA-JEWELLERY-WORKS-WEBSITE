@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataProvider } from './context/DataContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import SEO from './components/common/SEO';
 import Preloader from './components/public/Preloader';
 import Header from './components/public/Header';
 import HeroSection from './components/public/HeroSection';
@@ -110,6 +111,11 @@ function MainApp() {
           <CategoryCataloguePage categorySlug={route.categorySlug} initialProductId={route.productId} />
         ) : (
           <>
+            <SEO
+              title="Latha Jewellery Works | Handcrafted 22K Gold & Silver Atelier Chathencode"
+              description="Latha Jewellery Works (Est. 1990, Chathencode). Master goldsmiths crafting bespoke 22k gold harams, bridal suites, temple jewellery, valayal bangles, jimkis, and silver ornaments with live gold rates."
+              canonicalUrl="https://latha-jewellery-works.vercel.app"
+            />
             <HeroSection />
             <AboutSection />
             <ServicesSection />

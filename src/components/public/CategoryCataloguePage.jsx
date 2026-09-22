@@ -1,16 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import JewelleryDetailModal from './JewelleryDetailModal';
+import SEO from '../common/SEO';
 import { getCategoryRoute, matchCategoryByRouteSlug, navigateTo } from '../../utils/navigation';
 
-export default function CategoryCataloguePage({ categorySlug, initialProductId }) {
+export default function CategoryCataloguePage({ categorySlug, initialProductId, initialSearchQuery = '' }) {
   const { categories, jewellery_models, settings } = useData();
   const [activeModalItem, setActiveModalItem] = useState(null);
+  
+  // Read search query from URL parameter (?search=...) or initial props
+  const [searchQuery, setSearchQuery] = useState(() => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('search') || initialSearchQuery || '';
+    } catch (e) {
+      return initialSearchQuery || '';
+    }
+  });
+
+  // Synchronize state with URL search param on popstate / route changes
+  useEffect(() => {
+    const handleUrlSearch = () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryFromUrl = urlParams.get('search') || '';
+        setSearchQuery(queryFromUrl);
+      } catch (e) {}
+    };
+    window.addEventListener('popstate', handleUrlSearch);
+    window.addEventListener('locationchange', handleUrlSearch);
+    return () => {
+      window.removeEventListener('popstate', handleUrlSearch);
+      window.removeEventListener('locationchange', handleUrlSearch);
+    };
+  }, []);
 
   const whatsappNum = settings?.whatsapp || '9487056064';
-
   const matchedCategory = matchCategoryByRouteSlug(categorySlug, categories);
-
   const routeNorm = (categorySlug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
   let categoryTitle = 'All Masterpiece Collections';
@@ -46,15 +72,33 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId }
     }
   }, [initialProductId, jewellery_models]);
 
-  // Filter models for this specific route
+  // Filter models for this specific route AND search query by name/code
   const categoryModels = (jewellery_models || []).filter((item) => {
     if (!item.active) return false;
-    if (!categorySlug || categorySlug === 'all') return true;
-    if (matchedCategory) {
-      return item.category_slug.toLowerCase() === matchedCategory.slug.toLowerCase();
+
+    // 1. Category Filter
+    let matchesCategory = true;
+    if (categorySlug && categorySlug !== 'all') {
+      if (matchedCategory) {
+        matchesCategory = item.category_slug.toLowerCase() === matchedCategory.slug.toLowerCase();
+      } else {
+        const itemSlugNorm = (item.category_slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        matchesCategory = itemSlugNorm === routeNorm;
+      }
     }
-    const itemSlugNorm = (item.category_slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    return itemSlugNorm === routeNorm;
+
+    if (!matchesCategory) return false;
+
+    // 2. Name / Description / Code Search Filter
+    if (!searchQuery || !searchQuery.trim()) return true;
+
+    const q = searchQuery.toLowerCase().trim();
+    const nameMatch = (item.name || '').toLowerCase().includes(q);
+    const descMatch = (item.description || '').toLowerCase().includes(q);
+    const catMatch = (item.category_slug || '').toLowerCase().includes(q);
+    const codeMatch = (item.model_code || '').toLowerCase().includes(q);
+
+    return nameMatch || descMatch || catMatch || codeMatch;
   });
 
   // Required Category Navigation Buttons
@@ -79,6 +123,23 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId }
 
   return (
     <div className="min-h-screen bg-[#121212] pt-24 sm:pt-28 pb-20">
+      {/* Dynamic SEO Meta & JSON-LD Structured Data Injection */}
+      <SEO
+        title={`${categoryTitle} | Latha Jewellery Works`}
+        description={categoryDescription}
+        canonicalUrl={`https://latha-jewellery-works.vercel.app${currentCanonicalRoute}`}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://latha-jewellery-works.vercel.app/' },
+          { name: 'Collections', url: 'https://latha-jewellery-works.vercel.app/collections' },
+          { name: categoryTitle, url: `https://latha-jewellery-works.vercel.app${currentCanonicalRoute}` }
+        ]}
+        productSchema={activeModalItem ? {
+          name: activeModalItem.name,
+          description: activeModalItem.description,
+          image: activeModalItem.primary_image
+        } : null}
+      />
+
       <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8">
         {/* Top Navigation & Breadcrumb */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2A2A2A]">
@@ -98,17 +159,42 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId }
           </div>
         </div>
 
-        {/* Dedicated Category Header */}
-        <div className="mb-8 text-center sm:text-left">
-          <span className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-accent-gold mb-2 block font-semibold">
-            Dedicated Catalogue Page
-          </span>
-          <h1 className="font-headline text-2xl sm:text-4xl md:text-5xl font-bold text-[#F9F6F0] mb-3">
-            {categoryTitle}
-          </h1>
-          <p className="font-body text-xs sm:text-base text-[#F5F2EB]/75 font-light max-w-3xl leading-relaxed">
-            {categoryDescription}
-          </p>
+        {/* Dedicated Category Header & Search Input */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="text-center sm:text-left flex-1">
+            <span className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-accent-gold mb-2 block font-semibold">
+              Dedicated Catalogue Page
+            </span>
+            <h1 className="font-headline text-2xl sm:text-4xl md:text-5xl font-bold text-[#F9F6F0] mb-3">
+              {categoryTitle}
+            </h1>
+            <p className="font-body text-xs sm:text-base text-[#F5F2EB]/75 font-light max-w-3xl leading-relaxed">
+              {categoryDescription}
+            </p>
+          </div>
+
+          {/* Model Name Search Input */}
+          <div className="relative w-full md:w-80 shrink-0">
+            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-accent-gold text-lg pointer-events-none">
+              search
+            </span>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search model by name (e.g. Palakka, Haram, Jimki)..."
+              className="w-full bg-[#181818] border border-[#2A2A2A] focus:border-accent-gold rounded-xl py-2.5 pl-10 pr-10 text-xs sm:text-sm text-[#F9F6F0] outline-none transition-colors shadow-inner placeholder-[#F5F2EB]/40"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#F5F2EB]/50 hover:text-accent-gold transition-colors p-1"
+                title="Clear search"
+              >
+                <span className="material-symbols-outlined text-base">close</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Quick Category Switcher Bar */}
@@ -135,22 +221,51 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId }
           })}
         </div>
 
+        {/* Active Search Filter Banner */}
+        {searchQuery && (
+          <div className="flex items-center justify-between bg-[#181818] border border-accent-gold/40 rounded-xl px-4 py-2.5 mb-8 text-xs text-[#F5F2EB]/90 shadow-md">
+            <span className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-accent-gold text-base">filter_alt</span>
+              <span>
+                Found <strong className="text-accent-gold font-bold">{categoryModels.length}</strong> design{categoryModels.length === 1 ? '' : 's'} matching "<strong className="text-accent-gold font-bold">{searchQuery}</strong>"
+              </span>
+            </span>
+            <button
+              onClick={() => setSearchQuery('')}
+              className="text-accent-gold hover:underline font-semibold text-xs uppercase tracking-wider ml-4 shrink-0"
+            >
+              Clear Search ×
+            </button>
+          </div>
+        )}
+
         {/* Scalable Product Grid: 2 Columns on Mobile (320px+), 3 on Tablet, 4 on Desktop */}
         {categoryModels.length === 0 ? (
           <div className="text-center py-16 border border-[#2A2A2A] rounded-2xl bg-[#181818] px-4 my-8">
-            <span className="material-symbols-outlined text-accent-gold text-4xl mb-3 block">diamond</span>
+            <span className="material-symbols-outlined text-accent-gold text-4xl mb-3 block">search_off</span>
             <h4 className="font-headline text-lg sm:text-xl font-bold text-[#F9F6F0] mb-2">
-              No Designs Currently Available
+              No Jewellery Models Found
             </h4>
             <p className="font-body text-xs sm:text-sm text-[#F5F2EB]/60 max-w-md mx-auto mb-6">
-              We are adding new handcrafted designs to this dedicated collection. Please request a custom enquiry or check our other collections.
+              {searchQuery
+                ? `No models matched "${searchQuery}". Try searching for popular terms like "Haram", "Chain", "Palakka", "Jimki", "Bangle", or "Ring".`
+                : 'We are adding new handcrafted designs to this dedicated collection.'}
             </p>
-            <a
-              href="#custom-enquiry"
-              className="inline-flex items-center gap-2 bg-accent-gold text-[#121212] font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-widest hover:bg-supporting-beige transition-all"
-            >
-              Request Custom Design
-            </a>
+            {searchQuery ? (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="inline-flex items-center gap-2 bg-accent-gold text-[#121212] font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-widest hover:bg-supporting-beige transition-all"
+              >
+                Reset Search Filter
+              </button>
+            ) : (
+              <a
+                href="#custom-enquiry"
+                className="inline-flex items-center gap-2 bg-accent-gold text-[#121212] font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-widest hover:bg-supporting-beige transition-all"
+              >
+                Request Custom Design
+              </a>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">

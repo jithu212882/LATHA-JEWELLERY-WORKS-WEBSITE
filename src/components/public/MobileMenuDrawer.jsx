@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { navigateTo } from '../../utils/navigation';
 
 export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
   const drawerRef = useRef(null);
   const itemsRef = useRef([]);
+  const [mobileSearch, setMobileSearch] = useState('');
 
   useEffect(() => {
     if (isOpen) {
@@ -39,6 +40,15 @@ export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
     { label: 'Rings', href: '/collections/rings' },
   ];
 
+  const handleMobileSearchSubmit = (e) => {
+    e.preventDefault();
+    if (mobileSearch.trim()) {
+      onClose();
+      navigateTo(`/collections?search=${encodeURIComponent(mobileSearch.trim())}`, e);
+      setMobileSearch('');
+    }
+  };
+
   return (
     <div
       ref={drawerRef}
@@ -69,7 +79,21 @@ export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
         </button>
       </div>
 
-      <nav className="flex flex-col gap-4 text-xl font-headline py-8 overflow-y-auto">
+      {/* Mobile Search Input Bar */}
+      <form onSubmit={handleMobileSearchSubmit} className="pt-4 relative">
+        <span className="material-symbols-outlined absolute left-3 top-7 text-accent-gold text-base pointer-events-none">
+          search
+        </span>
+        <input
+          type="text"
+          value={mobileSearch}
+          onChange={(e) => setMobileSearch(e.target.value)}
+          placeholder="Search models by name..."
+          className="w-full bg-[#181818] border border-[#2A2A2A] focus:border-accent-gold rounded-xl py-2.5 pl-9 pr-3 text-xs text-[#F9F6F0] outline-none transition-all placeholder-[#F5F2EB]/40 shadow-inner"
+        />
+      </form>
+
+      <nav className="flex flex-col gap-3 text-xl font-headline py-6 overflow-y-auto">
         {navLinks.map((link, idx) => (
           <a
             key={link.label}
@@ -79,27 +103,27 @@ export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
               onClose();
               navigateTo(link.href, e);
             }}
-            className="text-[#F9F6F0]/80 hover:text-accent-gold transition-colors tracking-wide py-1 border-b border-[#2A2A2A]/40 uppercase text-lg"
+            className="text-[#F9F6F0]/80 hover:text-accent-gold transition-colors tracking-wide py-1.5 border-b border-[#2A2A2A]/40 uppercase text-base sm:text-lg"
           >
             {link.label}
           </a>
         ))}
       </nav>
 
-      <div className="mt-auto pt-6 border-t border-[#2A2A2A] flex flex-col gap-3">
+      <div className="mt-auto pt-4 border-t border-[#2A2A2A] flex flex-col gap-3">
         <a
           href="https://wa.me/919487056064"
           target="_blank"
           rel="noreferrer"
-          className="w-full py-3.5 bg-accent-gold text-[#121212] font-bold text-sm uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 shadow-lg"
+          className="w-full py-3.5 bg-accent-gold text-[#121212] font-bold text-xs uppercase tracking-widest rounded-lg flex items-center justify-center gap-2 shadow-lg"
         >
-          <span className="material-symbols-outlined text-[20px]">chat</span> WhatsApp | +91 94870 56064
+          <span className="material-symbols-outlined text-[18px]">chat</span> WhatsApp | +91 94870 56064
         </a>
         <a
           href="tel:9487056064"
-          className="w-full py-3 border border-accent-gold/40 text-accent-gold font-bold text-sm uppercase tracking-widest rounded-lg flex items-center justify-center gap-2"
+          className="w-full py-3 border border-accent-gold/40 text-accent-gold font-bold text-xs uppercase tracking-widest rounded-lg flex items-center justify-center gap-2"
         >
-          <span className="material-symbols-outlined text-[20px]">call</span> Call Atelier
+          <span className="material-symbols-outlined text-[18px]">call</span> Call Atelier
         </a>
       </div>
     </div>
