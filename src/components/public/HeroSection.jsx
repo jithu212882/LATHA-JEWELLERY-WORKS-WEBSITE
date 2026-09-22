@@ -26,7 +26,7 @@ export default function HeroSection() {
   return (
     <section
       ref={heroRef}
-      className="relative flex items-center justify-center overflow-hidden pt-20 sm:pt-32 md:pt-36 pb-8 sm:pb-16 md:pb-20 min-h-0 sm:min-h-[75vh] lg:min-h-[82vh] bg-[#121212]"
+      className="relative flex items-center justify-center overflow-hidden pt-[6.5rem] sm:pt-32 md:pt-36 lg:pt-40 pb-8 sm:pb-16 md:pb-20 min-h-0 sm:min-h-[75vh] lg:min-h-[82vh] bg-[#121212]"
     >
       {/* Background Image with Controlled Focus & Luxury Visibility */}
       <div
