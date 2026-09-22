@@ -75,16 +75,17 @@ export default function JewelleryManager() {
     if (files.length === 0) return;
     setError('');
 
-    // Strict JPG/JPEG validation
+    // Image format validation (PNG, JPG, WebP, AVIF)
+    const allowedMime = ['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png', 'image/webp', 'image/avif'];
     const invalidFile = files.find((f) => {
       const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
-      const validExt = ext === '.jpg' || ext === '.jpeg';
-      const validMime = f.type === 'image/jpeg' || f.type === 'image/jpg' || f.type === 'image/pjpeg';
-      return !validExt || !validMime;
+      const validExt = ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.webp' || ext === '.avif';
+      const validMime = allowedMime.includes(f.type);
+      return !validExt && !validMime;
     });
 
     if (invalidFile) {
-      setError('Only JPG/JPEG images are supported. PNG, WebP, GIF, and AVIF formats are not allowed.');
+      setError('Allowed image formats: PNG, JPG, WebP, AVIF');
       return;
     }
 
@@ -167,7 +168,7 @@ export default function JewelleryManager() {
 
     // Minimum 3 photo validation for publishing
     if (photos.length < 3) {
-      setError('Please add at least 3 JPG/JPEG photos for this jewellery model (e.g., Front View, Side Angle, Close-Up Detail).');
+      setError('Please add at least 3 photos (PNG, JPG, WebP, AVIF) for this jewellery model (e.g., Front View, Side Angle, Close-Up Detail).');
       setSaving(false);
       return;
     }
@@ -480,7 +481,7 @@ export default function JewelleryManager() {
                 <div className="flex justify-between items-center border-b border-[#2A2A2A] pb-3">
                   <div>
                     <h4 className="font-headline font-bold text-accent-gold uppercase text-base">
-                      Product Photos (Minimum 3 JPG/JPEG Required)
+                      Product Photos (Minimum 3 Photos Required: PNG, JPG, WebP)
                     </h4>
                     <p className="text-[11px] text-[#F5F2EB]/60">
                       Upload at least 3 photos showing different angles (Front, Side, Detail). The first photo will be used as the Catalogue Cover Image.
@@ -495,10 +496,10 @@ export default function JewelleryManager() {
                 <div className="flex items-center gap-3">
                   <label className="cursor-pointer bg-accent-gold text-[#121212] font-bold px-5 py-2.5 rounded-lg text-xs uppercase tracking-widest hover:bg-supporting-beige transition-colors inline-flex items-center gap-2 shadow-md">
                     <span className="material-symbols-outlined text-[18px]">add_a_photo</span>
-                    <span>{uploadingPhotos ? 'Uploading JPGs...' : 'Add Photos from Phone/Device'}</span>
+                    <span>{uploadingPhotos ? 'Uploading Photos...' : 'Add Photos from Phone/Device'}</span>
                     <input
                       type="file"
-                      accept="image/jpeg,image/jpg"
+                      accept="image/jpeg,image/png,image/webp,image/avif"
                       multiple
                       onChange={handleBatchPhotoUpload}
                       disabled={uploadingPhotos}
@@ -506,7 +507,7 @@ export default function JewelleryManager() {
                     />
                   </label>
                   <span className="text-[11px] text-amber-400/90 font-medium">
-                    * JPG / JPEG images only
+                    * PNG, JPG, WebP, AVIF supported
                   </span>
                 </div>
 
@@ -588,7 +589,7 @@ export default function JewelleryManager() {
                   </div>
                 ) : (
                   <div className="p-6 text-center border border-dashed border-[#2A2A2A] rounded-lg text-xs text-[#F5F2EB]/50">
-                    No photos selected yet. Tap &quot;Add Photos from Phone/Device&quot; to upload 3+ JPG/JPEG photos.
+                    No photos selected yet. Tap &quot;Add Photos from Phone/Device&quot; to upload 3+ photos (PNG, JPG, WebP).
                   </div>
                 )}
               </div>
