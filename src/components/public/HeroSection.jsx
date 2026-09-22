@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { useData } from '../../context/DataContext';
+import { navigateTo } from '../../utils/navigation';
 
 export default function HeroSection() {
   const { content, banners } = useData();
@@ -65,7 +66,8 @@ export default function HeroSection() {
               Request Custom Design
             </a>
             <a
-              href="#/collections/all"
+              href="/collections"
+              onClick={(e) => navigateTo('/collections', e)}
               className="w-full sm:w-auto border border-[#F5F2EB]/30 text-[#F5F2EB] font-medium px-7 py-3.5 sm:py-4 rounded-xl text-xs sm:text-sm uppercase tracking-widest hover:bg-[#F5F2EB]/10 transition-all text-center active:scale-95"
             >
               Explore Collections

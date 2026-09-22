@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DataProvider } from './context/DataContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import Preloader from './components/public/Preloader';
 import Header from './components/public/Header';
 import HeroSection from './components/public/HeroSection';
 import AboutSection from './components/public/AboutSection';
@@ -19,34 +20,57 @@ import AdminLogin from './components/admin/AdminLogin';
 import AdminLayout from './components/admin/AdminLayout';
 import CategoryCataloguePage from './components/public/CategoryCataloguePage';
 
+function parseCurrentRoute() {
+  const path = window.location.pathname || '/';
+  const hash = window.location.hash || '';
+  const search = window.location.search || '';
+
+  const isAdmin = hash === '#admin' || hash === '#/admin' || hash.startsWith('#/admin') || search.includes('admin=true');
+
+  if (path === '/collections' || path === '/collections/') {
+    return { type: 'category', categorySlug: 'all', isAdmin };
+  }
+  if (path.startsWith('/collections/')) {
+    const slug = path.replace(/^\/collections\//, '').replace(/\/$/, '').trim();
+    return { type: 'category', categorySlug: slug || 'all', isAdmin };
+  }
+  if (path.startsWith('/product/')) {
+    const productId = path.replace(/^\/product\//, '').replace(/\/$/, '').trim();
+    return { type: 'category', categorySlug: 'all', productId, isAdmin };
+  }
+
+  // Legacy hash route support
+  if (hash.startsWith('#/collections/')) {
+    const slug = hash.replace('#/collections/', '').trim();
+    return { type: 'category', categorySlug: slug || 'all', isAdmin };
+  }
+  if (hash === '#/collections') {
+    return { type: 'category', categorySlug: 'all', isAdmin };
+  }
+
+  return { type: 'home', categorySlug: null, isAdmin };
+}
+
 function MainApp() {
   const { isAuthenticated } = useAuth();
-  const [adminRequested, setAdminRequested] = useState(false);
-  const [route, setRoute] = useState({ type: 'home', categorySlug: null });
+  const [adminRequested, setAdminRequested] = useState(() => parseCurrentRoute().isAdmin);
+  const [route, setRoute] = useState(() => parseCurrentRoute());
 
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash || '';
-      const search = window.location.search || '';
-
-      if (hash === '#admin' || hash === '#/admin' || hash.startsWith('#/admin') || search.includes('admin=true')) {
+    const handleRouteChange = () => {
+      const currentRoute = parseCurrentRoute();
+      if (currentRoute.isAdmin) {
         setAdminRequested(true);
       }
-
-      if (hash.startsWith('#/collections/')) {
-        const slug = hash.replace('#/collections/', '').trim();
-        setRoute({ type: 'category', categorySlug: slug || 'all' });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (hash === '#/collections') {
-        setRoute({ type: 'category', categorySlug: 'all' });
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        setRoute({ type: 'home', categorySlug: null });
-      }
+      setRoute(currentRoute);
     };
 
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
+    // Initial check
+    handleRouteChange();
+
+    window.addEventListener('popstate', handleRouteChange);
+    window.addEventListener('hashchange', handleRouteChange);
+    window.addEventListener('locationchange', handleRouteChange);
 
     // Keyboard shortcut Ctrl+Shift+A (or Cmd+Shift+A) for store owner
     const handleKeyDown = (e) => {
@@ -58,13 +82,18 @@ function MainApp() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
-      window.removeEventListener('hashchange', handleHashChange);
+      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener('hashchange', handleRouteChange);
+      window.removeEventListener('locationchange', handleRouteChange);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
 
   return (
     <div className="min-h-screen bg-[#121212] text-[#F9F6F0] flex flex-col relative selection:bg-accent-gold selection:text-[#121212]">
+      {/* Luxury Website Preloader / Splash Screen */}
+      <Preloader />
+
       {/* Admin Interface Modal / Overlay */}
       {adminRequested && (
         isAuthenticated ? (
@@ -78,7 +107,7 @@ function MainApp() {
       <Header onOpenAdmin={() => setAdminRequested(true)} />
       <main className="flex-1 w-full">
         {route.type === 'category' ? (
-          <CategoryCataloguePage categorySlug={route.categorySlug} />
+          <CategoryCataloguePage categorySlug={route.categorySlug} initialProductId={route.productId} />
         ) : (
           <>
             <HeroSection />

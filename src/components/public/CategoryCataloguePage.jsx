@@ -1,53 +1,81 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import JewelleryDetailModal from './JewelleryDetailModal';
+import { getCategoryRoute, matchCategoryByRouteSlug, navigateTo } from '../../utils/navigation';
 
-export default function CategoryCataloguePage({ categorySlug }) {
+export default function CategoryCataloguePage({ categorySlug, initialProductId }) {
   const { categories, jewellery_models, settings } = useData();
   const [activeModalItem, setActiveModalItem] = useState(null);
 
   const whatsappNum = settings?.whatsapp || '9487056064';
 
-  // Normalize slug matching (e.g., 'chain' or 'chains-necklaces', 'bangles' or 'bangles-bracelets')
-  const normalizeSlug = (s) => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const matchedCategory = matchCategoryByRouteSlug(categorySlug, categories);
 
-  const matchedCategory = (categories || []).find((c) => {
-    const catSlugNorm = normalizeSlug(c.slug);
-    const targetSlugNorm = normalizeSlug(categorySlug);
-    if (catSlugNorm === targetSlugNorm) return true;
-    if (catSlugNorm === 'chain' && (targetSlugNorm.includes('chain') || targetSlugNorm.includes('necklace'))) return true;
-    if (catSlugNorm === 'bangles' && (targetSlugNorm.includes('bangle') || targetSlugNorm.includes('bracelet'))) return true;
-    if (catSlugNorm === 'kammal' && (targetSlugNorm.includes('kammal') || targetSlugNorm.includes('earring'))) return true;
-    if (catSlugNorm === 'kolus' && (targetSlugNorm.includes('kolu') || targetSlugNorm.includes('anklet'))) return true;
-    if (catSlugNorm === 'rings' && targetSlugNorm.includes('ring')) return true;
-    return false;
-  });
+  const routeNorm = (categorySlug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
-  const categoryTitle =
-    categorySlug === 'all'
-      ? 'All Masterpiece Collections'
-      : matchedCategory?.name || `${categorySlug.replace(/-/g, ' ').toUpperCase()} Collection`;
+  let categoryTitle = 'All Masterpiece Collections';
+  if (routeNorm === 'chainsnecklaces' || routeNorm === 'chain' || routeNorm === 'chains' || routeNorm === 'necklaces') {
+    categoryTitle = 'Chains & Necklaces Collection';
+  } else if (routeNorm === 'kolus' || routeNorm === 'kolu' || routeNorm === 'anklet' || routeNorm === 'anklets') {
+    categoryTitle = 'Kolus (Anklets) Collection';
+  } else if (routeNorm === 'kammal' || routeNorm === 'earring' || routeNorm === 'earrings') {
+    categoryTitle = 'Kammal (Earrings) Collection';
+  } else if (routeNorm === 'banglesbracelets' || routeNorm === 'bangles' || routeNorm === 'bangle' || routeNorm === 'bracelets') {
+    categoryTitle = 'Bangles & Bracelets Collection';
+  } else if (routeNorm === 'rings' || routeNorm === 'ring') {
+    categoryTitle = 'Rings Collection';
+  } else if (categorySlug && categorySlug !== 'all') {
+    categoryTitle = matchedCategory?.name || `${categorySlug.replace(/-/g, ' ').toUpperCase()} Collection`;
+  }
 
   const categoryDescription =
-    categorySlug === 'all'
+    categorySlug === 'all' || !categorySlug
       ? 'Explore our complete heritage catalogue of handcrafted 22k gold and silver jewellery masterpieces.'
       : matchedCategory?.description ||
         `Handcrafted pure 22k gold ${categoryTitle.toLowerCase()} forged by master artisans in Chathencode.`;
 
+  // Handle initialProductId if route is /product/:productId
+  useEffect(() => {
+    if (initialProductId && jewellery_models && jewellery_models.length > 0) {
+      const found = jewellery_models.find(
+        (m) => String(m.id) === String(initialProductId) || m.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === initialProductId
+      );
+      if (found) {
+        setActiveModalItem(found);
+      }
+    }
+  }, [initialProductId, jewellery_models]);
+
   // Filter models for this specific route
   const categoryModels = (jewellery_models || []).filter((item) => {
     if (!item.active) return false;
-    if (categorySlug === 'all') return true;
+    if (!categorySlug || categorySlug === 'all') return true;
     if (matchedCategory) {
       return item.category_slug.toLowerCase() === matchedCategory.slug.toLowerCase();
     }
-    return item.category_slug.toLowerCase() === categorySlug.toLowerCase();
+    const itemSlugNorm = (item.category_slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    return itemSlugNorm === routeNorm;
   });
 
+  // Required Category Navigation Buttons
   const filterableCategories = [
-    { slug: 'all', name: 'All Collections' },
-    ...(categories || []).filter((c) => c.active)
+    { slug: 'all', route: '/collections', name: 'ALL' },
+    { slug: 'chains-necklaces', route: '/collections/chains-necklaces', name: 'CHAINS & NECKLACES' },
+    { slug: 'kolus', route: '/collections/kolus', name: 'KOLUS (ANKLETS)' },
+    { slug: 'kammal', route: '/collections/kammal', name: 'KAMMAL (EARRINGS)' },
+    { slug: 'bangles-bracelets', route: '/collections/bangles-bracelets', name: 'BANGLES & BRACELETS' },
+    { slug: 'rings', route: '/collections/rings', name: 'RINGS' }
   ];
+
+  // Append any extra active categories created in admin dynamically
+  (categories || []).filter((c) => c.active).forEach((c) => {
+    const route = getCategoryRoute(c.slug);
+    if (!filterableCategories.some((fc) => fc.route === route)) {
+      filterableCategories.push({ slug: c.slug, route, name: c.name.toUpperCase() });
+    }
+  });
+
+  const currentCanonicalRoute = getCategoryRoute(categorySlug);
 
   return (
     <div className="min-h-screen bg-[#121212] pt-24 sm:pt-28 pb-20">
@@ -55,7 +83,8 @@ export default function CategoryCataloguePage({ categorySlug }) {
         {/* Top Navigation & Breadcrumb */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2A2A2A]">
           <a
-            href="#/"
+            href="/"
+            onClick={(e) => navigateTo('/', e)}
             className="inline-flex items-center gap-2 text-accent-gold hover:text-white transition-colors text-xs sm:text-sm font-semibold uppercase tracking-wider bg-[#181818] border border-[#2A2A2A] hover:border-accent-gold/40 px-3.5 py-2 rounded-lg shadow-md"
           >
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -70,61 +99,55 @@ export default function CategoryCataloguePage({ categorySlug }) {
         </div>
 
         {/* Dedicated Category Header */}
-        <div className="bg-gradient-to-b from-[#1A1A1A] to-[#121212] border border-accent-gold/25 rounded-2xl p-6 sm:p-10 mb-8 sm:mb-12 shadow-2xl relative overflow-hidden">
-          <div className="absolute -right-12 -top-12 w-64 h-64 rounded-full bg-accent-gold/5 blur-3xl pointer-events-none"></div>
-
-          <span className="inline-block text-[11px] uppercase tracking-[0.25em] text-accent-gold font-bold mb-2">
-            Dedicated Catalogue Route
+        <div className="mb-8 text-center sm:text-left">
+          <span className="text-[10px] sm:text-xs uppercase tracking-[0.22em] text-accent-gold mb-2 block font-semibold">
+            Dedicated Catalogue Page
           </span>
           <h1 className="font-headline text-2xl sm:text-4xl md:text-5xl font-bold text-[#F9F6F0] mb-3">
             {categoryTitle}
           </h1>
-          <p className="font-body text-xs sm:text-base text-[#F5F2EB]/75 font-light max-w-2xl leading-relaxed">
+          <p className="font-body text-xs sm:text-base text-[#F5F2EB]/75 font-light max-w-3xl leading-relaxed">
             {categoryDescription}
           </p>
-
-          {/* Quick Category Badges/Filter */}
-          <div className="mt-6 sm:mt-8 pt-6 border-t border-[#2A2A2A] flex flex-wrap gap-2">
-            {filterableCategories.map((c) => {
-              const isActive =
-                (categorySlug === 'all' && c.slug === 'all') ||
-                (matchedCategory && matchedCategory.slug === c.slug) ||
-                categorySlug.toLowerCase() === c.slug.toLowerCase();
-
-              return (
-                <a
-                  key={c.slug}
-                  href={`#/collections/${c.slug}`}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-medium tracking-wider transition-all duration-300 border ${
-                    isActive
-                      ? 'bg-accent-gold text-[#121212] border-accent-gold shadow-lg font-bold'
-                      : 'bg-[#181818] text-[#F5F2EB]/80 border-[#2A2A2A] hover:border-accent-gold/50 hover:text-accent-gold'
-                  }`}
-                >
-                  {c.name}
-                </a>
-              );
-            })}
-          </div>
         </div>
 
-        {/* Product Grid / Empty State */}
+        {/* Quick Category Switcher Bar */}
+        <div className="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar pb-3 mb-8 -mx-3 px-3 sm:mx-0 sm:px-0 border-b border-[#2A2A2A]/60">
+          {filterableCategories.map((cat) => {
+            const isCurrent =
+              cat.route === currentCanonicalRoute ||
+              (matchedCategory && getCategoryRoute(matchedCategory.slug) === cat.route);
+
+            return (
+              <a
+                key={cat.route}
+                href={cat.route}
+                onClick={(e) => navigateTo(cat.route, e)}
+                className={`px-3.5 sm:px-4 py-2 text-[11px] sm:text-xs uppercase tracking-wider rounded-lg transition-all font-medium whitespace-nowrap shrink-0 ${
+                  isCurrent
+                    ? 'bg-accent-gold text-[#121212] font-bold shadow-lg scale-[1.02]'
+                    : 'bg-[#181818] text-[#F5F2EB]/80 hover:text-accent-gold border border-[#2A2A2A] hover:border-accent-gold/40'
+                }`}
+              >
+                {cat.name}
+              </a>
+            );
+          })}
+        </div>
+
+        {/* Scalable Product Grid: 2 Columns on Mobile (320px+), 3 on Tablet, 4 on Desktop */}
         {categoryModels.length === 0 ? (
-          <div className="text-center py-20 bg-[#161616] rounded-2xl border border-[#2A2A2A]">
-            <span className="material-symbols-outlined text-accent-gold text-5xl mb-3">diamond</span>
-            <h3 className="font-headline text-xl font-bold text-[#F9F6F0] mb-2">
-              New Designs Arriving Soon
-            </h3>
+          <div className="text-center py-16 border border-[#2A2A2A] rounded-2xl bg-[#181818] px-4 my-8">
+            <span className="material-symbols-outlined text-accent-gold text-4xl mb-3 block">diamond</span>
+            <h4 className="font-headline text-lg sm:text-xl font-bold text-[#F9F6F0] mb-2">
+              No Designs Currently Available
+            </h4>
             <p className="font-body text-xs sm:text-sm text-[#F5F2EB]/60 max-w-md mx-auto mb-6">
-              Our master jewellers are hand-forging new models for this category. Contact us for custom orders.
+              We are adding new handcrafted designs to this dedicated collection. Please request a custom enquiry or check our other collections.
             </p>
             <a
-              href={`https://wa.me/91${whatsappNum}?text=Hello%20Latha%20Jewellery%20Works,%20I%20am%20inquiring%20about%20custom%20${encodeURIComponent(
-                categoryTitle
-              )}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 bg-accent-gold text-[#121212] px-6 py-3 rounded-lg text-xs font-bold uppercase tracking-widest hover:brightness-110 transition-all"
+              href="#custom-enquiry"
+              className="inline-flex items-center gap-2 bg-accent-gold text-[#121212] font-bold px-6 py-3 rounded-xl text-xs uppercase tracking-widest hover:bg-supporting-beige transition-all"
             >
               Request Custom Design
             </a>
@@ -132,65 +155,72 @@ export default function CategoryCataloguePage({ categorySlug }) {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {categoryModels.map((item) => {
-              const addImages = Array.isArray(item.additional_images)
-                ? item.additional_images
-                : typeof item.additional_images === 'string'
-                ? JSON.parse(item.additional_images || '[]')
-                : [];
-              const allImages = Array.from(new Set([item.primary_image, ...addImages].filter(Boolean)));
-              const photoCount = allImages.length;
+              const waMsg = `Hello Latha Jewellery Works,%0A%0AI am interested in inquiring about your piece: *${encodeURIComponent(
+                item.name
+              )}*`;
+              const waUrl = `https://wa.me/91${whatsappNum}?text=${waMsg}`;
+
+              const categoryObj = categories?.find(
+                (c) => c.slug.toLowerCase() === item.category_slug.toLowerCase()
+              );
+              const categoryTag = categoryObj?.name || item.category_slug;
 
               return (
                 <div
                   key={item.id}
-                  onClick={() => setActiveModalItem(item)}
-                  className="group bg-[#161616] border border-[#2A2A2A] rounded-xl overflow-hidden hover:border-accent-gold/50 transition-all duration-300 flex flex-col cursor-pointer shadow-lg hover:shadow-2xl"
+                  className="bg-[#181818] border border-[#2A2A2A] rounded-xl sm:rounded-2xl overflow-hidden group hover:border-accent-gold/50 transition-all duration-300 flex flex-col justify-between shadow-lg"
                 >
-                  {/* Image Container with Consistent Aspect Ratio */}
-                  <div className="relative aspect-square overflow-hidden bg-[#0D0D0D] p-2">
+                  {/* Product Image Box with Aspect Ratio Guard */}
+                  <div
+                    onClick={() => setActiveModalItem(item)}
+                    className="relative aspect-square w-full bg-[#121212] cursor-pointer overflow-hidden group"
+                  >
                     <img
-                      src={item.primary_image || '/assets/latha-logo.jpg'}
+                      src={item.primary_image}
                       alt={item.name}
+                      loading="lazy"
                       onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = '/assets/latha-logo.jpg';
                       }}
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 rounded-lg"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
 
-                    {/* Multi-photo Counter Badge */}
-                    {photoCount > 1 && (
-                      <div className="absolute top-3 right-3 bg-[#121212]/80 backdrop-blur-md text-accent-gold text-[10px] font-bold px-2 py-0.5 rounded-full border border-accent-gold/30 flex items-center gap-1 shadow-md">
-                        <span className="material-symbols-outlined text-[12px]">photo_library</span>
-                        <span>{photoCount} Views</span>
-                      </div>
-                    )}
+                    <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-[#121212]/85 backdrop-blur-md px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] text-accent-gold uppercase tracking-wider font-semibold border border-accent-gold/30 rounded shadow-md truncate max-w-[85%]">
+                      {categoryTag}
+                    </span>
 
-                    {item.min_weight && (
-                      <div className="absolute bottom-3 left-3 bg-[#121212]/85 backdrop-blur-md border border-accent-gold/40 text-accent-gold text-[10px] uppercase font-bold px-2.5 py-1 rounded-md">
-                        Min {item.min_weight}
-                      </div>
-                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center">
+                      <span className="bg-accent-gold text-[#121212] font-bold text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-lg shadow-xl">
+                        View Details
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Model Information */}
-                  <div className="p-3 sm:p-5 flex flex-col flex-1 justify-between">
+                  {/* Card Content & Compact WhatsApp Action */}
+                  <div className="p-2.5 sm:p-4 flex flex-col justify-between flex-1">
                     <div>
-                      <span className="text-[10px] uppercase tracking-widest text-accent-gold font-semibold block mb-1">
-                        {matchedCategory?.name || item.category_slug}
-                      </span>
-                      <h3 className="font-headline font-bold text-sm sm:text-base text-[#F9F6F0] group-hover:text-accent-gold transition-colors line-clamp-1 mb-1">
+                      <h3
+                        onClick={() => setActiveModalItem(item)}
+                        className="font-headline text-xs sm:text-base font-bold text-[#F9F6F0] mb-1 cursor-pointer hover:text-accent-gold transition-colors line-clamp-2 leading-snug"
+                        title={item.name}
+                      >
                         {item.name}
                       </h3>
-                      <p className="font-body text-[11px] sm:text-xs text-[#F5F2EB]/60 line-clamp-2 mb-3 font-light">
-                        {item.description}
+                      <p className="font-body text-[10px] sm:text-xs text-[#F5F2EB]/65 mb-3 font-light leading-tight">
+                        Min. Weight: <strong className="text-accent-gold font-medium">{item.min_weight || 'Custom'}</strong>
                       </p>
                     </div>
 
-                    <button className="w-full mt-2 py-2 sm:py-2.5 bg-[#1C1C1C] border border-accent-gold/30 text-accent-gold group-hover:bg-accent-gold group-hover:text-[#121212] rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1.5">
-                      <span>View 360° Photos</span>
-                      <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
-                    </button>
+                    <a
+                      href={waUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="w-full flex items-center justify-center gap-1 sm:gap-1.5 bg-[#121212] border border-accent-gold/40 text-accent-gold py-1.5 sm:py-2 px-2 rounded-lg text-[10px] sm:text-xs uppercase tracking-wider hover:bg-accent-gold hover:text-[#121212] font-bold transition-all mt-auto active:scale-95"
+                    >
+                      <span className="material-symbols-outlined text-[14px] sm:text-[16px] shrink-0">chat</span>
+                      <span className="truncate">Enquire</span>
+                    </a>
                   </div>
                 </div>
               );
@@ -199,9 +229,12 @@ export default function CategoryCataloguePage({ categorySlug }) {
         )}
       </div>
 
-      {/* Product Detail Modal */}
+      {/* Item Detail Modal */}
       {activeModalItem && (
-        <JewelleryDetailModal item={activeModalItem} onClose={() => setActiveModalItem(null)} />
+        <JewelleryDetailModal
+          item={activeModalItem}
+          onClose={() => setActiveModalItem(null)}
+        />
       )}
     </div>
   );

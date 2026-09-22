@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import LiveRateTicker from './LiveRateTicker';
 import MobileMenuDrawer from './MobileMenuDrawer';
 import { useData } from '../../context/DataContext';
+import { navigateTo } from '../../utils/navigation';
 
 export default function Header({ onOpenAdmin }) {
   const { settings } = useData();
@@ -47,7 +48,7 @@ export default function Header({ onOpenAdmin }) {
           }`}
         >
           {/* LEFT: Official Brand Logo & Name */}
-          <a href="#/" className="flex items-center gap-3 group shrink-0 py-1">
+          <a href="/" onClick={(e) => navigateTo('/', e)} className="flex items-center gap-3 group shrink-0 py-1">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg overflow-hidden border border-accent-gold/40 shadow-md bg-[#121212] p-0.5 shrink-0 group-hover:border-accent-gold transition-colors">
               <img
                 src={settings?.logo_primary || '/assets/latha-jewellery-works-logo.jpeg'}
@@ -71,25 +72,25 @@ export default function Header({ onOpenAdmin }) {
 
           {/* RIGHT: Desktop Navigation Links (Shown on lg+ / 1024px+ for clean, spacious presentation) */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-xs font-medium uppercase tracking-[0.1em] text-[#F5F2EB]/85 shrink-0">
-            <a href="#/" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+            <a href="/" onClick={(e) => navigateTo('/', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Home
             </a>
-            <a href="#/collections/all" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+            <a href="/collections" onClick={(e) => navigateTo('/collections', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Collections
             </a>
-            <a href="#/collections/kammal" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+            <a href="/collections/kammal" onClick={(e) => navigateTo('/collections/kammal', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Kammal
             </a>
-            <a href="#/collections/kolus" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+            <a href="/collections/kolus" onClick={(e) => navigateTo('/collections/kolus', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Kolus
             </a>
-            <a href="#/collections/chains-necklaces" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+            <a href="/collections/chains-necklaces" onClick={(e) => navigateTo('/collections/chains-necklaces', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Chains & Necklaces
             </a>
-            <a href="#/collections/bangles-bracelets" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+            <a href="/collections/bangles-bracelets" onClick={(e) => navigateTo('/collections/bangles-bracelets', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Bangles & Bracelets
             </a>
-            <a href="#/collections/rings" className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
+            <a href="/collections/rings" onClick={(e) => navigateTo('/collections/rings', e)} className="hover:text-accent-gold transition-colors py-1 relative hover:after:w-full after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-accent-gold after:transition-all">
               Rings
             </a>
           </nav>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import gsap from 'gsap';
+import { navigateTo } from '../../utils/navigation';
 
 export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
   const drawerRef = useRef(null);
@@ -29,13 +30,13 @@ export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
   }, [isOpen]);
 
   const navLinks = [
-    { label: 'Home', href: '#/' },
-    { label: 'All Collections', href: '#/collections/all' },
-    { label: 'Kammal (Earrings)', href: '#/collections/kammal' },
-    { label: 'Kolus (Anklets)', href: '#/collections/kolus' },
-    { label: 'Chains & Necklaces', href: '#/collections/chains-necklaces' },
-    { label: 'Bangles & Bracelets', href: '#/collections/bangles-bracelets' },
-    { label: 'Rings', href: '#/collections/rings' },
+    { label: 'Home', href: '/' },
+    { label: 'All Collections', href: '/collections' },
+    { label: 'Kammal (Earrings)', href: '/collections/kammal' },
+    { label: 'Kolus (Anklets)', href: '/collections/kolus' },
+    { label: 'Chains & Necklaces', href: '/collections/chains-necklaces' },
+    { label: 'Bangles & Bracelets', href: '/collections/bangles-bracelets' },
+    { label: 'Rings', href: '/collections/rings' },
   ];
 
   return (
@@ -74,7 +75,10 @@ export default function MobileMenuDrawer({ isOpen, onClose, onOpenAdmin }) {
             key={link.label}
             ref={(el) => (itemsRef.current[idx] = el)}
             href={link.href}
-            onClick={onClose}
+            onClick={(e) => {
+              onClose();
+              navigateTo(link.href, e);
+            }}
             className="text-[#F9F6F0]/80 hover:text-accent-gold transition-colors tracking-wide py-1 border-b border-[#2A2A2A]/40 uppercase text-lg"
           >
             {link.label}

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useData } from '../../context/DataContext';
+import { navigateTo } from '../../utils/navigation';
 
 export default function Footer() {
   const { settings } = useData();
@@ -27,8 +28,8 @@ export default function Footer() {
         </div>
 
         <div className="flex items-center gap-6 text-xs text-[#F5F2EB]/60 uppercase tracking-wider">
-          <a href="#/" className="hover:text-accent-gold transition-colors">Home</a>
-          <a href="#/collections/all" className="hover:text-accent-gold transition-colors">Collections</a>
+          <a href="/" onClick={(e) => navigateTo('/', e)} className="hover:text-accent-gold transition-colors">Home</a>
+          <a href="/collections" onClick={(e) => navigateTo('/collections', e)} className="hover:text-accent-gold transition-colors">Collections</a>
           <a href="#contact" className="hover:text-accent-gold transition-colors">Location</a>
         </div>
       </div>
