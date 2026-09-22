@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { compressImageFile } from '../../utils/imageCompressor';
 
 export default function ImageUploader({ value, onChange, label, sectionTag = 'General' }) {
   const { token } = useAuth();
@@ -8,29 +9,14 @@ export default function ImageUploader({ value, onChange, label, sectionTag = 'Ge
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
-  const readFileAsDataURL = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (err) => reject(err);
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleFileUpload = async (file) => {
     if (!file) return;
     setError('');
 
-    const allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
-    if (!allowed.includes(file.type)) {
-      setError('Allowed formats: JPG, PNG, WebP, AVIF');
-      return;
-    }
-
     setUploading(true);
 
     try {
-      // 1. Attempt Multipart File Upload to server endpoint
+      // 1. Attempt Multipart File Upload to server endpoint if available
       const formData = new FormData();
       formData.append('file', file);
       formData.append('section_tag', sectionTag);
@@ -46,39 +32,23 @@ export default function ImageUploader({ value, onChange, label, sectionTag = 'Ge
         const json = await res.json();
         if (json.url) {
           onChange(json.url);
+          setUploading(false);
           return;
         }
       }
 
-      // 2. Fallback: Convert image to Data URL client-side so upload NEVER crashes with HTML 404 syntax error
-      const dataUrl = await readFileAsDataURL(file);
-
-      // Attempt base64 JSON upload to Vercel serverless function if available
-      try {
-        const jsonRes = await fetch('/api/media/upload', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({ fileData: dataUrl, section_tag: sectionTag })
-        });
-        const jsonContentType = jsonRes.headers.get('content-type') || '';
-        if (jsonRes.ok && jsonContentType.includes('application/json')) {
-          const json = await jsonRes.json();
-          if (json.url) {
-            onChange(json.url);
-            return;
-          }
-        }
-      } catch (e) {}
-
-      onChange(dataUrl);
+      // 2. Compress image client-side to crisp, lightweight Data URL
+      const dataUrl = await compressImageFile(file);
+      if (dataUrl) {
+        onChange(dataUrl);
+      } else {
+        setError('Error processing image');
+      }
     } catch (err) {
       console.warn('Network upload error, converting to local Data URL:', err);
       try {
-        const dataUrl = await readFileAsDataURL(file);
-        onChange(dataUrl);
+        const dataUrl = await compressImageFile(file);
+        if (dataUrl) onChange(dataUrl);
       } catch (readErr) {
         setError('Error reading image file');
       }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ImageUploader from './ImageUploader';
+import { compressImageFile } from '../../utils/imageCompressor';
 
 export default function JewelleryManager() {
   const { jewellery_models, categories, refreshData } = useData();
@@ -74,62 +75,33 @@ export default function JewelleryManager() {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
     setError('');
-
-    // Image format validation (PNG, JPG, WebP, AVIF)
-    const allowedMime = ['image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png', 'image/webp', 'image/avif'];
-    const invalidFile = files.find((f) => {
-      const ext = f.name.substring(f.name.lastIndexOf('.')).toLowerCase();
-      const validExt = ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.webp' || ext === '.avif';
-      const validMime = allowedMime.includes(f.type);
-      return !validExt && !validMime;
-    });
-
-    if (invalidFile) {
-      setError('Allowed image formats: PNG, JPG, WebP, AVIF');
-      return;
-    }
-
     setUploadingPhotos(true);
-    const formDataUpload = new FormData();
-    files.forEach((file) => formDataUpload.append('files', file));
-    formDataUpload.append('section_tag', 'Jewellery');
-
-    const readFileAsDataURL = (file) =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (err) => reject(err);
-        reader.readAsDataURL(file);
-      });
 
     try {
-      const res = await fetch('/api/media/upload-multiple', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formDataUpload
-      });
+      // Compress and process all selected files in parallel
+      const compressedUrls = await Promise.all(
+        files.map((file) => compressImageFile(file))
+      );
 
-      const contentType = res.headers.get('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
-        const json = await res.json();
-        const newUrls = json.urls || [];
-        if (newUrls.length > 0) {
-          setPhotos((prev) => [...prev, ...newUrls]);
-          return;
-        }
+      const validUrls = compressedUrls.filter(Boolean);
+
+      if (validUrls.length > 0) {
+        setPhotos((prev) => {
+          const next = [...prev, ...validUrls];
+          return next;
+        });
+
+        // Set primary image if not set
+        setFormData((prev) => ({
+          ...prev,
+          primary_image: prev.primary_image || validUrls[0]
+        }));
+      } else {
+        setError('Failed to process selected photos.');
       }
-
-      // Fallback to Data URLs if server response is not JSON or fails
-      const dataUrls = await Promise.all(files.map(readFileAsDataURL));
-      setPhotos((prev) => [...prev, ...dataUrls]);
     } catch (err) {
-      console.warn('Photo upload API error, converting to Data URLs:', err);
-      try {
-        const dataUrls = await Promise.all(files.map(readFileAsDataURL));
-        setPhotos((prev) => [...prev, ...dataUrls]);
-      } catch (readErr) {
-        setError('Error processing photo files');
-      }
+      console.error('Error uploading photos:', err);
+      setError('Error processing photo files.');
     } finally {
       setUploadingPhotos(false);
       e.target.value = '';
