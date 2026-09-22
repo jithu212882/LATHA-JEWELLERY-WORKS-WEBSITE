@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function ReviewManager() {
   const { token } = useAuth();
@@ -8,16 +9,37 @@ export default function ReviewManager() {
   const [reviews, setReviews] = useState([]);
 
   const fetchAdminReviews = async () => {
+    let loaded = null;
+    try {
+      if (supabase) {
+        const { data, error } = await supabase
+          .from('reviews')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!error && data && data.length > 0) {
+          loaded = data;
+        }
+      }
+    } catch (err) {
+      console.warn('Supabase reviews fetch notice:', err.message);
+    }
+
     try {
       const res = await fetch('/api/reviews/admin', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         const json = await res.json();
-        setReviews(json);
+        if (!loaded || loaded.length === 0) {
+          loaded = json;
+        }
       }
     } catch (err) {
       console.error('Error fetching admin reviews:', err);
+    }
+
+    if (loaded) {
+      setReviews(loaded);
     }
   };
 
@@ -27,7 +49,18 @@ export default function ReviewManager() {
 
   const handleStatus = async (id, status, featured) => {
     try {
-      const res = await fetch(`/api/reviews/${id}/status`, {
+      if (supabase) {
+        await supabase
+          .from('reviews')
+          .update({ status, featured: featured ? 1 : 0 })
+          .eq('id', id);
+      }
+    } catch (err) {
+      console.warn('Supabase status update notice:', err.message);
+    }
+
+    try {
+      await fetch(`/api/reviews/${id}/status`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -35,51 +68,72 @@ export default function ReviewManager() {
         },
         body: JSON.stringify({ status, featured })
       });
-      if (res.ok) {
-        fetchAdminReviews();
-        refreshData();
-      }
     } catch (err) {
-      console.error('Error updating review:', err);
+      console.error('Error updating review status via API:', err);
     }
+
+    setReviews(prev => prev.map(r => r.id === id ? { ...r, status, featured: featured ? 1 : 0 } : r));
+    refreshData();
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this review?')) return;
+
     try {
-      const res = await fetch(`/api/reviews/${id}`, {
+      if (supabase) {
+        await supabase
+          .from('reviews')
+          .delete()
+          .eq('id', id);
+      }
+    } catch (err) {
+      console.warn('Supabase delete review notice:', err.message);
+    }
+
+    try {
+      await fetch(`/api/reviews/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) {
-        fetchAdminReviews();
-        refreshData();
-      }
     } catch (err) {
-      console.error('Error deleting review:', err);
+      console.error('Error deleting review via API:', err);
     }
+
+    setReviews(prev => prev.filter(r => r.id !== id));
+    refreshData();
   };
 
   const [editingReview, setEditingReview] = useState(null);
   const [formData, setFormData] = useState({ name: '', location: '', rating: 5, review_text: '', status: 'APPROVED', featured: 1 });
 
   const toggleFeature = async (rev) => {
+    const updatedFeatured = rev.featured ? 0 : 1;
     try {
-      const res = await fetch(`/api/reviews/${rev.id}`, {
+      if (supabase) {
+        await supabase
+          .from('reviews')
+          .update({ featured: updatedFeatured })
+          .eq('id', rev.id);
+      }
+    } catch (err) {
+      console.warn('Supabase toggle feature notice:', err.message);
+    }
+
+    try {
+      await fetch(`/api/reviews/${rev.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ featured: rev.featured ? 0 : 1 })
+        body: JSON.stringify({ featured: updatedFeatured })
       });
-      if (res.ok) {
-        fetchAdminReviews();
-        refreshData();
-      }
     } catch (err) {
-      console.error('Error toggling feature:', err);
+      console.error('Error toggling feature via API:', err);
     }
+
+    setReviews(prev => prev.map(r => r.id === rev.id ? { ...r, featured: updatedFeatured } : r));
+    refreshData();
   };
 
   const openEditModal = (rev) => {
@@ -97,7 +151,18 @@ export default function ReviewManager() {
   const handleEditSave = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/api/reviews/${editingReview.id}`, {
+      if (supabase) {
+        await supabase
+          .from('reviews')
+          .update(formData)
+          .eq('id', editingReview.id);
+      }
+    } catch (err) {
+      console.warn('Supabase edit save notice:', err.message);
+    }
+
+    try {
+      await fetch(`/api/reviews/${editingReview.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -105,14 +170,13 @@ export default function ReviewManager() {
         },
         body: JSON.stringify(formData)
       });
-      if (res.ok) {
-        fetchAdminReviews();
-        refreshData();
-        setEditingReview(null);
-      }
     } catch (err) {
-      console.error('Error saving review:', err);
+      console.error('Error saving review via API:', err);
     }
+
+    setReviews(prev => prev.map(r => r.id === editingReview.id ? { ...r, ...formData } : r));
+    refreshData();
+    setEditingReview(null);
   };
 
   return (
