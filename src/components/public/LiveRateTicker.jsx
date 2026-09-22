@@ -17,7 +17,7 @@ export default function LiveRateTicker() {
   const repeatedItems = [...rateItems, ...rateItems, ...rateItems, ...rateItems];
 
   return (
-    <div className="w-full bg-[#0E0E0E] border-b border-[#262626] py-1.5 sm:py-2 overflow-hidden text-xs font-sans select-none relative z-40 max-w-full">
+    <div className="w-full bg-[#0E0E0E] border-b border-[#262626] py-1.5 sm:py-2 overflow-hidden text-xs font-sans select-none relative z-40 max-w-full overflow-x-hidden">
       {/* DESKTOP VIEW: Centered and properly spaced across the full width (md+) */}
       <div className="hidden md:flex items-center justify-center gap-6 lg:gap-10 px-4 w-full">
         {rateItems.map((item, idx) => (
@@ -40,7 +40,7 @@ export default function LiveRateTicker() {
       </div>
 
       {/* MOBILE VIEW: Continuous smooth marquee scrolling without clipping (< md) */}
-      <div className="md:hidden w-full overflow-hidden flex items-center">
+      <div className="md:hidden w-full overflow-hidden flex items-center max-w-full">
         <div className="animate-ticker-marquee flex items-center whitespace-nowrap">
           {repeatedItems.map((item, idx) => (
             <div key={idx} className="flex items-center shrink-0 px-3 sm:px-4">

@@ -53,13 +53,14 @@ export default function ServicesSection() {
           </p>
         </div>
 
-        {/* Editorial Service List Layout */}
+        {/* Continuous Premium Editorial List Layout (No rounded container boxes) */}
         <div className="divide-y divide-[#2A2A2A]">
           {services.map((svc) => (
             <div
               key={svc.num}
-              className="py-6 sm:py-8 group flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 sm:gap-8 transition-colors hover:bg-[#121212]/50 px-2 sm:px-4 rounded-lg"
+              className="py-7 sm:py-9 group flex flex-col sm:flex-row sm:items-baseline justify-between gap-3 sm:gap-12 transition-colors"
             >
+              {/* Title Column */}
               <div className="flex items-baseline gap-4 sm:w-1/2">
                 <span className="font-headline text-xs sm:text-sm font-bold text-accent-gold font-mono tracking-widest shrink-0">
                   {svc.num}
@@ -69,7 +70,8 @@ export default function ServicesSection() {
                 </h3>
               </div>
 
-              <div className="sm:w-1/2 pl-8 sm:pl-0">
+              {/* Description Column (Slightly Increased Spacing) */}
+              <div className="sm:w-1/2 pl-8 sm:pl-0 mt-1 sm:mt-0">
                 <p className="font-body text-xs sm:text-sm text-[#F5F2EB]/75 font-light leading-relaxed">
                   {svc.desc}
                 </p>
