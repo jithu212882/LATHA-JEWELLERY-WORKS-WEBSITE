@@ -26,11 +26,11 @@ export default function HeroSection() {
   return (
     <section
       ref={heroRef}
-      className="relative flex items-center justify-center overflow-hidden pt-24 sm:pt-36 pb-10 sm:pb-20 sm:min-h-[80vh] lg:min-h-[88vh] bg-[#121212]"
+      className="relative flex items-center justify-center overflow-hidden pt-20 sm:pt-32 md:pt-36 pb-8 sm:pb-16 md:pb-20 min-h-0 sm:min-h-[75vh] lg:min-h-[82vh] bg-[#121212]"
     >
       {/* Background Image with Controlled Focus & Luxury Visibility */}
       <div
-        className="absolute inset-0 bg-cover bg-[center_30%] sm:bg-center opacity-40 sm:opacity-40 transition-opacity duration-1000"
+        className="absolute inset-0 bg-cover bg-[center_30%] sm:bg-center opacity-40 transition-opacity duration-1000"
         style={{ backgroundImage: `url('${bgImage}')` }}
       />
       {/* Editorial Vignette Overlay for Crisp Contrast & Atmosphere */}
@@ -53,7 +53,7 @@ export default function HeroSection() {
           </h1>
 
           {/* Subtitle */}
-          <p className="font-body text-xs sm:text-base md:text-lg text-[#F5F2EB]/85 max-w-2xl mb-6 sm:mb-10 font-light leading-relaxed px-2">
+          <p className="font-body text-xs sm:text-base md:text-lg text-[#F5F2EB]/85 max-w-2xl mb-5 sm:mb-8 md:mb-10 font-light leading-relaxed px-2">
             {content?.hero_subtitle || 'Where ancestral heritage meets uncompromising contemporary precision. Bespoke gold craftsmanship tailored to your most cherished milestones.'}
           </p>
 

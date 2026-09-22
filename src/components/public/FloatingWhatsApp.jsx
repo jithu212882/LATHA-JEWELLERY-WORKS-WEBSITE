@@ -11,9 +11,9 @@ export default function FloatingWhatsApp() {
       target="_blank"
       rel="noreferrer"
       aria-label="Direct WhatsApp Chat"
-      className="fixed bottom-6 right-6 z-40 w-14 h-14 bg-accent-gold text-[#121212] rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-transform duration-300 border border-white/20"
+      className="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-[90] w-12 h-12 sm:w-14 sm:h-14 bg-accent-gold text-[#121212] rounded-full flex items-center justify-center shadow-2xl hover:scale-110 active:scale-95 transition-transform duration-300 border border-white/20 pb-[env(safe-area-inset-bottom)]"
     >
-      <span className="material-symbols-outlined text-[28px]">chat</span>
+      <span className="material-symbols-outlined text-[24px] sm:text-[28px]">chat</span>
     </a>
   );
 }
