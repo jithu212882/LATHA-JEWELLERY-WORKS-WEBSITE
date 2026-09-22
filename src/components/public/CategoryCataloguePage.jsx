@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import JewelleryDetailModal from './JewelleryDetailModal';
 import SEO from '../common/SEO';
-import { getCategoryRoute, matchCategoryByRouteSlug, navigateTo } from '../../utils/navigation';
+import { getCategoryRoute, matchCategoryByRouteSlug, navigateTo, closeCurrentPageToHome } from '../../utils/navigation';
 
 export default function CategoryCataloguePage({ categorySlug, initialProductId, initialSearchQuery = '' }) {
   const { categories, jewellery_models, settings } = useData();
@@ -140,22 +140,42 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId, 
         } : null}
       />
 
+      {/* Floating Quick Close (X) Symbol Button for Android & Windows */}
+      <button
+        onClick={(e) => closeCurrentPageToHome(e)}
+        className="fixed top-20 right-3.5 sm:top-24 sm:right-6 z-40 bg-[#181818]/95 hover:bg-accent-gold text-accent-gold hover:text-[#121212] backdrop-blur-md p-2 sm:p-2.5 rounded-full border border-accent-gold/50 shadow-2xl transition-all hover:scale-110 active:scale-95 flex items-center justify-center"
+        aria-label="Close page and return to home"
+        title="Close Page (Return to Home)"
+      >
+        <span className="material-symbols-outlined text-[18px] sm:text-[20px] font-bold">close</span>
+      </button>
+
       <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8">
         {/* Top Navigation & Breadcrumb */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2A2A2A]">
-          <a
-            href="/"
-            onClick={(e) => navigateTo('/', e)}
-            className="inline-flex items-center gap-2 text-accent-gold hover:text-white transition-colors text-xs sm:text-sm font-semibold uppercase tracking-wider bg-[#181818] border border-[#2A2A2A] hover:border-accent-gold/40 px-3.5 py-2 rounded-lg shadow-md"
-          >
-            <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            <span>Back to Home</span>
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={(e) => closeCurrentPageToHome(e)}
+              className="inline-flex items-center gap-1.5 text-accent-gold hover:text-white transition-colors text-xs sm:text-sm font-semibold uppercase tracking-wider bg-[#181818] border border-accent-gold/50 hover:border-accent-gold px-3 sm:px-3.5 py-2 rounded-lg shadow-md active:scale-95"
+              title="Close page and return to home"
+            >
+              <span className="material-symbols-outlined text-[18px] text-accent-gold">close</span>
+              <span>Close</span>
+            </button>
+            <a
+              href="/"
+              onClick={(e) => navigateTo('/', e)}
+              className="inline-flex items-center gap-2 text-accent-gold/80 hover:text-white transition-colors text-xs sm:text-sm font-semibold uppercase tracking-wider bg-[#181818] border border-[#2A2A2A] hover:border-accent-gold/40 px-3 sm:px-3.5 py-2 rounded-lg shadow-md"
+            >
+              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              <span className="hidden sm:inline">Home</span>
+            </a>
+          </div>
 
           <div className="flex items-center gap-2 text-[10px] sm:text-xs text-[#F5F2EB]/50 uppercase tracking-widest font-sans">
             <span>Catalogue</span>
             <span>/</span>
-            <span className="text-accent-gold font-medium">{categoryTitle}</span>
+            <span className="text-accent-gold font-medium truncate max-w-[120px] sm:max-w-none">{categoryTitle}</span>
           </div>
         </div>
 

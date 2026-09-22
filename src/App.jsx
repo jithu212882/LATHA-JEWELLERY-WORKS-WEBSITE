@@ -21,6 +21,8 @@ import AdminLogin from './components/admin/AdminLogin';
 import AdminLayout from './components/admin/AdminLayout';
 import CategoryCataloguePage from './components/public/CategoryCataloguePage';
 
+import { ensureHomeHistoryRoot } from './utils/navigation';
+
 function parseCurrentRoute() {
   const path = window.location.pathname || '/';
   const hash = window.location.hash || '';
@@ -59,6 +61,7 @@ function MainApp() {
 
   useEffect(() => {
     const handleRouteChange = () => {
+      ensureHomeHistoryRoot();
       const currentRoute = parseCurrentRoute();
       if (currentRoute.isAdmin) {
         setAdminRequested(true);

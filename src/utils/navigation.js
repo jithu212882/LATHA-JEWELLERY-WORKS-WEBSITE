@@ -46,6 +46,20 @@ export function matchCategoryByRouteSlug(routeSlug, categories) {
 }
 
 /**
+ * Ensures root home route exists in history stack so pressing back never exits the website unexpectedly
+ */
+export function ensureHomeHistoryRoot() {
+  if (typeof window === 'undefined') return;
+  const currentPath = window.location.pathname + window.location.search + window.location.hash;
+  if (currentPath !== '/' && !window.history.state?.hasHomeRoot) {
+    try {
+      window.history.replaceState({ hasHomeRoot: true, page: 'home' }, '', '/');
+      window.history.pushState({ hasHomeRoot: true, page: currentPath }, '', currentPath);
+    } catch (e) {}
+  }
+}
+
+/**
  * Programmatic SPA navigation using standard HTML5 History API
  */
 export function navigateTo(path, e) {
@@ -58,8 +72,15 @@ export function navigateTo(path, e) {
   }
 
   if (window.location.pathname !== path || window.location.hash !== '') {
-    window.history.pushState({}, '', path);
+    window.history.pushState({ hasHomeRoot: true, page: path }, '', path);
     window.dispatchEvent(new Event('locationchange'));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+}
+
+/**
+ * Safely close any sub-page or category page and return to Home without exiting the website
+ */
+export function closeCurrentPageToHome(e) {
+  navigateTo('/', e);
 }

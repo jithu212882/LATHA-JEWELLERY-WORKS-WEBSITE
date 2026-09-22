@@ -10,8 +10,15 @@ export default function JewelleryDetailModal({ item, onClose }) {
   useEffect(() => {
     if (item) {
       setActiveIndex(0);
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
     }
-  }, [item]);
+  }, [item, onClose]);
 
   if (!item) return null;
 
