@@ -69,23 +69,50 @@ Deno.serve(async (req: Request) => {
 
     const data = await goldApiRes.json()
 
-    // 4 & 5. Read and validate response fields (price_gram_24k, price_gram_22k, price_gram_18k)
-    const p24 = Number(data.price_gram_24k)
-    const p22 = Number(data.price_gram_22k)
-    const p18 = Number(data.price_gram_18k)
+    // 4 & 5. Read and validate response fields — safely handle null/undefined/non-numeric.
+    // Log only field presence (never log values or secrets).
+    const fieldPresence = {
+      has_price_gram_24k: data.price_gram_24k != null,
+      has_price_gram_22k: data.price_gram_22k != null,
+      has_price_gram_18k: data.price_gram_18k != null,
+      has_price: data.price != null,
+    }
+    console.log('GoldAPI field presence:', JSON.stringify(fieldPresence))
 
+    // Standard troy ounce to gram conversion factor (LBMA standard)
+    const TROY_OZ_TO_GRAM = 31.1034768
+
+    // Primary: use per-gram karat fields when present and valid
+    let p24 = (data.price_gram_24k != null) ? Number(data.price_gram_24k) : NaN
+    let p22 = (data.price_gram_22k != null) ? Number(data.price_gram_22k) : NaN
+    let p18 = (data.price_gram_18k != null) ? Number(data.price_gram_18k) : NaN
+
+    // Fallback: derive from base `price` (XAU spot per troy oz in INR)
+    // when karat gram fields are absent or invalid (e.g. on lower-tier plans).
+    // 24K = price / 31.1034768
+    // 22K = 24K × (22/24)
+    // 18K = 24K × (18/24)
+    if ((isNaN(p24) || p24 <= 0) && data.price != null) {
+      const pricePerGram24k = Number(data.price) / TROY_OZ_TO_GRAM
+      if (!isNaN(pricePerGram24k) && pricePerGram24k > 0) {
+        console.log('GoldAPI karat fields unavailable — deriving from base price field.')
+        p24 = pricePerGram24k
+        p22 = pricePerGram24k * (22 / 24)
+        p18 = pricePerGram24k * (18 / 24)
+      }
+    }
+
+    // Final validation — reject if any value is still invalid after fallback
     if (
-      data.price_gram_24k === undefined ||
-      data.price_gram_22k === undefined ||
-      data.price_gram_18k === undefined ||
       isNaN(p24) || p24 <= 0 ||
       isNaN(p22) || p22 <= 0 ||
       isNaN(p18) || p18 <= 0
     ) {
+      console.error('GoldAPI validation failed after fallback. Field presence:', JSON.stringify(fieldPresence))
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'Invalid numeric price values received from GoldAPI.',
+          error: 'Invalid numeric price values received from GoldAPI. Karat fields unavailable and base price field missing or invalid.',
         }),
         {
           status: 422,
