@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
+import { supabase } from '../../lib/supabaseClient';
 
 export default function TestimonialsSection() {
   const { reviews } = useData();
@@ -18,6 +19,32 @@ export default function TestimonialsSection() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+    setSubmittedMessage('');
+
+    let submitted = false;
+
+    // 1. Try direct Supabase insertion if configured
+    try {
+      if (supabase) {
+        const { error: sbError } = await supabase.from('reviews').insert([
+          {
+            name: formData.name,
+            location: formData.location || 'Patron',
+            rating: parseInt(formData.rating) || 5,
+            review_text: formData.review_text,
+            status: 'PENDING',
+            created_at: new Date().toISOString()
+          }
+        ]);
+        if (!sbError) {
+          submitted = true;
+        }
+      }
+    } catch (err) {
+      console.warn('[Testimonials] Supabase review insert notice:', err.message);
+    }
+
+    // 2. Submit to Vercel API endpoint (/api/reviews)
     try {
       const res = await fetch('/api/reviews', {
         method: 'POST',
@@ -25,16 +52,19 @@ export default function TestimonialsSection() {
         body: JSON.stringify(formData)
       });
       if (res.ok) {
-        setSubmittedMessage('Thank you! Your review has been submitted for admin moderation.');
-        setFormData({ name: '', location: '', rating: '5', review_text: '' });
-      } else {
-        setSubmittedMessage('Failed to submit review. Please try again.');
+        submitted = true;
       }
     } catch (err) {
-      setSubmittedMessage('Error submitting review.');
-    } finally {
-      setSubmitting(false);
+      console.warn('[Testimonials] API review endpoint notice:', err.message);
     }
+
+    if (submitted) {
+      setSubmittedMessage('Thank you! Your review has been submitted for admin moderation.');
+      setFormData({ name: '', location: '', rating: '5', review_text: '' });
+    } else {
+      setSubmittedMessage('Failed to submit review. Please try again.');
+    }
+    setSubmitting(false);
   };
 
   return (
