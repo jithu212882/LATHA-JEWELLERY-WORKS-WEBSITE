@@ -1,7 +1,63 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import initialStoreData from '../../server/data/store.json';
+import { supabase } from '../lib/supabaseClient';
 
 const DataContext = createContext();
+
+/**
+ * Fetches the latest gold rates row from Supabase public.gold_rates.
+ * Returns null if Supabase is unavailable or data is invalid.
+ * Never exposes secrets — uses anon key + RLS SELECT policy only.
+ */
+async function fetchSupabaseGoldRates() {
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase
+      .from('gold_rates')
+      .select('price_24k, price_22k, price_18k, updated_at, source, currency, unit')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) return null;
+
+    const p24 = Number(data.price_24k);
+    const p22 = Number(data.price_22k);
+    const p18 = Number(data.price_18k);
+
+    // Reject if any value is invalid
+    if (isNaN(p24) || p24 <= 0 || isNaN(p22) || p22 <= 0 || isNaN(p18) || p18 <= 0) {
+      return null;
+    }
+
+    // Format to 2 decimal places with Indian locale (e.g. "13,369.65")
+    const fmt = (n) => n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const updatedAt = data.updated_at
+      ? new Date(data.updated_at).toLocaleString('en-IN', {
+          day: 'numeric', month: 'short', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        })
+      : null;
+
+    return {
+      rate_24k: fmt(p24),
+      rate_22k: fmt(p22),
+      rate_18k: fmt(p18),
+      source: data.source || 'GoldAPI',
+      currency: data.currency || 'INR',
+      unit: data.unit || 'gram',
+      last_updated: updatedAt || 'Today',
+      status: 'Connected (Supabase)',
+      mode: 'AUTOMATIC_API',
+      ticker_visible: 1,
+    };
+  } catch (err) {
+    // Silently fail — website never crashes due to Supabase being unavailable
+    console.warn('Supabase gold rate fetch failed, using fallback:', err.message);
+    return null;
+  }
+}
 
 export function DataProvider({ children }) {
   const [data, setData] = useState(() => ({
@@ -40,21 +96,6 @@ export function DataProvider({ children }) {
         const json = await res.json();
         setData(json);
         setError(null);
-
-        // Automatic Live GoldAPI.io Sync (Morning/Evening)
-        if (json.gold_rates?.mode !== 'MANUAL_OVERRIDE') {
-          fetch('/api/gold-rates/fetch-live', { method: 'POST' })
-            .then(r => r.json())
-            .then(liveJson => {
-              if (liveJson?.success && liveJson?.rates) {
-                setData(prev => ({
-                  ...prev,
-                  gold_rates: liveJson.rates
-                }));
-              }
-            })
-            .catch(() => {});
-        }
       } else {
         const staticRes = await fetch('/data/store.json');
         if (staticRes.ok) {
@@ -76,6 +117,22 @@ export function DataProvider({ children }) {
       setError(null);
     } finally {
       setLoading(false);
+    }
+
+    // Fetch live gold rates from Supabase (primary live source)
+    // This runs after the main data load and merges only the gold_rates portion.
+    // Silver is preserved from the existing data source.
+    const supabaseRates = await fetchSupabaseGoldRates();
+    if (supabaseRates) {
+      setData(prev => ({
+        ...prev,
+        gold_rates: {
+          // Preserve silver and any other existing fields not in Supabase table
+          ...prev.gold_rates,
+          // Overlay with live Supabase values
+          ...supabaseRates,
+        }
+      }));
     }
   };
 
