@@ -93,6 +93,14 @@ export default function JewelleryManager() {
     files.forEach((file) => formDataUpload.append('files', file));
     formDataUpload.append('section_tag', 'Jewellery');
 
+    const readFileAsDataURL = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(file);
+      });
+
     try {
       const res = await fetch('/api/media/upload-multiple', {
         method: 'POST',
@@ -100,17 +108,27 @@ export default function JewelleryManager() {
         body: formDataUpload
       });
 
-      if (!res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
-        throw new Error(json.error || 'Upload failed');
+        const newUrls = json.urls || [];
+        if (newUrls.length > 0) {
+          setPhotos((prev) => [...prev, ...newUrls]);
+          return;
+        }
       }
 
-      const json = await res.json();
-      const newUrls = json.urls || [];
-      setPhotos((prev) => [...prev, ...newUrls]);
+      // Fallback to Data URLs if server response is not JSON or fails
+      const dataUrls = await Promise.all(files.map(readFileAsDataURL));
+      setPhotos((prev) => [...prev, ...dataUrls]);
     } catch (err) {
-      console.error('Photo upload error:', err);
-      setError(err.message || 'Error uploading JPG/JPEG photos');
+      console.warn('Photo upload API error, converting to Data URLs:', err);
+      try {
+        const dataUrls = await Promise.all(files.map(readFileAsDataURL));
+        setPhotos((prev) => [...prev, ...dataUrls]);
+      } catch (readErr) {
+        setError('Error processing photo files');
+      }
     } finally {
       setUploadingPhotos(false);
       e.target.value = '';

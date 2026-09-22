@@ -13,9 +13,10 @@ export default function MediaLibrary() {
       const res = await fetch('/api/media', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
-        setMediaItems(json);
+        setMediaItems(Array.isArray(json) ? json : []);
       }
     } catch (err) {
       console.error('Error fetching media:', err);

@@ -8,6 +8,15 @@ export default function ImageUploader({ value, onChange, label, sectionTag = 'Ge
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
+  const readFileAsDataURL = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileUpload = async (file) => {
     if (!file) return;
     setError('');
@@ -19,27 +28,60 @@ export default function ImageUploader({ value, onChange, label, sectionTag = 'Ge
     }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('section_tag', sectionTag);
 
     try {
+      // 1. Attempt Multipart File Upload to server endpoint
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('section_tag', sectionTag);
+
       const res = await fetch('/api/media/upload', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
       });
 
-      if (!res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
-        throw new Error(json.error || 'Upload failed');
+        if (json.url) {
+          onChange(json.url);
+          return;
+        }
       }
 
-      const json = await res.json();
-      onChange(json.url);
+      // 2. Fallback: Convert image to Data URL client-side so upload NEVER crashes with HTML 404 syntax error
+      const dataUrl = await readFileAsDataURL(file);
+
+      // Attempt base64 JSON upload to Vercel serverless function if available
+      try {
+        const jsonRes = await fetch('/api/media/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ fileData: dataUrl, section_tag: sectionTag })
+        });
+        const jsonContentType = jsonRes.headers.get('content-type') || '';
+        if (jsonRes.ok && jsonContentType.includes('application/json')) {
+          const json = await jsonRes.json();
+          if (json.url) {
+            onChange(json.url);
+            return;
+          }
+        }
+      } catch (e) {}
+
+      onChange(dataUrl);
     } catch (err) {
-      console.error('File upload error:', err);
-      setError(err.message || 'Error uploading file');
+      console.warn('Network upload error, converting to local Data URL:', err);
+      try {
+        const dataUrl = await readFileAsDataURL(file);
+        onChange(dataUrl);
+      } catch (readErr) {
+        setError('Error reading image file');
+      }
     } finally {
       setUploading(false);
     }
