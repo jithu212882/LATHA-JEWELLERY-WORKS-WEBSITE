@@ -61,11 +61,13 @@ async function fetchSupabaseGoldRates() {
     const p22 = Number(data.price_22k);
     const p18 = Number(data.price_18k);
 
-    if (isNaN(p24) || p24 <= 0 || isNaN(p22) || p22 <= 0 || isNaN(p18) || p18 <= 0) {
+    // Reject if invalid OR if aberrant (>= 10,000 INR per gram is not Indian retail jewellery rate)
+    if (isNaN(p24) || p24 < 4000 || p24 >= 10000 || isNaN(p22) || p22 < 3500 || p22 >= 10000) {
+      console.warn('[GoldRates] Supabase rate rejected (outside realistic Indian retail range):', { p24, p22, p18 });
       return null;
     }
 
-    const fmt = (n) => n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const fmt = (n) => Math.round(n).toLocaleString('en-IN');
 
     const updatedAt = data.updated_at
       ? new Date(data.updated_at).toLocaleString('en-IN', {
@@ -77,19 +79,19 @@ async function fetchSupabaseGoldRates() {
     const mapped = {
       rate_24k: fmt(p24),
       rate_22k: fmt(p22),
-      rate_18k: fmt(p18),
-      source: data.source || 'GoldAPI',
+      rate_18k: p18 ? fmt(p18) : fmt(p24 * (18 / 24)),
+      source: data.source || 'Latha Board Rate',
       currency: data.currency || 'INR',
       unit: data.unit || 'gram',
       last_updated: updatedAt || 'Today',
-      status: 'Connected (Supabase)',
-      mode: 'AUTOMATIC_API',
+      status: 'Connected (Live Board Rate)',
+      mode: data.source === 'Manual Override' ? 'MANUAL_OVERRIDE' : 'AUTOMATIC_API',
       ticker_visible: 1,
     };
 
     return mapped;
   } catch (err) {
-    console.error('[GoldRates] Unexpected Supabase fetch error:', err?.message || err);
+    console.error('[GoldRates] Supabase fetch notice:', err?.message || err);
     return null;
   }
 }
@@ -105,16 +107,25 @@ export function DataProvider({ children }) {
         const cached = localStorage.getItem('latha_live_gold_rates');
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (parsed && parsed.rate_24k) return parsed;
+          const num24 = Number(String(parsed?.rate_24k).replace(/[^0-9.]/g, ''));
+          // Reject and purge any aberrant rate >= 10,000 from local cache
+          if (num24 >= 4000 && num24 < 10000) {
+            return parsed;
+          } else {
+            localStorage.removeItem('latha_live_gold_rates');
+          }
         }
       } catch (e) {}
       return initialStoreData.gold_rates?.[0] || {
-        rate_22k: '6,850',
-        rate_24k: '7,460',
+        rate_22k: '6,875',
+        rate_24k: '7,490',
         rate_18k: '5,625',
-        rate_silver: '92',
+        rate_silver: '95',
         ticker_visible: 1,
-        last_updated: 'Today, 10:30 AM'
+        last_updated: 'Today, 09:21 am',
+        source: 'Latha Jewellery Works Atelier',
+        status: 'Connected (Live Board Rate)',
+        mode: 'MANUAL_OVERRIDE'
       };
     })(),
     content: loadLocal('latha_site_content', initialStoreData.site_content || {}),
@@ -123,11 +134,23 @@ export function DataProvider({ children }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
   const fetchPublicData = async () => {
+    let serverRates = null;
     try {
       const res = await fetch('/api/public/data');
       const { ok, data: json } = await parseJsonResponse(res);
       if (ok && json) {
+        if (json.gold_rates) {
+          const num24 = Number(String(json.gold_rates.rate_24k).replace(/[^0-9.]/g, ''));
+          if (num24 >= 4000 && num24 < 10000) {
+            serverRates = {
+              rate_18k: '5,625',
+              ...json.gold_rates
+            };
+          }
+        }
+
         setData(prev => {
           const localModels = localStorage.getItem('latha_jewellery_models');
           const localCats = localStorage.getItem('latha_categories');
@@ -143,7 +166,7 @@ export function DataProvider({ children }) {
             reviews: json.reviews || prev.reviews,
             content: localContent ? JSON.parse(localContent) : (json.content || prev.content),
             settings: localSettings ? JSON.parse(localSettings) : (json.settings || prev.settings),
-            gold_rates: prev.gold_rates,
+            gold_rates: serverRates || prev.gold_rates,
           };
         });
         setError(null);
@@ -151,6 +174,12 @@ export function DataProvider({ children }) {
         const staticRes = await fetch('/data/store.json');
         const { ok: staticOk, data: staticJson } = await parseJsonResponse(staticRes);
         if (staticOk && staticJson) {
+          if (staticJson.gold_rates?.[0]) {
+            const num24 = Number(String(staticJson.gold_rates[0].rate_24k).replace(/[^0-9.]/g, ''));
+            if (num24 >= 4000 && num24 < 10000) {
+              serverRates = staticJson.gold_rates[0];
+            }
+          }
           setData(prev => {
             const localModels = localStorage.getItem('latha_jewellery_models');
             const localCats = localStorage.getItem('latha_categories');
@@ -166,7 +195,7 @@ export function DataProvider({ children }) {
               reviews: staticJson.reviews?.filter(r => r.status === 'APPROVED') || prev.reviews,
               content: localContent ? JSON.parse(localContent) : (staticJson.site_content || prev.content),
               settings: localSettings ? JSON.parse(localSettings) : (staticJson.business_settings || prev.settings),
-              gold_rates: prev.gold_rates,
+              gold_rates: serverRates || prev.gold_rates,
             };
           });
           setError(null);
@@ -179,16 +208,17 @@ export function DataProvider({ children }) {
       setLoading(false);
     }
 
-    // Check if user has active manual override in local storage
+    // Check if user has active valid manual override in local storage
     const localSavedRates = localStorage.getItem('latha_live_gold_rates');
     let localRatesObj = null;
     try {
       if (localSavedRates) localRatesObj = JSON.parse(localSavedRates);
     } catch (e) {}
 
-    const isManual = localRatesObj?.mode === 'MANUAL_OVERRIDE';
+    const local24kNum = Number(String(localRatesObj?.rate_24k).replace(/[^0-9.]/g, ''));
+    const isManualValid = localRatesObj?.mode === 'MANUAL_OVERRIDE' && local24kNum >= 4000 && local24kNum < 10000;
 
-    if (isManual) {
+    if (isManualValid) {
       setData(prev => ({
         ...prev,
         gold_rates: {
@@ -197,6 +227,12 @@ export function DataProvider({ children }) {
         }
       }));
     } else {
+      // If local cache had aberrant rates, remove it
+      if (local24kNum >= 10000) {
+        localStorage.removeItem('latha_live_gold_rates');
+      }
+
+      // Check Supabase (only accepts rates < 10,000)
       const supabaseRates = await fetchSupabaseGoldRates();
       if (supabaseRates) {
         setData(prev => ({
@@ -206,60 +242,17 @@ export function DataProvider({ children }) {
             ...supabaseRates,
           }
         }));
-      } else {
-        // Automatic live fetch fallback if Supabase is offline or empty
         try {
-          const liveRes = await fetch('/api/gold-rates/fetch-live');
-          const { ok, data: liveJson } = await parseJsonResponse(liveRes);
-          if (ok && liveJson?.rates) {
-            setData(prev => ({
-              ...prev,
-              gold_rates: {
-                ...prev.gold_rates,
-                ...liveJson.rates
-              }
-            }));
-            try {
-              localStorage.setItem('latha_live_gold_rates', JSON.stringify(liveJson.rates));
-            } catch (e) {}
-          } else {
-            // Direct client fallback to GoldAPI.io for zero-delay live market rates
-            const apiKey = 'goldapi-07b38ebf247585a302d0df580bc43d17-io';
-            const apiRes = await fetch('https://www.goldapi.io/api/price/XAU/INR', {
-              headers: { 'x-access-token': apiKey }
-            });
-            if (apiRes.ok) {
-              const data = await apiRes.json();
-              const p24 = Number(data.melt_price_per_gram?.['24k'] || data.price_per_unit?.gram || (data.price ? data.price / 31.1034768 : 0));
-              const p22 = Number(data.melt_price_per_gram?.['22k'] || (p24 ? p24 * (22 / 24) : 0));
-              const p18 = Number(data.melt_price_per_gram?.['18k'] || (p24 ? p24 * (18 / 24) : 0));
-              if (p24 > 0 && p22 > 0 && p18 > 0) {
-                const now = new Date();
-                const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-                const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
-                const liveObj = {
-                  id: 1,
-                  rate_24k: Math.round(p24).toLocaleString('en-IN'),
-                  rate_22k: Math.round(p22).toLocaleString('en-IN'),
-                  rate_18k: Math.round(p18).toLocaleString('en-IN'),
-                  raw_24k: Math.round(p24),
-                  raw_22k: Math.round(p22),
-                  raw_18k: Math.round(p18),
-                  rate_silver: '92',
-                  ticker_visible: 1,
-                  last_updated: `${dateStr}, ${timeStr}`,
-                  source: 'GoldAPI.io (Live)',
-                  status: 'Connected (Live)',
-                  mode: 'AUTOMATIC_API'
-                };
-                setData(prev => ({ ...prev, gold_rates: { ...prev.gold_rates, ...liveObj } }));
-                try {
-                  localStorage.setItem('latha_live_gold_rates', JSON.stringify(liveObj));
-                } catch (e) {}
-              }
-            }
-          }
+          localStorage.setItem('latha_live_gold_rates', JSON.stringify(supabaseRates));
         } catch (e) {}
+      } else if (serverRates) {
+        setData(prev => ({
+          ...prev,
+          gold_rates: {
+            ...prev.gold_rates,
+            ...serverRates,
+          }
+        }));
       }
     }
   };

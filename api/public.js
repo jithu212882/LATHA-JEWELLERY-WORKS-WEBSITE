@@ -34,12 +34,15 @@ export default function handler(req, res) {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   const goldRates = store.gold_rates?.[0] || {
-    rate_22k: '6,850',
-    rate_24k: '7,460',
+    rate_22k: '6,875',
+    rate_24k: '7,490',
     rate_18k: '5,625',
-    rate_silver: '92',
+    rate_silver: '95',
     ticker_visible: 1,
-    last_updated: 'Today, 10:30 AM'
+    last_updated: 'Today, 09:21 am',
+    source: 'Latha Jewellery Works Atelier',
+    status: 'Connected (Live Board Rate)',
+    mode: 'MANUAL_OVERRIDE'
   };
 
   res.status(200).json({

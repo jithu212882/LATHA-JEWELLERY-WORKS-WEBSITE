@@ -7,7 +7,7 @@ export default function DashboardOverview({ onSwitchTab }) {
   const totalModels = jewellery_models ? jewellery_models.length : 0;
   const totalCategories = categories ? categories.length : 0;
   const pendingReviews = (reviews || []).filter(r => r.status === 'PENDING').length;
-  const currentGoldRate = gold_rates ? gold_rates.rate_22k : '6,850';
+  const currentGoldRate = gold_rates ? gold_rates.rate_22k : '6,875';
 
   return (
     <div className="space-y-8">
