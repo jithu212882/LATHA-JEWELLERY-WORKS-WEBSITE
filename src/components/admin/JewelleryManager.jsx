@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ImageUploader from './ImageUploader';
-import { compressImageFile } from '../../utils/imageCompressor';
 import { parseJsonResponse } from '../../utils/apiHelper';
+import { uploadMultipleImages } from '../../lib/uploadImage';
 
 export default function JewelleryManager() {
   const { jewellery_models, categories, refreshData, saveJewelleryModel, deleteJewelleryModel } = useData();
@@ -79,24 +79,15 @@ export default function JewelleryManager() {
     setUploadingPhotos(true);
 
     try {
-      // Compress and process all selected files in parallel
-      const compressedUrls = await Promise.all(
-        files.map((file) => compressImageFile(file))
-      );
-
-      const validUrls = compressedUrls.filter(Boolean);
-
-      if (validUrls.length > 0) {
-        setPhotos((prev) => {
-          const next = [...prev, ...validUrls];
-          return next;
-        });
-
-        // Set primary image if not set
+      const result = await uploadMultipleImages(files, { sectionTag: 'Jewellery', token });
+      if (result.success && result.urls.length > 0) {
+        setPhotos((prev) => [...prev, ...result.urls]);
         setFormData((prev) => ({
           ...prev,
-          primary_image: prev.primary_image || validUrls[0]
+          primary_image: prev.primary_image || result.urls[0]
         }));
+      } else if (result.errors && result.errors.length > 0) {
+        setError(result.errors[0]);
       } else {
         setError('Failed to process selected photos.');
       }

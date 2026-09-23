@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { compressImageFile } from '../../utils/imageCompressor';
+import { uploadImage } from '../../lib/uploadImage';
 
 export default function ImageUploader({ value, onChange, label, sectionTag = 'General' }) {
   const { token } = useAuth();
@@ -12,46 +12,17 @@ export default function ImageUploader({ value, onChange, label, sectionTag = 'Ge
   const handleFileUpload = async (file) => {
     if (!file) return;
     setError('');
-
     setUploading(true);
 
     try {
-      // 1. Attempt Multipart File Upload to server endpoint if available
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('section_tag', sectionTag);
-
-      const res = await fetch('/api/media/upload', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData
-      });
-
-      const contentType = res.headers.get('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
-        const json = await res.json();
-        if (json.url) {
-          onChange(json.url);
-          setUploading(false);
-          return;
-        }
-      }
-
-      // 2. Compress image client-side to crisp, lightweight Data URL
-      const dataUrl = await compressImageFile(file);
-      if (dataUrl) {
-        onChange(dataUrl);
+      const result = await uploadImage(file, { sectionTag, token });
+      if (result.success && result.url) {
+        onChange(result.url);
       } else {
-        setError('Error processing image');
+        setError(result.error || 'Failed to upload image');
       }
     } catch (err) {
-      console.warn('Network upload error, converting to local Data URL:', err);
-      try {
-        const dataUrl = await compressImageFile(file);
-        if (dataUrl) onChange(dataUrl);
-      } catch (readErr) {
-        setError('Error reading image file');
-      }
+      setError('Error processing image upload');
     } finally {
       setUploading(false);
     }
