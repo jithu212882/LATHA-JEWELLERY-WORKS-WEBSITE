@@ -122,6 +122,7 @@ export function DataProvider({ children }) {
   }));
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const fetchPublicData = async () => {
     try {
       const res = await fetch('/api/public/data');
