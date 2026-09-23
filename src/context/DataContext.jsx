@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import initialStoreData from '../../server/data/store.json';
 import { supabase } from '../lib/supabaseClient';
+import { parseJsonResponse } from '../utils/apiHelper';
 
 const DataContext = createContext();
 
@@ -121,13 +122,11 @@ export function DataProvider({ children }) {
   }));
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
   const fetchPublicData = async () => {
     try {
       const res = await fetch('/api/public/data');
-      if (res.ok) {
-        const json = await res.json();
+      const { ok, data: json } = await parseJsonResponse(res);
+      if (ok && json) {
         setData(prev => {
           const localModels = localStorage.getItem('latha_jewellery_models');
           const localCats = localStorage.getItem('latha_categories');
@@ -149,8 +148,8 @@ export function DataProvider({ children }) {
         setError(null);
       } else {
         const staticRes = await fetch('/data/store.json');
-        if (staticRes.ok) {
-          const staticJson = await staticRes.json();
+        const { ok: staticOk, data: staticJson } = await parseJsonResponse(staticRes);
+        if (staticOk && staticJson) {
           setData(prev => {
             const localModels = localStorage.getItem('latha_jewellery_models');
             const localCats = localStorage.getItem('latha_categories');
