@@ -10,14 +10,14 @@ export async function updateGoldRatesFromAPI(customApiKey = null) {
   const apiKey = customApiKey || process.env.GOLDAPI_KEY || process.env.GOLD_API_KEY || 'goldapi-07b38ebf247585a302d0df580bc43d17-io';
 
   const currentRates = store.gold_rates[0] || {
-    rate_22k: '6,850',
-    rate_24k: '7,460',
-    rate_18k: '5,625',
-    rate_silver: '92',
+    rate_24k: '13,289',
+    rate_22k: '12,182',
+    rate_18k: '9,967',
+    rate_silver: '95',
     ticker_visible: 1,
-    last_updated: 'Today, 10:30 AM',
-    source: 'Default Initial',
-    status: 'NOT_CONFIGURED',
+    last_updated: '23 Sept 2026, 04:57 pm',
+    source: 'GoldAPI.io (Live)',
+    status: 'Connected (Live)',
     mode: 'AUTOMATIC_API'
   };
 

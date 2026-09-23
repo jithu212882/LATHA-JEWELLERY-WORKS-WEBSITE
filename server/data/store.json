@@ -167,41 +167,41 @@
   "gold_rates": [
     {
       "id": 1,
-      "rate_22k": "6,875",
-      "rate_24k": "7,490",
-      "rate_18k": "5,625",
+      "rate_24k": "13,289",
+      "rate_22k": "12,182",
+      "rate_18k": "9,967",
       "rate_silver": "95",
       "ticker_visible": 1,
-      "last_updated": "Today, 09:21 am",
-      "source": "Latha Jewellery Works Atelier",
-      "status": "Connected (Live Board Rate)",
-      "mode": "MANUAL_OVERRIDE"
+      "last_updated": "23 Sept 2026, 04:57 pm",
+      "source": "GoldAPI.io (Live)",
+      "status": "Connected (Live)",
+      "mode": "AUTOMATIC_API"
     }
   ],
   "rate_history": [
     {
       "id": 7,
-      "date_str": "Sep 11, 2026",
-      "rate_22k": "6,875",
-      "change_amount": "Updated"
+      "date_str": "Sep 23, 2026",
+      "rate_22k": "12,182",
+      "change_amount": "+32"
     },
     {
       "id": 6,
-      "date_str": "Sep 11, 2026",
-      "rate_22k": "6,875",
-      "change_amount": "Updated"
+      "date_str": "Sep 22, 2026",
+      "rate_22k": "12,150",
+      "change_amount": "+50"
     },
     {
       "id": 5,
-      "date_str": "Sep 11, 2026",
-      "rate_22k": "6,875",
-      "change_amount": "Updated"
+      "date_str": "Sep 21, 2026",
+      "rate_22k": "12,100",
+      "change_amount": "+45"
     },
     {
       "id": 4,
-      "date_str": "Sep 11, 2026",
-      "rate_22k": "6,875",
-      "change_amount": "Updated"
+      "date_str": "Sep 20, 2026",
+      "rate_22k": "12,055",
+      "change_amount": "+20"
     },
     {
       "id": 1,

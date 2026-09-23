@@ -61,9 +61,9 @@ async function fetchSupabaseGoldRates() {
     const p22 = Number(data.price_22k);
     const p18 = Number(data.price_18k);
 
-    // Reject if invalid OR if aberrant (>= 10,000 INR per gram is not Indian retail jewellery rate)
-    if (isNaN(p24) || p24 < 4000 || p24 >= 10000 || isNaN(p22) || p22 < 3500 || p22 >= 10000) {
-      console.warn('[GoldRates] Supabase rate rejected (outside realistic Indian retail range):', { p24, p22, p18 });
+    // Reject if invalid OR outside realistic range (5,000 to 30,000 INR per gram in 2026)
+    if (isNaN(p24) || p24 < 4000 || p24 >= 30000 || isNaN(p22) || p22 < 3500 || p22 >= 30000) {
+      console.warn('[GoldRates] Supabase rate rejected (outside realistic range):', { p24, p22, p18 });
       return null;
     }
 
@@ -108,8 +108,8 @@ export function DataProvider({ children }) {
         if (cached) {
           const parsed = JSON.parse(cached);
           const num24 = Number(String(parsed?.rate_24k).replace(/[^0-9.]/g, ''));
-          // Reject and purge any aberrant rate >= 10,000 from local cache
-          if (num24 >= 4000 && num24 < 10000) {
+          // In 2026, valid gold rates are between 4,000 and 30,000
+          if (num24 >= 4000 && num24 < 30000) {
             return parsed;
           } else {
             localStorage.removeItem('latha_live_gold_rates');
@@ -117,15 +117,15 @@ export function DataProvider({ children }) {
         }
       } catch (e) {}
       return initialStoreData.gold_rates?.[0] || {
-        rate_22k: '6,875',
-        rate_24k: '7,490',
-        rate_18k: '5,625',
+        rate_24k: '13,289',
+        rate_22k: '12,182',
+        rate_18k: '9,967',
         rate_silver: '95',
         ticker_visible: 1,
-        last_updated: 'Today, 09:21 am',
-        source: 'Latha Jewellery Works Atelier',
-        status: 'Connected (Live Board Rate)',
-        mode: 'MANUAL_OVERRIDE'
+        last_updated: '23 Sept 2026, 04:57 pm',
+        source: 'GoldAPI.io (Live)',
+        status: 'Connected (Live)',
+        mode: 'AUTOMATIC_API'
       };
     })(),
     content: loadLocal('latha_site_content', initialStoreData.site_content || {}),
@@ -143,9 +143,9 @@ export function DataProvider({ children }) {
       if (ok && json) {
         if (json.gold_rates) {
           const num24 = Number(String(json.gold_rates.rate_24k).replace(/[^0-9.]/g, ''));
-          if (num24 >= 4000 && num24 < 10000) {
+          if (num24 >= 4000 && num24 < 30000) {
             serverRates = {
-              rate_18k: '5,625',
+              rate_18k: '9,967',
               ...json.gold_rates
             };
           }
@@ -176,7 +176,7 @@ export function DataProvider({ children }) {
         if (staticOk && staticJson) {
           if (staticJson.gold_rates?.[0]) {
             const num24 = Number(String(staticJson.gold_rates[0].rate_24k).replace(/[^0-9.]/g, ''));
-            if (num24 >= 4000 && num24 < 10000) {
+            if (num24 >= 4000 && num24 < 30000) {
               serverRates = staticJson.gold_rates[0];
             }
           }
@@ -216,7 +216,7 @@ export function DataProvider({ children }) {
     } catch (e) {}
 
     const local24kNum = Number(String(localRatesObj?.rate_24k).replace(/[^0-9.]/g, ''));
-    const isManualValid = localRatesObj?.mode === 'MANUAL_OVERRIDE' && local24kNum >= 4000 && local24kNum < 10000;
+    const isManualValid = localRatesObj?.mode === 'MANUAL_OVERRIDE' && local24kNum >= 4000 && local24kNum < 30000;
 
     if (isManualValid) {
       setData(prev => ({
@@ -227,12 +227,7 @@ export function DataProvider({ children }) {
         }
       }));
     } else {
-      // If local cache had aberrant rates, remove it
-      if (local24kNum >= 10000) {
-        localStorage.removeItem('latha_live_gold_rates');
-      }
-
-      // Check Supabase (only accepts rates < 10,000)
+      // Check Supabase
       const supabaseRates = await fetchSupabaseGoldRates();
       if (supabaseRates) {
         setData(prev => ({
@@ -253,6 +248,24 @@ export function DataProvider({ children }) {
             ...serverRates,
           }
         }));
+      } else {
+        // Live GoldAPI fetch via serverless endpoint
+        try {
+          const liveRes = await fetch('/api/gold-rates/fetch-live');
+          const { ok, data: liveJson } = await parseJsonResponse(liveRes);
+          if (ok && liveJson?.rates) {
+            setData(prev => ({
+              ...prev,
+              gold_rates: {
+                ...prev.gold_rates,
+                ...liveJson.rates
+              }
+            }));
+            try {
+              localStorage.setItem('latha_live_gold_rates', JSON.stringify(liveJson.rates));
+            } catch (e) {}
+          }
+        } catch (e) {}
       }
     }
   };

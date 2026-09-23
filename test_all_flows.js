@@ -104,14 +104,14 @@ async function runTests() {
           Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
-          rate_22k: '6,875',
-          rate_24k: '7,490',
+          rate_22k: '12,182',
+          rate_24k: '13,289',
           rate_silver: '95',
           ticker_visible: 1
         })
       });
       const json = await res.json();
-      if (res.ok && json.rate_22k === '6,875') {
+      if (res.ok && json.rate_22k === '12,182') {
         console.log(`✅ Admin Published New Live Gold Rate: 22K = ₹${json.rate_22k}/g (Ticker Synced)`);
       } else {
         console.error('❌ Gold Rate Update Failed:', json);
@@ -125,10 +125,10 @@ async function runTests() {
   try {
     const res = await fetch(`${BASE_URL}/api/public/data`);
     const json = await res.json();
-    if (json.gold_rates.rate_22k === '6,875') {
-      console.log('✅ Real-time Public-Admin Synchronization Verified: 22K rate is ₹6,875 across all public sessions!');
+    if (json.gold_rates.rate_22k === '12,182') {
+      console.log('✅ Real-time Public-Admin Synchronization Verified: 22K rate is ₹12,182 across all public sessions!');
     } else {
-      console.error('❌ Public Synchronization Failed, expected 6,875 but got:', json.gold_rates.rate_22k);
+      console.error('❌ Public Synchronization Failed, expected 12,182 but got:', json.gold_rates.rate_22k);
     }
   } catch (err) {
     console.error('❌ Sync Verification Failed:', err);

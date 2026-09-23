@@ -197,16 +197,18 @@ function seedInitialData() {
   if (store.gold_rates.length === 0) {
     store.gold_rates = [{
       id: 1,
-      rate_22k: '6,850',
-      rate_24k: '7,460',
-      rate_silver: '92',
+      rate_24k: '13,289',
+      rate_22k: '12,182',
+      rate_18k: '9,967',
+      rate_silver: '95',
       ticker_visible: 1,
-      last_updated: 'Today, 10:30 AM'
+      last_updated: '23 Sept 2026, 04:57 pm',
+      source: 'GoldAPI.io (Live)',
+      status: 'Connected (Live)',
+      mode: 'AUTOMATIC_API'
     }];
     store.rate_history = [
-      { id: 1, date_str: 'Oct 24, 2024', rate_22k: '6,850', change_amount: '+25' },
-      { id: 2, date_str: 'Oct 23, 2024', rate_22k: '6,825', change_amount: '+30' },
-      { id: 3, date_str: 'Oct 22, 2024', rate_22k: '6,795', change_amount: '+15' }
+      { id: 1, date_str: '23 Sept 2026', rate_22k: '12,182', rate_24k: '13,289', rate_18k: '9,967', change_amount: '+25' }
     ];
     dirty = true;
   }

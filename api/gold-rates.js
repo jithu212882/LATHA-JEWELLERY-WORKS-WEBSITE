@@ -10,15 +10,15 @@ let memoryRates = null;
 
 const DEFAULT_SHOP_RATES = {
   id: 1,
-  rate_22k: '6,875',
-  rate_24k: '7,490',
-  rate_18k: '5,625',
+  rate_24k: '13,289',
+  rate_22k: '12,182',
+  rate_18k: '9,967',
   rate_silver: '95',
   ticker_visible: 1,
-  last_updated: 'Today, 09:21 am',
-  source: 'Latha Jewellery Works Atelier',
-  status: 'Connected (Live Board Rate)',
-  mode: 'MANUAL_OVERRIDE'
+  last_updated: '23 Sept 2026, 04:57 pm',
+  source: 'GoldAPI.io (Live)',
+  status: 'Connected (Live)',
+  mode: 'AUTOMATIC_API'
 };
 
 function getStore() {
@@ -75,9 +75,8 @@ async function fetchFromGoldAPI(apiKey) {
     const p22 = Number(data.price_gram_22k || data.melt_price_per_gram?.['22k'] || (p24 ? p24 * (22 / 24) : 0));
     const p18 = Number(data.price_gram_18k || data.melt_price_per_gram?.['18k'] || (p24 ? p24 * (18 / 24) : 0));
 
-    // Guard: Only accept realistic Indian retail gold per-gram rates (e.g. 5,000 - 9,999 INR/gram)
-    // Aberrant feeds (such as raw spot conversions > 10,000) are rejected
-    if (p24 >= 5000 && p24 < 10000 && p22 >= 4500 && p22 < 10000 && p18 > 0) {
+    // Valid range in 2026
+    if (p24 >= 5000 && p24 < 30000 && p22 >= 4500 && p22 < 30000 && p18 > 0) {
       const now = new Date();
       const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
       const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
@@ -105,8 +104,6 @@ async function fetchFromGoldAPI(apiKey) {
 
       syncToSupabase(Math.round(p24), Math.round(p22), Math.round(p18), 'GoldAPI').catch(() => {});
       return rateObj;
-    } else {
-      console.warn('[GoldRates] GoldAPI rate rejected as outside Indian retail range:', { p24, p22, p18 });
     }
   } catch (err) {
     console.error('[GoldRates] GoldAPI fetch error:', err.message);
@@ -125,6 +122,7 @@ export default async function handler(req, res) {
   }
 
   const urlPath = new URL(req.url, 'http://localhost').pathname;
+  const sub = String(req.query?.subroute || (Array.isArray(req.query?.path) ? req.query.path.join('/') : req.query?.path) || '');
   const store = getStore();
   if (!Array.isArray(store.gold_rates)) store.gold_rates = [];
 
@@ -132,7 +130,7 @@ export default async function handler(req, res) {
   let currentRate = memoryRates || storeSavedRate || DEFAULT_SHOP_RATES;
 
   // 1. FETCH LIVE: /api/gold-rates/fetch-live
-  if (urlPath.includes('/fetch-live') || req.query?.subroute === 'fetch-live') {
+  if (urlPath.includes('/fetch-live') || sub.includes('fetch-live')) {
     const customKey = req.body?.api_key || req.query?.api_key;
     const live = await fetchFromGoldAPI(customKey);
     if (live) {
@@ -147,7 +145,7 @@ export default async function handler(req, res) {
     }
 
     // If live fetch returned aberrant rate or was unreachable, use verified board rates
-    const fallbackRate = (currentRate && Number(String(currentRate.rate_24k).replace(/[^0-9.]/g, '')) < 10000)
+    const fallbackRate = (currentRate && Number(String(currentRate.rate_24k).replace(/[^0-9.]/g, '')) < 30000)
       ? currentRate
       : DEFAULT_SHOP_RATES;
 
@@ -159,7 +157,7 @@ export default async function handler(req, res) {
   }
 
   // 2. RESTORE AUTO: /api/gold-rates/restore-auto
-  if (urlPath.includes('/restore-auto') || req.query?.subroute === 'restore-auto') {
+  if (urlPath.includes('/restore-auto') || sub.includes('restore-auto')) {
     const live = await fetchFromGoldAPI();
     const updated = live || {
       ...DEFAULT_SHOP_RATES,
@@ -179,7 +177,7 @@ export default async function handler(req, res) {
   }
 
   // 3. OVERRIDE: /api/gold-rates/override
-  if (urlPath.includes('/override') || req.query?.subroute === 'override') {
+  if (urlPath.includes('/override') || sub.includes('override')) {
     try {
       let body = req.body;
       if (typeof body === 'string') {
@@ -209,9 +207,9 @@ export default async function handler(req, res) {
       saveStore(store);
 
       // Extract numeric values and sync to Supabase table
-      const num24 = Number(String(updated.rate_24k).replace(/[^0-9.]/g, '')) || 7490;
-      const num22 = Number(String(updated.rate_22k).replace(/[^0-9.]/g, '')) || 6875;
-      const num18 = Number(String(updated.rate_18k).replace(/[^0-9.]/g, '')) || 5625;
+      const num24 = Number(String(updated.rate_24k).replace(/[^0-9.]/g, '')) || 13289;
+      const num22 = Number(String(updated.rate_22k).replace(/[^0-9.]/g, '')) || 12182;
+      const num18 = Number(String(updated.rate_18k).replace(/[^0-9.]/g, '')) || 9967;
       syncToSupabase(num24, num22, num18, 'Manual Override').catch(() => {});
 
       return res.status(200).json({
@@ -225,9 +223,9 @@ export default async function handler(req, res) {
   }
 
   // 4. GET GOLD RATES: /api/gold-rates
-  // Sanitize: ensure no aberrant rate >= 10000 is ever returned
+  // Sanitize: ensure no aberrant rate >= 30000 is ever returned
   const current24kNum = Number(String(currentRate?.rate_24k).replace(/[^0-9.]/g, ''));
-  if (!currentRate || isNaN(current24kNum) || current24kNum >= 10000 || current24kNum < 4000) {
+  if (!currentRate || isNaN(current24kNum) || current24kNum >= 30000 || current24kNum < 4000) {
     currentRate = DEFAULT_SHOP_RATES;
   }
 

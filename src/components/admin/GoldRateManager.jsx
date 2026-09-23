@@ -12,18 +12,18 @@ export default function GoldRateManager() {
   const [errorMsg, setErrorMsg] = useState('');
   const [testApiKey, setTestApiKey] = useState('');
 
-  const [manual24k, setManual24k] = useState(gold_rates?.rate_24k || '7,490');
-  const [manual22k, setManual22k] = useState(gold_rates?.rate_22k || '6,875');
-  const [manual18k, setManual18k] = useState(gold_rates?.rate_18k || '5,625');
+  const [manual24k, setManual24k] = useState(gold_rates?.rate_24k || '13,289');
+  const [manual22k, setManual22k] = useState(gold_rates?.rate_22k || '12,182');
+  const [manual18k, setManual18k] = useState(gold_rates?.rate_18k || '9,967');
   const [manualSilver, setManualSilver] = useState(gold_rates?.rate_silver || '95');
 
   const isManualMode = gold_rates?.mode === 'MANUAL_OVERRIDE';
 
-  // Synchronize manual form fields whenever current rates update (guarding against aberrant >10,000)
+  // Synchronize manual form fields whenever current rates update (guarding against aberrant >30,000)
   useEffect(() => {
     if (gold_rates) {
       const num24 = Number(String(gold_rates.rate_24k).replace(/[^0-9.]/g, ''));
-      if (num24 >= 4000 && num24 < 10000) {
+      if (num24 >= 4000 && num24 < 30000) {
         if (gold_rates.rate_24k) setManual24k(gold_rates.rate_24k);
         if (gold_rates.rate_22k) setManual22k(gold_rates.rate_22k);
         if (gold_rates.rate_18k) setManual18k(gold_rates.rate_18k);
@@ -57,7 +57,7 @@ export default function GoldRateManager() {
 
       if (res.ok && json.success && json.rates) {
         const num24 = Number(String(json.rates.rate_24k).replace(/[^0-9.]/g, ''));
-        if (num24 >= 4000 && num24 < 10000) {
+        if (num24 >= 4000 && num24 < 30000) {
           if (saveGoldRates) saveGoldRates(json.rates);
           setManual24k(json.rates.rate_24k);
           setManual22k(json.rates.rate_22k);
@@ -85,7 +85,7 @@ export default function GoldRateManager() {
         const p22 = Number(data.price_gram_22k || data.melt_price_per_gram?.['22k'] || (p24 ? p24 * (22 / 24) : 0));
         const p18 = Number(data.price_gram_18k || data.melt_price_per_gram?.['18k'] || (p24 ? p24 * (18 / 24) : 0));
 
-        if (p24 >= 4000 && p24 < 10000 && p22 >= 3500 && p22 < 10000 && p18 > 0) {
+        if (p24 >= 4000 && p24 < 30000 && p22 >= 3500 && p22 < 30000 && p18 > 0) {
           const formatted24k = Math.round(p24).toLocaleString('en-IN');
           const formatted22k = Math.round(p22).toLocaleString('en-IN');
           const formatted18k = Math.round(p18).toLocaleString('en-IN');
@@ -286,7 +286,7 @@ export default function GoldRateManager() {
               24K Gold Rate
             </span>
             <span className="font-headline text-2xl sm:text-3xl font-bold text-[#F9F6F0]">
-              ₹{gold_rates?.rate_24k || '7,460'}
+              ₹{gold_rates?.rate_24k || '13,289'}
             </span>
             <span className="text-[10px] text-[#F5F2EB]/50 block mt-1">Per Gram</span>
           </div>
@@ -296,7 +296,7 @@ export default function GoldRateManager() {
               22K Gold Rate
             </span>
             <span className="font-headline text-2xl sm:text-3xl font-bold text-accent-gold">
-              ₹{gold_rates?.rate_22k || '6,850'}
+              ₹{gold_rates?.rate_22k || '12,182'}
             </span>
             <span className="text-[10px] text-[#F5F2EB]/50 block mt-1">Per Gram</span>
           </div>
@@ -306,7 +306,7 @@ export default function GoldRateManager() {
               18K Gold Rate
             </span>
             <span className="font-headline text-2xl sm:text-3xl font-bold text-[#F9F6F0]">
-              ₹{gold_rates?.rate_18k || '5,625'}
+              ₹{gold_rates?.rate_18k || '9,967'}
             </span>
             <span className="text-[10px] text-[#F5F2EB]/50 block mt-1">Per Gram</span>
           </div>
