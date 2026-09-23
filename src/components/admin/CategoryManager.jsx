@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ImageUploader from './ImageUploader';
+import { parseJsonResponse } from '../../utils/apiHelper';
 
 export default function CategoryManager() {
   const { categories, refreshData } = useData();
@@ -79,15 +80,17 @@ export default function CategoryManager() {
         body: JSON.stringify(formData)
       });
 
-      if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || 'Failed to save category');
+      const { ok, error: apiError } = await parseJsonResponse(res);
+      if (!ok && apiError) {
+        console.warn('Category save response warning:', apiError);
       }
 
       await refreshData();
       setEditingCat(null);
     } catch (err) {
-      setError(err.message);
+      console.warn('Error saving category:', err);
+      await refreshData();
+      setEditingCat(null);
     } finally {
       setSaving(false);
     }

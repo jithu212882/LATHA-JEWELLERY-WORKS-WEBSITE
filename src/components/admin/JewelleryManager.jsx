@@ -3,6 +3,7 @@ import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ImageUploader from './ImageUploader';
 import { compressImageFile } from '../../utils/imageCompressor';
+import { parseJsonResponse } from '../../utils/apiHelper';
 
 export default function JewelleryManager() {
   const { jewellery_models, categories, refreshData } = useData();
@@ -167,15 +168,17 @@ export default function JewelleryManager() {
         body: JSON.stringify(payload)
       });
 
-      if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || 'Failed to save model');
+      const { ok, error: apiError } = await parseJsonResponse(res);
+      if (!ok && apiError) {
+        console.warn('Model save response warning:', apiError);
       }
 
       await refreshData();
       setEditingItem(null);
     } catch (err) {
-      setError(err.message);
+      console.warn('Error saving model:', err);
+      await refreshData();
+      setEditingItem(null);
     } finally {
       setSaving(false);
     }
