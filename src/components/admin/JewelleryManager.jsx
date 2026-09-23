@@ -6,7 +6,7 @@ import { compressImageFile } from '../../utils/imageCompressor';
 import { parseJsonResponse } from '../../utils/apiHelper';
 
 export default function JewelleryManager() {
-  const { jewellery_models, categories, refreshData } = useData();
+  const { jewellery_models, categories, refreshData, saveJewelleryModel, deleteJewelleryModel } = useData();
   const { token } = useAuth();
 
   const [search, setSearch] = useState('');
@@ -149,14 +149,23 @@ export default function JewelleryManager() {
     const primaryImage = photos[0];
     const additionalImages = photos.slice(1);
 
+    const isNew = editingItem === 'new';
+    const targetId = isNew ? null : editingItem.id;
+
     const payload = {
       ...formData,
       primary_image: primaryImage,
       additional_images: additionalImages
     };
 
-    const url = editingItem === 'new' ? '/api/jewellery' : `/api/jewellery/${editingItem.id}`;
-    const method = editingItem === 'new' ? 'POST' : 'PUT';
+    // 1. Immediately update & persist model state in DataContext & localStorage
+    if (saveJewelleryModel) {
+      saveJewelleryModel(payload, isNew, targetId);
+    }
+
+    // 2. Background API call for server persistence
+    const url = isNew ? '/api/jewellery' : `/api/jewellery/${targetId}`;
+    const method = isNew ? 'POST' : 'PUT';
 
     try {
       const res = await fetch(url, {
@@ -167,33 +176,26 @@ export default function JewelleryManager() {
         },
         body: JSON.stringify(payload)
       });
-
-      const { ok, error: apiError } = await parseJsonResponse(res);
-      if (!ok && apiError) {
-        console.warn('Model save response warning:', apiError);
-      }
-
-      await refreshData();
-      setEditingItem(null);
+      await parseJsonResponse(res);
     } catch (err) {
-      console.warn('Error saving model:', err);
-      await refreshData();
-      setEditingItem(null);
+      console.warn('Background model save sync:', err);
     } finally {
       setSaving(false);
+      setEditingItem(null);
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this jewellery model?')) return;
+    if (deleteJewelleryModel) {
+      deleteJewelleryModel(id);
+    }
     try {
       const res = await fetch(`/api/jewellery/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) {
-        await refreshData();
-      }
+      await parseJsonResponse(res);
     } catch (err) {
       console.error('Error deleting model:', err);
     }

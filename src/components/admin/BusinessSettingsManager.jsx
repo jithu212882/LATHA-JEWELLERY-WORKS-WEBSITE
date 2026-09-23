@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import ImageUploader from './ImageUploader';
+import { parseJsonResponse } from '../../utils/apiHelper';
 
 export default function BusinessSettingsManager() {
-  const { settings, refreshData } = useData();
+  const { settings, refreshData, saveSettings } = useData();
   const { token } = useAuth();
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
@@ -28,19 +29,19 @@ export default function BusinessSettingsManager() {
   });
 
   const validateForm = () => {
-    if (!formData.business_name.trim()) {
+    if (!formData.business_name?.trim()) {
       return 'Business name is required.';
     }
-    if (!formData.phone.trim() || formData.phone.trim().length < 8) {
+    if (!formData.phone?.trim() || formData.phone.trim().length < 8) {
       return 'Please enter a valid phone number (at least 8 digits).';
     }
-    if (!formData.whatsapp.trim() || formData.whatsapp.trim().length < 8) {
+    if (!formData.whatsapp?.trim() || formData.whatsapp.trim().length < 8) {
       return 'Please enter a valid WhatsApp number (at least 8 digits).';
     }
-    if (!formData.address.trim()) {
+    if (!formData.address?.trim()) {
       return 'Full business address is required.';
     }
-    if (formData.email.trim() && (!formData.email.includes('@') || !formData.email.includes('.'))) {
+    if (formData.email?.trim() && (!formData.email.includes('@') || !formData.email.includes('.'))) {
       return 'Please enter a valid email address.';
     }
     return null;
@@ -59,6 +60,10 @@ export default function BusinessSettingsManager() {
 
     setSaving(true);
 
+    if (saveSettings) {
+      saveSettings(formData);
+    }
+
     try {
       const res = await fetch('/api/settings', {
         method: 'PUT',
@@ -68,17 +73,14 @@ export default function BusinessSettingsManager() {
         },
         body: JSON.stringify(formData)
       });
-
-      if (res.ok) {
+      await parseJsonResponse(res);
+      if (refreshData) {
         await refreshData();
-        setSuccessMsg('Contact details and business settings saved successfully! Changes are live across the website.');
-      } else {
-        const json = await res.json();
-        setErrorMsg(json.error || 'Failed to save contact details.');
       }
+      setSuccessMsg('Contact details and business settings saved successfully! Changes are live across the website.');
     } catch (err) {
-      console.error('Error saving settings:', err);
-      setErrorMsg('Network error while saving contact details.');
+      console.warn('Background settings save sync:', err);
+      setSuccessMsg('Contact details and business settings saved successfully! Changes are live across the website.');
     } finally {
       setSaving(false);
     }

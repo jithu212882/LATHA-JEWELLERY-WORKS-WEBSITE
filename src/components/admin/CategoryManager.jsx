@@ -5,7 +5,7 @@ import ImageUploader from './ImageUploader';
 import { parseJsonResponse } from '../../utils/apiHelper';
 
 export default function CategoryManager() {
-  const { categories, refreshData } = useData();
+  const { categories, refreshData, saveCategory, deleteCategory } = useData();
   const { token } = useAuth();
 
   const [editingCat, setEditingCat] = useState(null); // null, 'new', or category object
@@ -20,6 +20,11 @@ export default function CategoryManager() {
   });
 
   const toggleActive = async (cat) => {
+    const isNew = false;
+    const targetId = cat.id;
+    if (saveCategory) {
+      saveCategory({ active: cat.active ? 0 : 1 }, isNew, targetId);
+    }
     try {
       const res = await fetch(`/api/categories/${cat.id}`, {
         method: 'PUT',
@@ -29,7 +34,7 @@ export default function CategoryManager() {
         },
         body: JSON.stringify({ active: cat.active ? 0 : 1 })
       });
-      if (res.ok) await refreshData();
+      await parseJsonResponse(res);
     } catch (err) {
       console.error('Toggle category active error:', err);
     }
@@ -67,8 +72,17 @@ export default function CategoryManager() {
     setSaving(true);
     setError('');
 
-    const url = editingCat === 'new' ? '/api/categories' : `/api/categories/${editingCat.id}`;
-    const method = editingCat === 'new' ? 'POST' : 'PUT';
+    const isNew = editingCat === 'new';
+    const targetId = isNew ? null : editingCat.id;
+
+    // 1. Immediately persist category in DataContext & localStorage
+    if (saveCategory) {
+      saveCategory(formData, isNew, targetId);
+    }
+
+    // 2. Background API call for server persistence
+    const url = isNew ? '/api/categories' : `/api/categories/${targetId}`;
+    const method = isNew ? 'POST' : 'PUT';
 
     try {
       const res = await fetch(url, {
@@ -79,33 +93,26 @@ export default function CategoryManager() {
         },
         body: JSON.stringify(formData)
       });
-
-      const { ok, error: apiError } = await parseJsonResponse(res);
-      if (!ok && apiError) {
-        console.warn('Category save response warning:', apiError);
-      }
-
-      await refreshData();
-      setEditingCat(null);
+      await parseJsonResponse(res);
     } catch (err) {
-      console.warn('Error saving category:', err);
-      await refreshData();
-      setEditingCat(null);
+      console.warn('Background category save sync:', err);
     } finally {
       setSaving(false);
+      setEditingCat(null);
     }
   };
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this category?')) return;
+    if (deleteCategory) {
+      deleteCategory(id);
+    }
     try {
       const res = await fetch(`/api/categories/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) {
-        await refreshData();
-      }
+      await parseJsonResponse(res);
     } catch (err) {
       console.error('Delete error:', err);
     }
