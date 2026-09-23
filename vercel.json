@@ -11,8 +11,19 @@
     { "source": "/api/public/data", "destination": "/api/public/data.js" },
     { "source": "/api/media/upload-multiple", "destination": "/api/media/upload-multiple.js" },
     { "source": "/api/media/upload", "destination": "/api/media/upload.js" },
-    { "source": "/api/media/delete", "destination": "/api/media/delete.js" },
+    { "source": "/api/media/:id", "destination": "/api/media/[id].js" },
     { "source": "/api/media", "destination": "/api/media/index.js" },
+    { "source": "/api/categories/:id", "destination": "/api/categories/[id].js" },
+    { "source": "/api/categories", "destination": "/api/categories/index.js" },
+    { "source": "/api/jewellery/:id", "destination": "/api/jewellery/[id].js" },
+    { "source": "/api/jewellery", "destination": "/api/jewellery/index.js" },
+    { "source": "/api/banners/:id", "destination": "/api/banners/[id].js" },
+    { "source": "/api/banners", "destination": "/api/banners/index.js" },
+    { "source": "/api/content", "destination": "/api/content/index.js" },
+    { "source": "/api/settings", "destination": "/api/settings/index.js" },
+    { "source": "/api/enquiries", "destination": "/api/enquiries.js" },
+    { "source": "/api/reviews/:id", "destination": "/api/reviews/[id].js" },
+    { "source": "/api/reviews", "destination": "/api/reviews.js" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }
