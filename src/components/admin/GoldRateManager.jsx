@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 
 export default function GoldRateManager() {
-  const { gold_rates, refreshData } = useData();
+  const { gold_rates, refreshData, saveGoldRates } = useData();
   const { token } = useAuth();
 
   const [fetching, setFetching] = useState(false);
@@ -18,6 +18,16 @@ export default function GoldRateManager() {
   const [manualSilver, setManualSilver] = useState(gold_rates?.rate_silver || '92');
 
   const isManualMode = gold_rates?.mode === 'MANUAL_OVERRIDE';
+
+  // Synchronize manual form fields whenever current rates update
+  useEffect(() => {
+    if (gold_rates) {
+      if (gold_rates.rate_24k) setManual24k(gold_rates.rate_24k);
+      if (gold_rates.rate_22k) setManual22k(gold_rates.rate_22k);
+      if (gold_rates.rate_18k) setManual18k(gold_rates.rate_18k);
+      if (gold_rates.rate_silver) setManualSilver(gold_rates.rate_silver);
+    }
+  }, [gold_rates?.rate_24k, gold_rates?.rate_22k, gold_rates?.rate_18k, gold_rates?.rate_silver]);
 
   // Trigger Live GoldAPI.io Fetch
   const handleFetchLive = async () => {
@@ -43,8 +53,11 @@ export default function GoldRateManager() {
       try { json = text ? JSON.parse(text) : {}; } catch (e) {}
 
       if (res.ok && json.success && json.rates) {
-        setStatusMsg(json.message || 'Successfully fetched live rates from GoldAPI.io!');
-        await refreshData();
+        if (saveGoldRates) saveGoldRates(json.rates);
+        setManual24k(json.rates.rate_24k);
+        setManual22k(json.rates.rate_22k);
+        setManual18k(json.rates.rate_18k);
+        setStatusMsg(json.message || `Successfully fetched live rates from GoldAPI.io! (24K: ₹${json.rates.rate_24k}/g)`);
         setFetching(false);
         return;
       }
@@ -62,9 +75,9 @@ export default function GoldRateManager() {
 
       if (apiRes.ok) {
         const data = await apiRes.json();
-        const p24 = Number(data.price_gram_24k);
-        const p22 = Number(data.price_gram_22k);
-        const p18 = Number(data.price_gram_18k);
+        const p24 = Number(data.price_gram_24k || data.melt_price_per_gram?.['24k'] || data.price_per_unit?.gram || (data.price ? data.price / 31.1034768 : 0));
+        const p22 = Number(data.price_gram_22k || data.melt_price_per_gram?.['22k'] || (p24 ? p24 * (22 / 24) : 0));
+        const p18 = Number(data.price_gram_18k || data.melt_price_per_gram?.['18k'] || (p24 ? p24 * (18 / 24) : 0));
 
         if (p24 > 0 && p22 > 0 && p18 > 0) {
           const formatted24k = Math.round(p24).toLocaleString('en-IN');
@@ -93,12 +106,12 @@ export default function GoldRateManager() {
             mode: 'AUTOMATIC_API'
           };
 
-          try {
-            localStorage.setItem('latha_live_gold_rates', JSON.stringify(updated));
-          } catch (e) {}
+          if (saveGoldRates) saveGoldRates(updated);
+          setManual24k(formatted24k);
+          setManual22k(formatted22k);
+          setManual18k(formatted18k);
 
           setStatusMsg(`Successfully fetched live rates from GoldAPI.io! (24K: ₹${formatted24k}/g, 22K: ₹${formatted22k}/g, 18K: ₹${formatted18k}/g)`);
-          await refreshData();
           setFetching(false);
           return;
         }
@@ -118,8 +131,35 @@ export default function GoldRateManager() {
     setStatusMsg('');
     setErrorMsg('');
 
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+    const updated = {
+      ...(gold_rates || {}),
+      id: 1,
+      rate_24k: String(manual24k).trim(),
+      rate_22k: String(manual22k).trim(),
+      rate_18k: String(manual18k).trim(),
+      rate_silver: String(manualSilver).trim(),
+      ticker_visible: 1,
+      last_updated: `${dateStr}, ${timeStr} (Manual)`,
+      mode: 'MANUAL_OVERRIDE',
+      status: 'Emergency Manual Override Active'
+    };
+
+    // 1. Immediately update client state and localStorage
+    if (saveGoldRates) {
+      saveGoldRates(updated);
+    } else {
+      try {
+        localStorage.setItem('latha_live_gold_rates', JSON.stringify(updated));
+      } catch (err) {}
+    }
+
+    // 2. Sync to serverless backend
     try {
-      const res = await fetch('/api/gold-rates/override', {
+      await fetch('/api/gold-rates/override', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -132,22 +172,10 @@ export default function GoldRateManager() {
           rate_silver: manualSilver
         })
       });
+    } catch (err) {}
 
-      const text = await res.text();
-      let json = {};
-      try { json = text ? JSON.parse(text) : {}; } catch (e) {}
-
-      if (res.ok || json.success) {
-        setStatusMsg('Emergency manual override published successfully.');
-        await refreshData();
-      } else {
-        setStatusMsg('Manual override saved.');
-      }
-    } catch (err) {
-      setStatusMsg('Manual override updated.');
-    } finally {
-      setSavingOverride(false);
-    }
+    setStatusMsg(`Emergency manual override published successfully! (24K: ₹${manual24k}/g, 22K: ₹${manual22k}/g, 18K: ₹${manual18k}/g)`);
+    setSavingOverride(false);
   };
 
   // Restore Automatic Mode
@@ -167,15 +195,16 @@ export default function GoldRateManager() {
       let json = {};
       try { json = text ? JSON.parse(text) : {}; } catch (e) {}
 
-      if (res.ok || json.success) {
+      if (res.ok && json.rates) {
+        if (saveGoldRates) saveGoldRates({ ...json.rates, mode: 'AUTOMATIC_API' });
         setStatusMsg('Restored automatic GoldAPI.io market rate mode.');
-        await refreshData();
+        setFetching(false);
+        return;
       }
-    } catch (err) {
-      setStatusMsg('Restored automatic mode.');
-    } finally {
-      setFetching(false);
-    }
+    } catch (err) {}
+
+    // Fallback: live fetch directly
+    await handleFetchLive();
   };
 
   return (

@@ -179,16 +179,102 @@ export function DataProvider({ children }) {
       setLoading(false);
     }
 
-    const supabaseRates = await fetchSupabaseGoldRates();
-    if (supabaseRates) {
+    // Check if user has active manual override in local storage
+    const localSavedRates = localStorage.getItem('latha_live_gold_rates');
+    let localRatesObj = null;
+    try {
+      if (localSavedRates) localRatesObj = JSON.parse(localSavedRates);
+    } catch (e) {}
+
+    const isManual = localRatesObj?.mode === 'MANUAL_OVERRIDE';
+
+    if (isManual) {
       setData(prev => ({
         ...prev,
         gold_rates: {
           ...prev.gold_rates,
-          ...supabaseRates,
+          ...localRatesObj
         }
       }));
+    } else {
+      const supabaseRates = await fetchSupabaseGoldRates();
+      if (supabaseRates) {
+        setData(prev => ({
+          ...prev,
+          gold_rates: {
+            ...prev.gold_rates,
+            ...supabaseRates,
+          }
+        }));
+      } else {
+        // Automatic live fetch fallback if Supabase is offline or empty
+        try {
+          const liveRes = await fetch('/api/gold-rates/fetch-live');
+          const { ok, data: liveJson } = await parseJsonResponse(liveRes);
+          if (ok && liveJson?.rates) {
+            setData(prev => ({
+              ...prev,
+              gold_rates: {
+                ...prev.gold_rates,
+                ...liveJson.rates
+              }
+            }));
+            try {
+              localStorage.setItem('latha_live_gold_rates', JSON.stringify(liveJson.rates));
+            } catch (e) {}
+          } else {
+            // Direct client fallback to GoldAPI.io for zero-delay live market rates
+            const apiKey = 'goldapi-07b38ebf247585a302d0df580bc43d17-io';
+            const apiRes = await fetch('https://www.goldapi.io/api/price/XAU/INR', {
+              headers: { 'x-access-token': apiKey }
+            });
+            if (apiRes.ok) {
+              const data = await apiRes.json();
+              const p24 = Number(data.melt_price_per_gram?.['24k'] || data.price_per_unit?.gram || (data.price ? data.price / 31.1034768 : 0));
+              const p22 = Number(data.melt_price_per_gram?.['22k'] || (p24 ? p24 * (22 / 24) : 0));
+              const p18 = Number(data.melt_price_per_gram?.['18k'] || (p24 ? p24 * (18 / 24) : 0));
+              if (p24 > 0 && p22 > 0 && p18 > 0) {
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+                const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                const liveObj = {
+                  id: 1,
+                  rate_24k: Math.round(p24).toLocaleString('en-IN'),
+                  rate_22k: Math.round(p22).toLocaleString('en-IN'),
+                  rate_18k: Math.round(p18).toLocaleString('en-IN'),
+                  raw_24k: Math.round(p24),
+                  raw_22k: Math.round(p22),
+                  raw_18k: Math.round(p18),
+                  rate_silver: '92',
+                  ticker_visible: 1,
+                  last_updated: `${dateStr}, ${timeStr}`,
+                  source: 'GoldAPI.io (Live)',
+                  status: 'Connected (Live)',
+                  mode: 'AUTOMATIC_API'
+                };
+                setData(prev => ({ ...prev, gold_rates: { ...prev.gold_rates, ...liveObj } }));
+                try {
+                  localStorage.setItem('latha_live_gold_rates', JSON.stringify(liveObj));
+                } catch (e) {}
+              }
+            }
+          }
+        } catch (e) {}
+      }
     }
+  };
+
+  const saveGoldRates = (ratesPayload) => {
+    setData(prev => {
+      const nextRates = {
+        ...prev.gold_rates,
+        ...ratesPayload
+      };
+      try {
+        localStorage.setItem('latha_live_gold_rates', JSON.stringify(nextRates));
+      } catch (e) {}
+      return { ...prev, gold_rates: nextRates };
+    });
   };
 
   const saveJewelleryModel = (modelPayload, isNew = false, targetId = null) => {
@@ -317,6 +403,39 @@ export function DataProvider({ children }) {
 
   useEffect(() => {
     fetchPublicData();
+
+    // Background auto-refresh every 15 minutes (if not in manual override)
+    const interval = setInterval(() => {
+      try {
+        const cached = localStorage.getItem('latha_live_gold_rates');
+        const parsed = cached ? JSON.parse(cached) : null;
+        if (parsed?.mode !== 'MANUAL_OVERRIDE') {
+          fetchPublicData();
+        }
+      } catch (e) {
+        fetchPublicData();
+      }
+    }, 15 * 60 * 1000);
+
+    // Refresh when user returns to the tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        try {
+          const cached = localStorage.getItem('latha_live_gold_rates');
+          const parsed = cached ? JSON.parse(cached) : null;
+          if (parsed?.mode !== 'MANUAL_OVERRIDE') {
+            fetchPublicData();
+          }
+        } catch (e) {}
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   return (
@@ -326,6 +445,7 @@ export function DataProvider({ children }) {
         loading,
         error,
         refreshData: fetchPublicData,
+        saveGoldRates,
         saveJewelleryModel,
         deleteJewelleryModel,
         saveCategory,
