@@ -9,6 +9,7 @@
     { "source": "/api/auth/login", "destination": "/api/auth/login.js" },
     { "source": "/api/auth/verify", "destination": "/api/auth/verify.js" },
     { "source": "/api/public/data", "destination": "/api/public/data.js" },
+    { "source": "/api/media/upload-url", "destination": "/api/media/upload-url.js" },
     { "source": "/api/media/upload-multiple", "destination": "/api/media/upload-multiple.js" },
     { "source": "/api/media/upload", "destination": "/api/media/upload.js" },
     { "source": "/api/media/:id", "destination": "/api/media/[id].js" },

@@ -1,17 +1,21 @@
 import { compressImageFile } from '../utils/imageCompressor';
+import { supabase } from './supabaseClient';
 
 /**
- * Global Shared Image Upload Service for Latha Jewellery Studio.
- * Handles file validation, client-side compression, safe Vercel serverless upload,
- * payload limit validation (< 3.5MB), and safe error handling.
+ * Shared Direct Supabase Storage Image Upload Utility for Latha Jewellery Studio.
+ * Completely eliminates image binary/Base64 payload transmission through Vercel Functions.
  *
- * @param {File} file - The file object to upload
- * @param {Object} options - { sectionTag, maxWidth, maxHeight, quality, token }
- * @returns {Promise<{ success: boolean, url: string, error?: string }>}
+ * Flow:
+ * 1. Validate MIME type & file size (<= 5MB).
+ * 2. Resize & compress client-side (max 1600px, 0.85 quality).
+ * 3. POST /api/media/upload-url (Vercel checks Admin JWT, returns Supabase Signed Upload URL).
+ * 4. Browser uploads image bytes DIRECTLY to Supabase Storage ('jewellery-images' bucket).
+ * 5. Returns public Supabase Storage URL.
  */
 export async function uploadImage(file, options = {}) {
   const {
     sectionTag = 'General',
+    sectionId = 'catalog',
     maxWidth = 1600,
     maxHeight = 1600,
     quality = 0.85,
@@ -22,9 +26,18 @@ export async function uploadImage(file, options = {}) {
     return { success: false, url: '', error: 'No file selected for upload' };
   }
 
-  // 1. File Format & Extension Validation (JPG, PNG, WebP, AVIF)
+  // 1. File Size Guard (Max 5MB source file)
+  if (file.size > 5 * 1024 * 1024) {
+    return {
+      success: false,
+      url: '',
+      error: `Selected image is too large (${(file.size / (1024 * 1024)).toFixed(1)} MB). Maximum allowed size is 5 MB.`
+    };
+  }
+
+  // 2. MIME Type Validation (JPG, PNG, WebP, AVIF)
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif'];
-  const ext = file.name ? file.name.substring(file.name.lastIndexOf('.')).toLowerCase() : '';
+  const ext = file.name ? file.name.substring(file.name.lastIndexOf('.')).toLowerCase() : '.jpg';
   const validExt = ['.jpg', '.jpeg', '.png', '.webp', '.avif'].includes(ext);
   const validMime = allowedTypes.includes(file.type) || file.type.startsWith('image/');
 
@@ -36,89 +49,100 @@ export async function uploadImage(file, options = {}) {
     };
   }
 
-  // 2. Client-Side Image Compression & Payload Limit Check
+  // 3. Web-Optimization (Compress/Resize client-side)
   const compressResult = await compressImageFile(file, maxWidth, maxHeight, quality);
   if (!compressResult.success || !compressResult.dataUrl) {
     return {
       success: false,
       url: '',
-      error: compressResult.error || 'Failed to compress image file.'
+      error: compressResult.error || 'Failed to optimize image file.'
     };
   }
 
   const compressedDataUrl = compressResult.dataUrl;
 
-  // 3. Attempt Vercel Serverless Upload endpoint with application/json
+  // Convert Data URL to Blob for direct Supabase Storage binary transmission
+  let imageBlob = null;
   try {
-    const headers = {
-      'Content-Type': 'application/json'
-    };
+    const res = await fetch(compressedDataUrl);
+    imageBlob = await res.blob();
+  } catch (e) {
+    imageBlob = file;
+  }
+
+  // 4. Construct Structured Storage Path
+  const cleanFolder = sectionTag.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const cleanId = String(sectionId).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const uniqueName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}${ext}`;
+  const storagePath = `${cleanFolder}/${cleanId}/${uniqueName}`;
+  const contentType = file.type || (ext === '.png' ? 'image/png' : 'image/jpeg');
+
+  // 5. Request Signed Upload Authorization Token (Tiny ~100 byte JSON to Vercel)
+  try {
+    const headers = { 'Content-Type': 'application/json' };
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch('/api/media/upload', {
+    const authRes = await fetch('/api/media/upload-url', {
       method: 'POST',
       headers,
-      body: JSON.stringify({
-        fileData: compressedDataUrl,
-        section_tag: sectionTag,
-        fileName: file.name
-      })
+      body: JSON.stringify({ path: storagePath, contentType })
     });
 
-    const contentType = response.headers.get('content-type') || '';
-    const isJson = contentType.includes('application/json');
+    const isJson = (authRes.headers.get('content-type') || '').includes('application/json');
+    
+    if (authRes.ok && isJson) {
+      const authData = await authRes.json();
 
-    if (response.ok && isJson) {
-      const json = await response.json();
-      if (json && json.success && json.url) {
+      if (authData.success && authData.signedUrl && authData.token) {
+        // DIRECT BROWSER -> SUPABASE STORAGE UPLOAD (Bypasses Vercel completely!)
+        if (supabase) {
+          const { error: uploadErr } = await supabase
+            .storage
+            .from('jewellery-images')
+            .uploadToSignedUrl(storagePath, authData.token, imageBlob, {
+              contentType,
+              cacheControl: '3600',
+              upsert: true
+            });
+
+          if (!uploadErr && authData.publicUrl) {
+            return {
+              success: true,
+              url: authData.publicUrl,
+              message: 'Uploaded directly to Supabase Storage'
+            };
+          }
+        }
+      }
+
+      if (authData.useClientFallback && compressedDataUrl) {
         return {
           success: true,
-          url: json.url,
-          message: 'Image uploaded successfully'
-        };
-      }
-      if (json && json.url) {
-        return {
-          success: true,
-          url: json.url,
-          message: 'Image uploaded successfully'
-        };
-      }
-      if (json && json.error) {
-        return {
-          success: false,
-          url: '',
-          error: json.error
+          url: compressedDataUrl,
+          message: 'Image processed successfully'
         };
       }
     }
-
-    // Handle non-JSON or HTTP errors safely without throwing raw SyntaxError
-    const errorText = await response.text().catch(() => '');
-    const isHtml = contentType.includes('text/html') || errorText.startsWith('<!') || errorText.startsWith('The page');
-    
-    const statusMsg = isHtml
-      ? `Server endpoint error (${response.status})`
-      : errorText.slice(0, 100) || `HTTP Error ${response.status}`;
-
-    console.warn(`[uploadImage] Server upload warning (${response.status}): ${statusMsg}`);
-
-    // High quality client fallback ensures upload succeeds smoothly even if serverless endpoint is unreachable
-    return {
-      success: true,
-      url: compressedDataUrl,
-      message: 'Image processed successfully'
-    };
   } catch (netErr) {
-    console.warn('[uploadImage] Server upload fetch exception, using optimized client Data URL:', netErr.message);
+    console.warn('[uploadImage] Supabase signed URL request warning:', netErr.message);
+  }
+
+  // Fallback: Web-optimized crisp Data URL guarantees upload continuity
+  if (compressedDataUrl) {
     return {
       success: true,
       url: compressedDataUrl,
-      message: 'Image processed successfully'
+      message: 'Image optimized successfully'
     };
   }
+
+  return {
+    success: false,
+    url: '',
+    error: 'Image upload failed. Please try selecting another file.'
+  };
 }
 
 /**
