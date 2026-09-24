@@ -73,6 +73,7 @@ export default function SEO({
       '@id': 'https://latha-jewellery-works.vercel.app/#store',
       'url': 'https://latha-jewellery-works.vercel.app',
       'telephone': '+91-94870-56064',
+      'email': 'lathajewelleryworks@gmail.com',
       'priceRange': '₹₹₹',
       'address': {
         '@type': 'PostalAddress',

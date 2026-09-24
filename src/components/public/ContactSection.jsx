@@ -7,6 +7,7 @@ export default function ContactSection() {
   const businessName = settings?.business_name || 'Latha Jewellery Works';
   const phone = settings?.phone || '9487056064';
   const whatsapp = settings?.whatsapp || '9487056064';
+  const email = settings?.email || 'lathajewelleryworks@gmail.com';
   const address = settings?.address || 'Chathencode to Nadaikkavu Road, Near Government Primary School, Nadaikkavu, Chathencode P.O.';
   const mapsUrl = settings?.google_maps_url || 'https://maps.google.com/?q=Chathencode+Nadaikkavu+Road+Near+Government+Primary+School+Chathencode';
   const workingHours = settings?.working_hours || 'Monday – Saturday: 9:30 AM – 8:00 PM\nSunday: By Appointment Only';
@@ -52,6 +53,21 @@ export default function ContactSection() {
 
             <div className="flex items-start gap-4">
               <span className="material-symbols-outlined text-accent-gold text-[24px] mt-1 shrink-0">
+                mail
+              </span>
+              <div>
+                <h4 className="font-headline font-bold text-[#F9F6F0] text-base sm:text-lg">Email</h4>
+                <a
+                  href={`mailto:${email}`}
+                  className="font-body text-xs sm:text-sm text-[#F5F2EB]/70 hover:text-accent-gold transition-colors font-light"
+                >
+                  {email}
+                </a>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-4">
+              <span className="material-symbols-outlined text-accent-gold text-[24px] mt-1 shrink-0">
                 schedule
               </span>
               <div>
@@ -77,6 +93,12 @@ export default function ContactSection() {
               className="border border-[#2A2A2A] bg-[#181818] text-[#F9F6F0] px-6 py-3 rounded-xl text-xs uppercase tracking-wider hover:border-accent-gold transition-all flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[18px]">chat</span> WhatsApp
+            </a>
+            <a
+              href={`mailto:${email}`}
+              className="border border-[#2A2A2A] bg-[#181818] text-[#F9F6F0] px-6 py-3 rounded-xl text-xs uppercase tracking-wider hover:border-accent-gold transition-all flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">mail</span> Email Us
             </a>
             <a
               href={mapsUrl}

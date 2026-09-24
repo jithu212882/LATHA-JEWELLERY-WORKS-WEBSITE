@@ -5,6 +5,7 @@ import { navigateTo } from '../../utils/navigation';
 export default function Footer() {
   const { settings } = useData();
   const businessName = settings?.business_name || 'Latha Jewellery Works';
+  const email = settings?.email || 'lathajewelleryworks@gmail.com';
 
   return (
     <footer className="w-full bg-[#0D0D0D] border-t border-[#2A2A2A] py-10">
@@ -27,10 +28,11 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="flex items-center gap-6 text-xs text-[#F5F2EB]/60 uppercase tracking-wider">
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-5 text-xs text-[#F5F2EB]/60 uppercase tracking-wider">
           <a href="/" onClick={(e) => navigateTo('/', e)} className="hover:text-accent-gold transition-colors">Home</a>
           <a href="/collections" onClick={(e) => navigateTo('/collections', e)} className="hover:text-accent-gold transition-colors">Collections</a>
           <a href="#contact" className="hover:text-accent-gold transition-colors">Location</a>
+          <a href={`mailto:${email}`} className="text-accent-gold hover:underline normal-case font-mono">{email}</a>
         </div>
       </div>
     </footer>

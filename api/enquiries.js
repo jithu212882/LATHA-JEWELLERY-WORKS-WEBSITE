@@ -79,6 +79,10 @@ export default async function handler(req, res) {
     if (sbEnquiries && sbEnquiries.length > 0) {
       store.enquiries = sbEnquiries;
       saveStore(store);
+    } else if (store.enquiries && store.enquiries.length > 0) {
+      for (const enq of store.enquiries) {
+        upsertToSupabase('enquiries', enq).catch(() => {});
+      }
     }
   }
 

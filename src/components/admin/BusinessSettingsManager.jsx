@@ -16,7 +16,7 @@ export default function BusinessSettingsManager() {
     established_year: settings?.established_year || '1990',
     phone: settings?.phone || '9487056064',
     whatsapp: settings?.whatsapp || '9487056064',
-    email: settings?.email || 'contact@lathajewelleryworks.com',
+    email: settings?.email || 'lathajewelleryworks@gmail.com',
     address: settings?.address || 'Chathencode to Nadaikkavu Road, Near Government Primary School, Nadaikkavu, Chathencode P.O.',
     google_maps_url: settings?.google_maps_url || 'https://maps.google.com/?q=Chathencode+Nadaikkavu+Road+Near+Government+Primary+School+Chathencode',
     working_hours: settings?.working_hours || 'Monday – Saturday: 9:30 AM – 8:00 PM',
@@ -190,7 +190,7 @@ export default function BusinessSettingsManager() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full bg-[#121212] border border-[#2A2A2A] rounded-xl px-4 py-3 text-sm text-[#F9F6F0] focus:border-accent-gold outline-none"
-                placeholder="contact@lathajewelleryworks.com"
+                placeholder="lathajewelleryworks@gmail.com"
               />
             </div>
 
