@@ -76,7 +76,7 @@ export default async function handler(req, res) {
       }
     }
   }
-  const targetId = !isNaN(parsedId) ? parsedId : (!isNaN(queryId) ? queryId : (req.query?.id ? parseInt(req.query.id) : null));
+  const targetId = !isNaN(parsedId) ? parsedId : (!isNaN(queryId) ? queryId : (req.query?.id ? parseInt(req.query.id) : (body?.id ? parseInt(body.id) : null)));
 
   // ==========================================
   // 1. CATEGORIES CRUD (/api/categories)
@@ -123,12 +123,13 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      let index = store.categories.findIndex(c => Number(c.id) === Number(targetId));
-      const existing = index !== -1 ? store.categories[index] : {};
+      const idToMatch = Number(targetId || body.id || 1);
+      let index = store.categories.findIndex(c => Number(c.id) === idToMatch || (body.slug && c.slug === body.slug));
+      const existing = index !== -1 ? store.categories[index] : (store.categories[0] || {});
       const updated = {
         ...existing,
         ...body,
-        id: Number(targetId),
+        id: idToMatch,
         active: body.active !== undefined ? (body.active ? 1 : 0) : (existing.active !== undefined ? existing.active : 1)
       };
       if (index !== -1) {
@@ -139,7 +140,11 @@ export default async function handler(req, res) {
       saveStore(store);
 
       if (isSupabaseConfigured()) {
-        await upsertToSupabase('categories', updated);
+        try {
+          await upsertToSupabase('categories', updated);
+        } catch (err) {
+          console.warn('[Store] Supabase categories sync notice:', err.message);
+        }
       }
 
       return res.status(200).json(updated);
@@ -207,12 +212,13 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      let index = store.jewellery_models.findIndex(m => Number(m.id) === Number(targetId));
-      const current = index !== -1 ? store.jewellery_models[index] : {};
+      const idToMatch = Number(targetId || body.id || 1);
+      let index = store.jewellery_models.findIndex(m => Number(m.id) === idToMatch);
+      const current = index !== -1 ? store.jewellery_models[index] : (store.jewellery_models[0] || {});
       const updated = {
         ...current,
         ...body,
-        id: Number(targetId),
+        id: idToMatch,
         primary_image: body.primary_image !== undefined ? body.primary_image : current.primary_image,
         additional_images: Array.isArray(body.additional_images) ? body.additional_images : (current.additional_images || []),
         featured: body.featured !== undefined ? (body.featured ? 1 : 0) : (current.featured || 0),
@@ -226,7 +232,11 @@ export default async function handler(req, res) {
       saveStore(store);
 
       if (isSupabaseConfigured()) {
-        await upsertToSupabase('jewellery_models', updated);
+        try {
+          await upsertToSupabase('jewellery_models', updated);
+        } catch (err) {
+          console.warn('[Store] Supabase jewellery sync notice:', err.message);
+        }
       }
 
       return res.status(200).json(updated);

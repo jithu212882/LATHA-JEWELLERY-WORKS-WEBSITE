@@ -9,12 +9,29 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABAS
 
 function getStore() {
   try {
+    const tmpPath = '/tmp/store.json';
+    if (fs.existsSync(tmpPath)) {
+      return JSON.parse(fs.readFileSync(tmpPath, 'utf-8'));
+    }
+  } catch (e) {}
+  try {
     const storePath = path.join(process.cwd(), 'server/data/store.json');
     if (fs.existsSync(storePath)) {
       return JSON.parse(fs.readFileSync(storePath, 'utf-8'));
     }
   } catch (e) {}
   return { media: [] };
+}
+
+function saveStore(store) {
+  try {
+    const tmpPath = '/tmp/store.json';
+    fs.writeFileSync(tmpPath, JSON.stringify(store, null, 2), 'utf-8');
+  } catch (e) {}
+  try {
+    const storePath = path.join(process.cwd(), 'server/data/store.json');
+    fs.writeFileSync(storePath, JSON.stringify(store, null, 2), 'utf-8');
+  } catch (e) {}
 }
 
 export default async function handler(req, res) {
@@ -79,7 +96,7 @@ export default async function handler(req, res) {
       const { data, error } = await supabase
         .storage
         .from('jewellery-images')
-        .createSignedUploadUrl(filePath);
+        .createSignedUploadUrl(filePath, { upsert: true });
 
       if (error || !data) {
         return res.status(200).json({
@@ -107,37 +124,129 @@ export default async function handler(req, res) {
     }
   }
 
-  // 2. LEGACY JSON UPLOAD ENDPOINTS: /api/media/upload and /api/media/upload-multiple
-  if (urlPath.includes('/upload')) {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ success: false, error: 'Method Not Allowed' });
-    }
-
+  // 2. REGISTER MEDIA ASSET: POST /api/media/register or POST /api/media
+  if (req.method === 'POST') {
     let body = req.body;
     if (typeof body === 'string') {
       try { body = JSON.parse(body); } catch (e) {}
     }
 
-    const fileData = body?.fileData || body?.url || '';
-    if (!fileData && Array.isArray(body?.files)) {
+    const fileUrl = body?.url || body?.fileData || '';
+    if (!fileUrl && Array.isArray(body?.files)) {
       return res.status(200).json({ urls: body.files, count: body.files.length });
+    }
+
+    const store = getStore();
+    if (!Array.isArray(store.media)) store.media = [];
+
+    const newMedia = {
+      id: Date.now().toString(),
+      name: body?.name || 'Uploaded Asset',
+      url: fileUrl,
+      section_tag: body?.section_tag || 'General',
+      created_at: new Date().toISOString()
+    };
+
+    if (fileUrl && !store.media.some(m => m.url === fileUrl)) {
+      store.media.unshift(newMedia);
+      saveStore(store);
     }
 
     return res.status(200).json({
       success: true,
-      id: Date.now(),
-      url: fileData || '',
-      section_tag: body?.section_tag || 'General',
-      created_at: new Date().toISOString()
+      media: newMedia,
+      id: newMedia.id,
+      url: fileUrl,
+      section_tag: newMedia.section_tag,
+      created_at: newMedia.created_at
     });
   }
 
   // 3. MEDIA ITEM DELETE: DELETE /api/media/:id
   if (req.method === 'DELETE') {
+    const store = getStore();
+    if (Array.isArray(store.media)) {
+      const segments = urlPath.split('/').filter(Boolean);
+      const deleteId = segments[segments.length - 1];
+      store.media = store.media.filter(m => String(m.id) !== String(deleteId));
+      saveStore(store);
+    }
     return res.status(200).json({ success: true, message: 'Media item deleted' });
   }
 
   // 4. GET MEDIA LIST: GET /api/media
   const store = getStore();
-  return res.status(200).json(store.media || []);
+  let mediaList = Array.isArray(store.media) ? [...store.media] : [];
+
+  // Fetch live storage objects from Supabase Storage bucket
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const folders = ['', 'banner', 'category', 'jewellery', 'general'];
+
+      for (const folder of folders) {
+        try {
+          const { data: items } = await supabase.storage.from('jewellery-images').list(folder, { limit: 100 });
+          if (Array.isArray(items)) {
+            for (const item of items) {
+              if (item.name && item.id) {
+                const itemPath = folder ? `${folder}/${item.name}` : item.name;
+                const publicUrl = `${supabaseUrl}/storage/v1/object/public/jewellery-images/${itemPath}`;
+                if (!mediaList.some(m => m.url === publicUrl)) {
+                  mediaList.push({
+                    id: item.id || `storage-${item.name}`,
+                    name: item.name,
+                    url: publicUrl,
+                    section_tag: folder ? folder.charAt(0).toUpperCase() + folder.slice(1) : 'General',
+                    created_at: item.created_at || new Date().toISOString()
+                  });
+                }
+              }
+            }
+          }
+        } catch (fErr) {}
+      }
+    } catch (err) {
+      console.warn('[Media] Supabase storage list notice:', err.message);
+    }
+  }
+
+  // Also include currently referenced images from banners, categories & models
+  try {
+    (store.banners || []).forEach(b => {
+      if (b.desktop_image && !mediaList.some(m => m.url === b.desktop_image)) {
+        mediaList.push({
+          id: `banner-${b.id}`,
+          name: b.title || 'Hero Banner',
+          url: b.desktop_image,
+          section_tag: 'Banner',
+          created_at: b.created_at || new Date().toISOString()
+        });
+      }
+    });
+    (store.categories || []).forEach(c => {
+      if (c.image_url && !mediaList.some(m => m.url === c.image_url)) {
+        mediaList.push({
+          id: `cat-${c.id}`,
+          name: c.name || 'Category Cover',
+          url: c.image_url,
+          section_tag: 'Category',
+          created_at: c.created_at || new Date().toISOString()
+        });
+      }
+    });
+    (store.jewellery_models || []).forEach(j => {
+      if (j.primary_image && !mediaList.some(m => m.url === j.primary_image)) {
+        mediaList.push({
+          id: `jewel-${j.id}`,
+          name: j.name || 'Jewellery Model',
+          url: j.primary_image,
+          section_tag: 'Jewellery',
+          created_at: j.created_at || new Date().toISOString()
+        });
+      }
+    });
+  } catch (e) {}
+
+  return res.status(200).json(mediaList);
 }

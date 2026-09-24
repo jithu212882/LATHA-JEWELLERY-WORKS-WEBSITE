@@ -7,6 +7,7 @@ export default function MediaLibrary() {
   const [mediaItems, setMediaItems] = useState([]);
   const [tagFilter, setTagFilter] = useState('ALL');
   const [copiedId, setCopiedId] = useState(null);
+  const [uploadMsg, setUploadMsg] = useState('');
 
   const fetchMedia = async () => {
     try {
@@ -27,6 +28,35 @@ export default function MediaLibrary() {
     fetchMedia();
   }, []);
 
+  const handleImageUploaded = async (url) => {
+    if (!url) return;
+    setUploadMsg('Processing and registering uploaded image...');
+    try {
+      const res = await fetch('/api/media', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          url,
+          section_tag: tagFilter === 'ALL' ? 'General' : tagFilter,
+          name: 'Upload ' + new Date().toLocaleTimeString('en-IN')
+        })
+      });
+      const data = await res.json();
+      if (data?.media) {
+        setMediaItems(prev => [data.media, ...prev.filter(m => m.url !== url)]);
+      }
+      setUploadMsg('Image uploaded and registered to Central Media Library successfully!');
+      setTimeout(() => setUploadMsg(''), 4000);
+      fetchMedia();
+    } catch (err) {
+      console.warn('Media registration notice:', err);
+      fetchMedia();
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this media asset?')) return;
     try {
@@ -35,6 +65,7 @@ export default function MediaLibrary() {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
+        setMediaItems(prev => prev.filter(m => String(m.id) !== String(id)));
         fetchMedia();
       }
     } catch (err) {
@@ -45,14 +76,14 @@ export default function MediaLibrary() {
   const copyUrl = (url, id) => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+    setTimeout(() => setCopiedId(null), 2500);
   };
 
   const tags = ['ALL', 'Jewellery', 'Hero', 'Banner', 'Category', 'Logo', 'General'];
 
   const filteredItems = mediaItems.filter(item => {
     if (tagFilter === 'ALL') return true;
-    return item.section_tag === tagFilter;
+    return (item.section_tag || '').toLowerCase() === tagFilter.toLowerCase();
   });
 
   return (
@@ -71,14 +102,24 @@ export default function MediaLibrary() {
         </span>
       </div>
 
+      {uploadMsg && (
+        <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 rounded-xl text-xs font-bold flex items-center gap-2">
+          <span className="material-symbols-outlined text-base">check_circle</span>
+          <span>{uploadMsg}</span>
+        </div>
+      )}
+
       {/* Upload Zone */}
       <div className="bg-[#181818] border border-[#2A2A2A] p-6 rounded-2xl shadow-lg">
         <h3 className="font-headline text-lg font-bold text-accent-gold uppercase mb-3">
-          Upload New Image
+          Upload New Image to Cloud Library
         </h3>
+        <p className="text-xs text-[#F5F2EB]/60 mb-4">
+          Images uploaded here are stored in Supabase Storage with permanent HTTPS URLs, accessible across all devices.
+        </p>
         <ImageUploader
-          onChange={() => fetchMedia()}
-          sectionTag="General"
+          onChange={handleImageUploaded}
+          sectionTag={tagFilter === 'ALL' ? 'General' : tagFilter}
         />
       </div>
 
@@ -106,33 +147,41 @@ export default function MediaLibrary() {
           <p className="text-xs text-[#F5F2EB]/60">No media uploaded in this section yet.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {filteredItems.map((item) => (
             <div
               key={item.id}
               className="bg-[#181818] border border-[#2A2A2A] rounded-xl p-3 flex flex-col justify-between group hover:border-accent-gold/50 transition-colors shadow-lg"
             >
               <div
-                className="w-full h-32 bg-cover bg-center rounded-lg border border-[#2A2A2A] mb-2"
+                className="w-full h-32 bg-cover bg-center rounded-lg border border-[#2A2A2A] mb-2 relative overflow-hidden"
                 style={{ backgroundImage: `url('${item.url}')` }}
-              />
-              <span className="text-xs text-[#F9F6F0] font-medium truncate block" title={item.original_name}>
-                {item.original_name}
+              >
+                {item.section_tag && (
+                  <span className="absolute top-1.5 left-1.5 bg-black/80 text-accent-gold text-[9px] uppercase font-bold px-2 py-0.5 rounded border border-accent-gold/30">
+                    {item.section_tag}
+                  </span>
+                )}
+              </div>
+              <span className="text-xs text-[#F9F6F0] font-medium truncate block" title={item.name || item.original_name}>
+                {item.name || item.original_name || 'Jewellery Asset'}
               </span>
-              <span className="text-[10px] text-accent-gold block mt-0.5">
-                {(item.size ? (item.size / 1024).toFixed(1) + ' KB' : 'Uploaded')}
+              <span className="text-[10px] text-accent-gold block mt-0.5 truncate font-mono">
+                {item.url.startsWith('data:') ? 'Local Data' : 'Cloud Hosted'}
               </span>
 
               <div className="flex gap-2 pt-3 mt-2 border-t border-[#2A2A2A]">
                 <button
+                  type="button"
                   onClick={() => copyUrl(item.url, item.id)}
-                  className="flex-1 bg-[#121212] border border-[#2A2A2A] text-xs py-1 rounded text-[#F5F2EB] hover:text-accent-gold transition-colors font-medium text-center"
+                  className="flex-1 bg-[#121212] border border-[#2A2A2A] text-xs py-1.5 rounded text-[#F5F2EB] hover:text-accent-gold transition-colors font-medium text-center"
                 >
                   {copiedId === item.id ? 'Copied!' : 'Copy Link'}
                 </button>
                 <button
+                  type="button"
                   onClick={() => handleDelete(item.id)}
-                  className="p-1 bg-[#121212] border border-[#2A2A2A] text-red-400 rounded hover:bg-red-500 hover:text-white transition-colors"
+                  className="p-1.5 bg-[#121212] border border-[#2A2A2A] text-red-400 rounded hover:bg-red-500 hover:text-white transition-colors"
                   title="Delete Media"
                 >
                   <span className="material-symbols-outlined text-[16px]">delete</span>

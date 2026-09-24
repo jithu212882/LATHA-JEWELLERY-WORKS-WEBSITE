@@ -30,11 +30,11 @@ export default function HeroSection() {
     >
       {/* Background Image with Controlled Focus & Luxury Visibility */}
       <div
-        className="absolute inset-0 bg-cover bg-[center_30%] sm:bg-center opacity-55 transition-opacity duration-1000"
+        className="absolute inset-0 bg-cover bg-[center_30%] sm:bg-center opacity-80 md:opacity-85 transition-opacity duration-1000"
         style={{ backgroundImage: `url('${bgImage}')` }}
       />
       {/* Editorial Vignette Overlay for Crisp Contrast & Atmosphere */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#121212]/80 via-[#121212]/50 to-[#121212]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#121212]/60 via-[#121212]/35 to-[#121212]/90" />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center z-10 w-full">
         <div ref={textRef} className="flex flex-col items-center w-full">

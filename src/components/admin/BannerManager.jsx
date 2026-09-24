@@ -8,6 +8,7 @@ export default function BannerManager() {
   const { token } = useAuth();
   const [editingBanner, setEditingBanner] = useState(null); // null, 'new', or banner object
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const [formData, setFormData] = useState({
     title: '',
@@ -30,6 +31,7 @@ export default function BannerManager() {
       active: 1
     });
     setEditingBanner('new');
+    setError('');
   };
 
   const openEditModal = (banner) => {
@@ -43,6 +45,7 @@ export default function BannerManager() {
       active: banner.active ? 1 : 0
     });
     setEditingBanner(banner);
+    setError('');
   };
 
   const toggleActive = async (banner) => {
@@ -84,6 +87,7 @@ export default function BannerManager() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
+    setError('');
     const isNew = editingBanner === 'new';
     const targetId = isNew ? null : (editingBanner?.id || 1);
 
@@ -98,7 +102,7 @@ export default function BannerManager() {
       saveBanner(bannerPayload, isNew, targetId);
     }
 
-    // 2. Sync to serverless backend
+    // 2. Sync to serverless backend & Supabase
     const url = isNew ? '/api/banners' : `/api/banners/${targetId}`;
     const method = isNew ? 'POST' : 'PUT';
 
@@ -111,14 +115,16 @@ export default function BannerManager() {
         },
         body: JSON.stringify(bannerPayload)
       });
-      if (res.ok) {
-        if (refreshData) await refreshData();
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status} while saving banner.`);
       }
+      if (refreshData) await refreshData();
+      setEditingBanner(null);
     } catch (err) {
       console.error('Error saving banner:', err);
+      setError(err.message || 'Failed to save banner. Please check connection and try again.');
     } finally {
       setSaving(false);
-      setEditingBanner(null);
     }
   };
 
@@ -199,6 +205,12 @@ export default function BannerManager() {
             <h3 className="font-headline text-2xl font-bold text-accent-gold mb-4 uppercase">
               {editingBanner === 'new' ? 'Add Hero Banner' : 'Edit Hero Banner'}
             </h3>
+
+            {error && (
+              <div className="p-3 bg-red-500/15 border border-red-500/30 text-red-400 rounded-xl text-xs font-semibold mb-4">
+                {error}
+              </div>
+            )}
 
             <form onSubmit={handleSave} className="space-y-4">
               <div>

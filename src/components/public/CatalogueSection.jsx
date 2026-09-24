@@ -148,12 +148,14 @@ export default function CatalogueSection() {
 
           {/* SUPPORTING COLLECTION CARDS (Desktop: 6 Columns Grid) */}
           <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4.5">
-            {supportingCards.map((card) => (
+            {supportingCards.map((card, idx) => (
               <a
                 key={card.id}
                 href={card.route}
                 onClick={(e) => navigateTo(card.route, e)}
-                className="editorial-card group relative bg-[#121212] border border-[#2A2A2A] hover:border-accent-gold/50 rounded-2xl overflow-hidden transition-all duration-500 flex flex-col justify-end p-4 sm:p-5 min-h-[145px] sm:min-h-[155px] shadow-lg"
+                className={`editorial-card group relative bg-[#121212] border border-[#2A2A2A] hover:border-accent-gold/50 rounded-2xl overflow-hidden transition-all duration-500 flex flex-col justify-end p-4 sm:p-5 min-h-[145px] sm:min-h-[155px] shadow-lg ${
+                  idx === supportingCards.length - 1 && supportingCards.length % 2 !== 0 ? 'sm:col-span-2' : ''
+                }`}
               >
                 <div
                   className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700 ease-out"

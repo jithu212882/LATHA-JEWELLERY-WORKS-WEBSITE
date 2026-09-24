@@ -130,9 +130,9 @@ export default function JewelleryManager() {
     setSaving(true);
     setError('');
 
-    // Minimum 3 photo validation for publishing
-    if (photos.length < 3) {
-      setError('Please add at least 3 photos (PNG, JPG, WebP, AVIF) for this jewellery model (e.g., Front View, Side Angle, Close-Up Detail).');
+    // Minimum 1 photo validation for publishing
+    if (photos.length < 1) {
+      setError('Please add at least 1 photo (PNG, JPG, WebP, AVIF) for this jewellery model.');
       setSaving(false);
       return;
     }
@@ -145,6 +145,7 @@ export default function JewelleryManager() {
 
     const payload = {
       ...formData,
+      id: targetId,
       primary_image: primaryImage,
       additional_images: additionalImages
     };
@@ -167,13 +168,17 @@ export default function JewelleryManager() {
         },
         body: JSON.stringify(payload)
       });
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status} while saving jewellery model.`);
+      }
       await parseJsonResponse(res);
       if (refreshData) await refreshData();
+      setEditingItem(null);
     } catch (err) {
-      console.warn('Background model save sync:', err);
+      console.warn('Background model save sync warning:', err);
+      setError(err.message || 'Failed to save jewellery model. Please check connection and try again.');
     } finally {
       setSaving(false);
-      setEditingItem(null);
     }
   };
 

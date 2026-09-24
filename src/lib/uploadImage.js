@@ -64,8 +64,15 @@ export async function uploadImage(file, options = {}) {
   // Convert Data URL to Blob for direct Supabase Storage binary transmission
   let imageBlob = null;
   try {
-    const res = await fetch(compressedDataUrl);
-    imageBlob = await res.blob();
+    const arr = compressedDataUrl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    imageBlob = new Blob([u8arr], { type: mime });
   } catch (e) {
     imageBlob = file;
   }
@@ -107,6 +114,20 @@ export async function uploadImage(file, options = {}) {
             body: imageBlob
           });
           if (directPut.ok && authData.publicUrl) {
+            // Auto-register to Central Media Library
+            fetch('/api/media', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { Authorization: `Bearer ${token}` } : {})
+              },
+              body: JSON.stringify({
+                url: authData.publicUrl,
+                section_tag: sectionTag,
+                name: file.name || uniqueName
+              })
+            }).catch(() => {});
+
             return {
               success: true,
               url: authData.publicUrl,

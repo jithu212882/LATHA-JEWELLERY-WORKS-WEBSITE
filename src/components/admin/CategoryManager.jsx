@@ -74,10 +74,14 @@ export default function CategoryManager() {
 
     const isNew = editingCat === 'new';
     const targetId = isNew ? null : editingCat.id;
+    const catPayload = {
+      ...formData,
+      id: targetId
+    };
 
     // 1. Immediately persist category in DataContext & localStorage
     if (saveCategory) {
-      saveCategory(formData, isNew, targetId);
+      saveCategory(catPayload, isNew, targetId);
     }
 
     // 2. Background API call for server persistence
@@ -91,15 +95,19 @@ export default function CategoryManager() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(catPayload)
       });
+      if (!res.ok) {
+        throw new Error(`Server returned ${res.status} while saving category.`);
+      }
       await parseJsonResponse(res);
       if (refreshData) await refreshData();
+      setEditingCat(null);
     } catch (err) {
-      console.warn('Background category save sync:', err);
+      console.warn('Category save sync warning:', err);
+      setError(err.message || 'Failed to sync category with server. Please try again.');
     } finally {
       setSaving(false);
-      setEditingCat(null);
     }
   };
 
