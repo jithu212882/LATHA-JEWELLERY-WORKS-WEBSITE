@@ -168,6 +168,7 @@ export default function JewelleryManager() {
         body: JSON.stringify(payload)
       });
       await parseJsonResponse(res);
+      if (refreshData) await refreshData();
     } catch (err) {
       console.warn('Background model save sync:', err);
     } finally {
@@ -187,6 +188,7 @@ export default function JewelleryManager() {
         headers: { Authorization: `Bearer ${token}` }
       });
       await parseJsonResponse(res);
+      if (refreshData) await refreshData();
     } catch (err) {
       console.error('Error deleting model:', err);
     }

@@ -96,7 +96,28 @@ export async function uploadImage(file, options = {}) {
       const authData = await authRes.json();
 
       if (authData.success && authData.signedUrl && authData.token) {
-        // DIRECT BROWSER -> SUPABASE STORAGE UPLOAD (Bypasses Vercel completely!)
+        // 1. Direct browser PUT to signed URL (Works everywhere without frontend auth/SDK dependencies)
+        try {
+          const directPut = await fetch(authData.signedUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': contentType,
+              'Cache-Control': '3600'
+            },
+            body: imageBlob
+          });
+          if (directPut.ok && authData.publicUrl) {
+            return {
+              success: true,
+              url: authData.publicUrl,
+              message: 'Uploaded directly to Supabase Storage'
+            };
+          }
+        } catch (dirErr) {
+          console.warn('[uploadImage] Direct PUT notice:', dirErr.message);
+        }
+
+        // 2. Fallback to Supabase JS client uploadToSignedUrl if available
         if (supabase) {
           const { error: uploadErr } = await supabase
             .storage

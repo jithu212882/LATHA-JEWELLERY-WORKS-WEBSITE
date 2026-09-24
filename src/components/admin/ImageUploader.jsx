@@ -119,6 +119,25 @@ export default function ImageUploader({ value, onChange, label, sectionTag = 'Ge
         )}
       </div>
 
+      <div className="flex items-center gap-2">
+        <input
+          type="url"
+          placeholder="Or paste direct image URL (https://...)"
+          value={value && !value.startsWith('data:') ? value : ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1 bg-[#121212] border border-[#2A2A2A] rounded-lg px-3 py-2 text-xs text-[#F9F6F0] focus:border-accent-gold outline-none font-mono"
+        />
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className="px-2.5 py-2 text-[11px] text-red-400 hover:text-red-300 border border-red-500/30 rounded-lg hover:bg-red-500/10"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
       {error && <p className="text-xs text-red-400">{error}</p>}
     </div>
   );

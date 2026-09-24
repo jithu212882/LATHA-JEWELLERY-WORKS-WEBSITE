@@ -151,24 +151,35 @@ export function DataProvider({ children }) {
           }
         }
 
-        setData(prev => {
-          const localModels = localStorage.getItem('latha_jewellery_models');
-          const localCats = localStorage.getItem('latha_categories');
-          const localBanners = localStorage.getItem('latha_banners');
-          const localContent = localStorage.getItem('latha_site_content');
-          const localSettings = localStorage.getItem('latha_business_settings');
+        const nextCategories = (Array.isArray(json.categories) && json.categories.length > 0) ? json.categories : null;
+        const nextModels = (Array.isArray(json.jewellery_models) && json.jewellery_models.length > 0) ? json.jewellery_models : null;
+        const nextBanners = (Array.isArray(json.banners) && json.banners.length > 0) ? json.banners : null;
+        const nextContent = (json.content && typeof json.content === 'object' && Object.keys(json.content).length > 0) ? json.content : null;
+        const nextSettings = (json.settings && typeof json.settings === 'object' && Object.keys(json.settings).length > 0) ? json.settings : null;
+        const nextReviews = Array.isArray(json.reviews) ? json.reviews : null;
 
-          return {
-            ...prev,
-            categories: localCats ? JSON.parse(localCats) : (json.categories || prev.categories),
-            jewellery_models: localModels ? JSON.parse(localModels) : (json.jewellery_models || prev.jewellery_models),
-            banners: localBanners ? JSON.parse(localBanners) : (json.banners || prev.banners),
-            reviews: json.reviews || prev.reviews,
-            content: localContent ? JSON.parse(localContent) : (json.content || prev.content),
-            settings: localSettings ? JSON.parse(localSettings) : (json.settings || prev.settings),
-            gold_rates: serverRates || prev.gold_rates,
-          };
-        });
+        // Sync fresh database truth to localStorage cache
+        try {
+          if (nextCategories) localStorage.setItem('latha_categories', JSON.stringify(nextCategories));
+          if (nextModels) localStorage.setItem('latha_jewellery_models', JSON.stringify(nextModels));
+          if (nextBanners) localStorage.setItem('latha_banners', JSON.stringify(nextBanners));
+          if (nextContent) localStorage.setItem('latha_site_content', JSON.stringify(nextContent));
+          if (nextSettings) localStorage.setItem('latha_business_settings', JSON.stringify(nextSettings));
+          if (nextReviews) localStorage.setItem('latha_reviews', JSON.stringify(nextReviews));
+        } catch (e) {
+          console.warn('[DataContext] localStorage cache sync notice:', e.message);
+        }
+
+        setData(prev => ({
+          ...prev,
+          categories: nextCategories || prev.categories,
+          jewellery_models: nextModels || prev.jewellery_models,
+          banners: nextBanners || prev.banners,
+          reviews: nextReviews || prev.reviews,
+          content: nextContent || prev.content,
+          settings: nextSettings || prev.settings,
+          gold_rates: serverRates || prev.gold_rates,
+        }));
         setError(null);
       } else {
         const staticRes = await fetch('/data/store.json');
@@ -180,24 +191,23 @@ export function DataProvider({ children }) {
               serverRates = staticJson.gold_rates[0];
             }
           }
-          setData(prev => {
-            const localModels = localStorage.getItem('latha_jewellery_models');
-            const localCats = localStorage.getItem('latha_categories');
-            const localBanners = localStorage.getItem('latha_banners');
-            const localContent = localStorage.getItem('latha_site_content');
-            const localSettings = localStorage.getItem('latha_business_settings');
+          const nextCategories = (Array.isArray(staticJson.categories) && staticJson.categories.length > 0) ? staticJson.categories.filter(c => c.active) : null;
+          const nextModels = (Array.isArray(staticJson.jewellery_models) && staticJson.jewellery_models.length > 0) ? staticJson.jewellery_models.filter(m => m.active) : null;
+          const nextBanners = (Array.isArray(staticJson.banners) && staticJson.banners.length > 0) ? staticJson.banners.filter(b => b.active) : null;
+          const nextContent = staticJson.site_content || null;
+          const nextSettings = staticJson.business_settings || null;
+          const nextReviews = staticJson.reviews?.filter(r => r.status === 'APPROVED') || null;
 
-            return {
-              ...prev,
-              categories: localCats ? JSON.parse(localCats) : (staticJson.categories?.filter(c => c.active) || prev.categories),
-              jewellery_models: localModels ? JSON.parse(localModels) : (staticJson.jewellery_models?.filter(m => m.active) || prev.jewellery_models),
-              banners: localBanners ? JSON.parse(localBanners) : (staticJson.banners?.filter(b => b.active) || prev.banners),
-              reviews: staticJson.reviews?.filter(r => r.status === 'APPROVED') || prev.reviews,
-              content: localContent ? JSON.parse(localContent) : (staticJson.site_content || prev.content),
-              settings: localSettings ? JSON.parse(localSettings) : (staticJson.business_settings || prev.settings),
-              gold_rates: serverRates || prev.gold_rates,
-            };
-          });
+          setData(prev => ({
+            ...prev,
+            categories: nextCategories || prev.categories,
+            jewellery_models: nextModels || prev.jewellery_models,
+            banners: nextBanners || prev.banners,
+            reviews: nextReviews || prev.reviews,
+            content: nextContent || prev.content,
+            settings: nextSettings || prev.settings,
+            gold_rates: serverRates || prev.gold_rates,
+          }));
           setError(null);
         }
       }

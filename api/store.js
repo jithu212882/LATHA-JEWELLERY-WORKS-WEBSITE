@@ -84,15 +84,15 @@ export default async function handler(req, res) {
   if (fullCheck.includes('categories')) {
     if (!Array.isArray(store.categories)) store.categories = [];
 
-    if (req.method === 'GET') {
-      if (isSupabaseConfigured()) {
-        const sbCats = await fetchFromSupabase('categories', 'display_order', true);
-        if (sbCats && sbCats.length > 0) {
-          store.categories = sbCats;
-          saveStore(store);
-        }
+    if (isSupabaseConfigured()) {
+      const sbCats = await fetchFromSupabase('categories', 'display_order', true);
+      if (sbCats && sbCats.length > 0) {
+        store.categories = sbCats;
+        saveStore(store);
       }
+    }
 
+    if (req.method === 'GET') {
       if (targetId) {
         const cat = store.categories.find(c => Number(c.id) === Number(targetId));
         if (!cat) return res.status(404).json({ error: 'Category not found' });
@@ -123,15 +123,19 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const index = store.categories.findIndex(c => Number(c.id) === Number(targetId));
-      if (index === -1) return res.status(404).json({ error: 'Category not found' });
+      let index = store.categories.findIndex(c => Number(c.id) === Number(targetId));
+      const existing = index !== -1 ? store.categories[index] : {};
       const updated = {
-        ...store.categories[index],
+        ...existing,
         ...body,
-        id: targetId,
-        active: body.active !== undefined ? (body.active ? 1 : 0) : store.categories[index].active
+        id: Number(targetId),
+        active: body.active !== undefined ? (body.active ? 1 : 0) : (existing.active !== undefined ? existing.active : 1)
       };
-      store.categories[index] = updated;
+      if (index !== -1) {
+        store.categories[index] = updated;
+      } else {
+        store.categories.push(updated);
+      }
       saveStore(store);
 
       if (isSupabaseConfigured()) {
@@ -160,15 +164,15 @@ export default async function handler(req, res) {
   if (fullCheck.includes('jewellery')) {
     if (!Array.isArray(store.jewellery_models)) store.jewellery_models = [];
 
-    if (req.method === 'GET') {
-      if (isSupabaseConfigured()) {
-        const sbModels = await fetchFromSupabase('jewellery_models', 'display_order', true);
-        if (sbModels && sbModels.length > 0) {
-          store.jewellery_models = sbModels;
-          saveStore(store);
-        }
+    if (isSupabaseConfigured()) {
+      const sbModels = await fetchFromSupabase('jewellery_models', 'display_order', true);
+      if (sbModels && sbModels.length > 0) {
+        store.jewellery_models = sbModels;
+        saveStore(store);
       }
+    }
 
+    if (req.method === 'GET') {
       if (targetId) {
         const item = store.jewellery_models.find(m => Number(m.id) === Number(targetId));
         if (!item) return res.status(404).json({ error: 'Jewellery model not found' });
@@ -203,19 +207,22 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const index = store.jewellery_models.findIndex(m => Number(m.id) === Number(targetId));
-      if (index === -1) return res.status(404).json({ error: 'Jewellery model not found' });
-      const current = store.jewellery_models[index];
+      let index = store.jewellery_models.findIndex(m => Number(m.id) === Number(targetId));
+      const current = index !== -1 ? store.jewellery_models[index] : {};
       const updated = {
         ...current,
         ...body,
-        id: targetId,
+        id: Number(targetId),
         primary_image: body.primary_image !== undefined ? body.primary_image : current.primary_image,
-        additional_images: Array.isArray(body.additional_images) ? body.additional_images : current.additional_images,
-        featured: body.featured !== undefined ? (body.featured ? 1 : 0) : current.featured,
-        active: body.active !== undefined ? (body.active ? 1 : 0) : current.active
+        additional_images: Array.isArray(body.additional_images) ? body.additional_images : (current.additional_images || []),
+        featured: body.featured !== undefined ? (body.featured ? 1 : 0) : (current.featured || 0),
+        active: body.active !== undefined ? (body.active ? 1 : 0) : (current.active !== undefined ? current.active : 1)
       };
-      store.jewellery_models[index] = updated;
+      if (index !== -1) {
+        store.jewellery_models[index] = updated;
+      } else {
+        store.jewellery_models.push(updated);
+      }
       saveStore(store);
 
       if (isSupabaseConfigured()) {
@@ -244,15 +251,15 @@ export default async function handler(req, res) {
   if (fullCheck.includes('banners')) {
     if (!Array.isArray(store.banners)) store.banners = [];
 
-    if (req.method === 'GET') {
-      if (isSupabaseConfigured()) {
-        const sbBanners = await fetchFromSupabase('banners', 'display_order', true);
-        if (sbBanners && sbBanners.length > 0) {
-          store.banners = sbBanners;
-          saveStore(store);
-        }
+    if (isSupabaseConfigured()) {
+      const sbBanners = await fetchFromSupabase('banners', 'display_order', true);
+      if (sbBanners && sbBanners.length > 0) {
+        store.banners = sbBanners;
+        saveStore(store);
       }
+    }
 
+    if (req.method === 'GET') {
       if (targetId) {
         const banner = store.banners.find(b => Number(b.id) === Number(targetId));
         if (!banner) return res.status(404).json({ error: 'Banner not found' });
@@ -287,24 +294,18 @@ export default async function handler(req, res) {
     if (req.method === 'PUT') {
       const idToMatch = Number(targetId || body.id || 1);
       let index = store.banners.findIndex(b => Number(b.id) === idToMatch);
-      if (index === -1) {
-        if (store.banners.length > 0) {
-          index = 0;
-        } else {
-          const created = { id: 1, ...body, active: body.active !== undefined ? (body.active ? 1 : 0) : 1 };
-          store.banners.push(created);
-          saveStore(store);
-          if (isSupabaseConfigured()) await upsertToSupabase('banners', created);
-          return res.status(200).json(created);
-        }
-      }
+      const existing = index !== -1 ? store.banners[index] : (store.banners[0] || {});
       const updated = {
-        ...store.banners[index],
+        ...existing,
         ...body,
-        id: store.banners[index].id,
-        active: body.active !== undefined ? (body.active ? 1 : 0) : store.banners[index].active
+        id: idToMatch,
+        active: body.active !== undefined ? (body.active ? 1 : 0) : (existing.active !== undefined ? existing.active : 1)
       };
-      store.banners[index] = updated;
+      if (index !== -1) {
+        store.banners[index] = updated;
+      } else {
+        store.banners.push(updated);
+      }
       saveStore(store);
 
       if (isSupabaseConfigured()) {

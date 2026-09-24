@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { fetchFromSupabase, isSupabaseConfigured } from '../server/supabase.js';
+import { fetchFromSupabase, upsertToSupabase, isSupabaseConfigured } from '../server/supabase.js';
 
 let memoryStore = null;
 
@@ -49,12 +49,53 @@ export default async function handler(req, res) {
         fetchFromSupabase('gold_rates', 'id', true)
       ]);
 
-      if (sbCats && sbCats.length > 0) categories = sbCats;
-      if (sbModels && sbModels.length > 0) models = sbModels;
-      if (sbBanners && sbBanners.length > 0) banners = sbBanners;
-      if (sbReviews && sbReviews.length > 0) reviews = sbReviews;
-      if (sbContent && sbContent.length > 0 && sbContent[0].content) content = sbContent[0].content;
-      if (sbSettings && sbSettings.length > 0 && sbSettings[0].settings) settings = sbSettings[0].settings;
+      if (sbCats && sbCats.length > 0) {
+        categories = sbCats;
+      } else if (categories.length > 0) {
+        // Auto-seed Supabase categories if table was empty
+        for (const c of categories) {
+          upsertToSupabase('categories', c).catch(() => {});
+        }
+      }
+
+      if (sbModels && sbModels.length > 0) {
+        models = sbModels;
+      } else if (models.length > 0) {
+        // Auto-seed Supabase models if table was empty
+        for (const m of models) {
+          upsertToSupabase('jewellery_models', m).catch(() => {});
+        }
+      }
+
+      if (sbBanners && sbBanners.length > 0) {
+        banners = sbBanners;
+      } else if (banners.length > 0) {
+        // Auto-seed Supabase banners if table was empty
+        for (const b of banners) {
+          upsertToSupabase('banners', b).catch(() => {});
+        }
+      }
+
+      if (sbReviews && sbReviews.length > 0) {
+        reviews = sbReviews;
+      } else if (reviews.length > 0) {
+        for (const r of reviews) {
+          upsertToSupabase('reviews', r).catch(() => {});
+        }
+      }
+
+      if (sbContent && sbContent.length > 0 && sbContent[0].content) {
+        content = sbContent[0].content;
+      } else if (Object.keys(content).length > 0) {
+        upsertToSupabase('site_content', { id: 1, content, updated_at: new Date().toISOString() }).catch(() => {});
+      }
+
+      if (sbSettings && sbSettings.length > 0 && sbSettings[0].settings) {
+        settings = sbSettings[0].settings;
+      } else if (Object.keys(settings).length > 0) {
+        upsertToSupabase('business_settings', { id: 1, settings, updated_at: new Date().toISOString() }).catch(() => {});
+      }
+
       if (sbRates && sbRates.length > 0) goldRates = sbRates[0];
     } catch (e) {
       console.warn('[Public API] Supabase query notice:', e.message);

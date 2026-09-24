@@ -94,6 +94,7 @@ export default function CategoryManager() {
         body: JSON.stringify(formData)
       });
       await parseJsonResponse(res);
+      if (refreshData) await refreshData();
     } catch (err) {
       console.warn('Background category save sync:', err);
     } finally {
@@ -113,6 +114,7 @@ export default function CategoryManager() {
         headers: { Authorization: `Bearer ${token}` }
       });
       await parseJsonResponse(res);
+      if (refreshData) await refreshData();
     } catch (err) {
       console.error('Delete error:', err);
     }

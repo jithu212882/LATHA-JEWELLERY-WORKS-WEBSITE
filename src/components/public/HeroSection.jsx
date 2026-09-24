@@ -30,11 +30,11 @@ export default function HeroSection() {
     >
       {/* Background Image with Controlled Focus & Luxury Visibility */}
       <div
-        className="absolute inset-0 bg-cover bg-[center_30%] sm:bg-center opacity-40 transition-opacity duration-1000"
+        className="absolute inset-0 bg-cover bg-[center_30%] sm:bg-center opacity-55 transition-opacity duration-1000"
         style={{ backgroundImage: `url('${bgImage}')` }}
       />
       {/* Editorial Vignette Overlay for Crisp Contrast & Atmosphere */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#121212]/90 via-[#121212]/60 to-[#121212]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#121212]/80 via-[#121212]/50 to-[#121212]" />
 
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center z-10 w-full">
         <div ref={textRef} className="flex flex-col items-center w-full">
@@ -60,10 +60,10 @@ export default function HeroSection() {
           {/* Mobile-First Full-Width CTAs */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 w-full sm:w-auto px-2">
             <a
-              href="#custom-enquiry"
+              href={activeBanner?.cta_link || "#custom-enquiry"}
               className="w-full sm:w-auto bg-accent-gold text-[#121212] font-bold px-7 py-3.5 sm:py-4 rounded-xl text-xs sm:text-sm uppercase tracking-widest hover:bg-supporting-beige transition-all shadow-xl text-center active:scale-95"
             >
-              Request Custom Design
+              {activeBanner?.cta_label || "Request Custom Design"}
             </a>
             <a
               href="/collections"
