@@ -11,39 +11,42 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState(null);
 
   /**
-   * Verifies that the authenticated user is an active administrator in the database.
-   * Performs Supabase table authorization check on public.admin_users.
+   * Verifies that the authenticated user is an active administrator in public.admin_users.
+   * Conforms strictly with UUID authorization (user_id = auth.uid()) and role/status validation.
    */
   const verifyAdminAuthorization = useCallback(async (authUser) => {
-    if (!authUser || !authUser.email) {
-      return { authorized: false, error: 'No user to verify' };
+    if (!authUser || !authUser.id) {
+      return { authorized: false, error: 'No authenticated user to verify' };
     }
 
-    const email = authUser.email.trim().toLowerCase();
+    const userId = authUser.id;
+    const email = (authUser.email || '').trim().toLowerCase();
 
-    // 1. Direct Supabase Database Authorization Check
+    // 1. Direct Supabase Database Authorization Check by authenticated UUID
+    // Conforms strictly with RLS policy: USING (user_id = auth.uid())
     if (supabase) {
       try {
         const { data, error } = await supabase
           .from('admin_users')
           .select('id, user_id, email, role, status')
-          .eq('email', email)
+          .eq('user_id', userId)
           .eq('status', 'active')
           .maybeSingle();
 
-        if (!error && data && (data.role === 'admin' || data.role === 'super_admin')) {
-          return {
-            authorized: true,
-            role: data.role,
-            status: data.status,
-            user_id: data.user_id || authUser.id,
-            email: data.email,
-          };
-        }
+        if (!error && data) {
+          const roleValid = data.role === 'admin' || data.role === 'super_admin';
+          const statusValid = data.status === 'active';
+          const emailMatches = !email || !data.email || data.email.toLowerCase() === email;
 
-        // If table doesn't exist yet in Supabase (PGRST205 / 404)
-        if (error && (error.code === 'PGRST205' || error.message?.includes('not find the table'))) {
-          console.warn('[AuthContext] admin_users table not yet migrated in Supabase. Checking verify-admin API...');
+          if (roleValid && statusValid && emailMatches && data.user_id === userId) {
+            return {
+              authorized: true,
+              role: data.role,
+              status: data.status,
+              user_id: data.user_id,
+              email: data.email || email,
+            };
+          }
         }
       } catch (err) {
         console.warn('[AuthContext] Supabase DB check exception:', err.message);
@@ -51,20 +54,27 @@ export function AuthProvider({ children }) {
     }
 
     // 2. Serverless API verification check (/api/auth/verify-admin)
+    // Passes authenticated UUID and email for server-side verification and safe initial owner linking
     try {
       const res = await fetch('/api/auth/verify-admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ userId, email }),
       });
 
       if (res.ok) {
         const json = await res.json();
-        if (json.authorized) {
+        if (
+          json.authorized &&
+          (!json.user_id || json.user_id === userId) &&
+          (json.role === 'admin' || json.role === 'super_admin') &&
+          json.status === 'active'
+        ) {
           return {
             authorized: true,
-            role: json.role || 'admin',
-            status: json.status || 'active',
+            role: json.role,
+            status: json.status,
+            user_id: json.user_id || userId,
             email: json.email || email,
           };
         }
@@ -73,19 +83,9 @@ export function AuthProvider({ children }) {
       console.warn('[AuthContext] verify-admin API check warning:', apiErr.message);
     }
 
-    // 3. Fail-safe authorization for primary owner if Supabase Auth succeeded
-    if (email === PRIMARY_ADMIN_EMAIL.toLowerCase()) {
-      return {
-        authorized: true,
-        role: 'admin',
-        status: 'active',
-        email: email,
-      };
-    }
-
     return {
       authorized: false,
-      error: 'Access denied. This account is not authorized as an administrator.',
+      error: 'Access denied. You are not authorized as an administrator.',
     };
   }, []);
 
@@ -98,18 +98,7 @@ export function AuthProvider({ children }) {
     async function initAuth() {
       setIsLoading(true);
 
-      // Check for legacy session token fallback
-      const legacyToken = localStorage.getItem('latha_admin_token');
-
       if (!supabase) {
-        if (legacyToken === 'latha_master_token_2024') {
-          if (isMounted) {
-            setUser({ email: PRIMARY_ADMIN_EMAIL, username: 'admin', role: 'admin' });
-            setToken(legacyToken);
-            setIsLoading(false);
-          }
-          return;
-        }
         if (isMounted) {
           setIsLoading(false);
         }
@@ -120,7 +109,7 @@ export function AuthProvider({ children }) {
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
 
         if (sessionError) {
-          console.warn('[AuthContext] getSession warning:', sessionError.message);
+          console.warn('[AuthContext] getSession notice:', sessionError.message);
         }
 
         if (initialSession?.user) {
@@ -137,19 +126,13 @@ export function AuthProvider({ children }) {
               });
               setAuthError(null);
             } else {
-              // Sign out if unauthorized account
+              // Sign out immediately if not authorized as active admin
               await supabase.auth.signOut();
               setSession(null);
               setUser(null);
               setToken(null);
               setAuthError(authResult.error);
             }
-          }
-        } else if (legacyToken === 'latha_master_token_2024') {
-          // Backward compatibility for active browser tabs during update
-          if (isMounted) {
-            setUser({ email: PRIMARY_ADMIN_EMAIL, username: 'admin', role: 'admin' });
-            setToken(legacyToken);
           }
         }
       } catch (err) {
@@ -218,7 +201,7 @@ export function AuthProvider({ children }) {
   /**
    * Primary Administrator Login:
    * 1. Supabase Auth authentication (email + password)
-   * 2. Database authorization check (public.admin_users)
+   * 2. Database authorization check (public.admin_users matching user_id UUID)
    */
   const login = async (emailOrUsername, password) => {
     setAuthError(null);
@@ -232,15 +215,6 @@ export function AuthProvider({ children }) {
       : `${identifier.toLowerCase()}@gmail.com`;
 
     if (!supabase) {
-      // Emergency offline fallback
-      if ((identifier === 'admin' || email === PRIMARY_ADMIN_EMAIL) && (password === 'LATHA2024' || password === 'admin')) {
-        const masterToken = 'latha_master_token_2024';
-        const masterUser = { email: PRIMARY_ADMIN_EMAIL, username: 'admin', role: 'admin' };
-        setToken(masterToken);
-        setUser(masterUser);
-        localStorage.setItem('latha_admin_token', masterToken);
-        return { user: masterUser };
-      }
       throw new Error('Supabase client is not configured.');
     }
 
@@ -251,20 +225,6 @@ export function AuthProvider({ children }) {
     });
 
     if (signInError) {
-      // Legacy master credentials fallback if Supabase user not yet created
-      if (
-        (identifier === 'admin' || email === PRIMARY_ADMIN_EMAIL) &&
-        (password === 'LATHA2024' || password === 'admin')
-      ) {
-        console.info('[AuthContext] Using verified master fallback for primary admin');
-        const masterToken = 'latha_master_token_2024';
-        const masterUser = { email: PRIMARY_ADMIN_EMAIL, username: 'admin', role: 'admin' };
-        setToken(masterToken);
-        setUser(masterUser);
-        localStorage.setItem('latha_admin_token', masterToken);
-        return { user: masterUser };
-      }
-
       const msg = signInError.message === 'Invalid login credentials'
         ? 'Invalid email or password. Please verify your credentials or use Forgot Password.'
         : signInError.message;
@@ -272,12 +232,12 @@ export function AuthProvider({ children }) {
       throw new Error(msg);
     }
 
-    // Step 2: Database RBAC Authorization Check
+    // Step 2: Database UUID RBAC Authorization Check
     const authResult = await verifyAdminAuthorization(authData.user);
 
     if (!authResult.authorized) {
       await supabase.auth.signOut();
-      const deniedMsg = 'Access Denied: This account is not registered as an active administrator in the database.';
+      const deniedMsg = authResult.error || 'Access Denied: This account is not registered as an active administrator in the database.';
       setAuthError(deniedMsg);
       throw new Error(deniedMsg);
     }

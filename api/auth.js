@@ -54,6 +54,7 @@ export default async function handler(req, res) {
   }
 
   // 2. VERIFY-ADMIN: /api/auth/verify-admin
+  // Verifies authenticated user UUID against public.admin_users
   if (urlPath.endsWith('/verify-admin') || req.query?.subroute === 'verify-admin') {
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method Not Allowed' });
@@ -61,93 +62,84 @@ export default async function handler(req, res) {
 
     try {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
+      const targetUserId = body.userId ? String(body.userId).trim() : null;
       const targetEmail = (body.email || '').trim().toLowerCase();
 
-      if (!targetEmail) {
-        return res.status(400).json({ authorized: false, error: 'Email parameter required' });
+      if (!targetUserId && !targetEmail) {
+        return res.status(400).json({ authorized: false, error: 'User ID or email required' });
       }
 
       const client = getSupabaseServerClient();
       if (!client) {
-        // Fallback check if Supabase is completely unavailable
-        if (targetEmail === PRIMARY_ADMIN_EMAIL) {
-          return res.status(200).json({
-            authorized: true,
-            email: targetEmail,
-            role: 'admin',
-            status: 'active',
-            source: 'primary_owner_fallback',
-          });
-        }
-        return res.status(403).json({ authorized: false, error: 'Authorization service unavailable' });
+        return res.status(503).json({ authorized: false, error: 'Authorization service unavailable' });
       }
 
-      // Query public.admin_users for active admin status
-      const { data, error } = await client
-        .from('admin_users')
-        .select('*')
-        .eq('email', targetEmail)
-        .eq('status', 'active')
-        .maybeSingle();
+      let adminRecord = null;
 
-      if (error) {
-        // If table doesn't exist yet (PGRST205 or similar error code)
-        if (error.code === 'PGRST205' || error.message?.includes('not find the table') || error.code === '42P01') {
-          // If service role is available, attempt to seed the primary admin
-          if (supabaseServiceKey && targetEmail === PRIMARY_ADMIN_EMAIL) {
-            try {
-              await client.rpc('exec_sql', {
-                query: `CREATE TABLE IF NOT EXISTS public.admin_users (
-                  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                  user_id UUID,
-                  email TEXT NOT NULL UNIQUE,
-                  role TEXT NOT NULL DEFAULT 'admin',
-                  status TEXT NOT NULL DEFAULT 'active',
-                  created_at TIMESTAMPTZ DEFAULT NOW(),
-                  updated_at TIMESTAMPTZ DEFAULT NOW()
-                );`
-              });
-            } catch (err) {}
-          }
+      // Primary check: Query admin_users matching authenticated user UUID
+      if (targetUserId) {
+        const { data, error } = await client
+          .from('admin_users')
+          .select('id, user_id, email, role, status')
+          .eq('user_id', targetUserId)
+          .eq('status', 'active')
+          .maybeSingle();
 
-          if (targetEmail === PRIMARY_ADMIN_EMAIL) {
-            return res.status(200).json({
-              authorized: true,
-              email: targetEmail,
-              role: 'admin',
-              status: 'active',
-              notice: 'admin_users table pending creation in Supabase SQL editor',
-            });
-          }
+        if (!error && data) {
+          adminRecord = data;
         }
-
-        console.warn('[api/auth] admin_users query error:', error.message);
-        // If error querying and it's the primary admin email
-        if (targetEmail === PRIMARY_ADMIN_EMAIL) {
-          return res.status(200).json({
-            authorized: true,
-            email: targetEmail,
-            role: 'admin',
-            status: 'active',
-          });
-        }
-        return res.status(403).json({ authorized: false, error: 'Database authorization query failed' });
       }
 
-      if (data && (data.role === 'admin' || data.role === 'super_admin')) {
+      // Safe owner user_id association:
+      // If not yet matched by UUID, but email is the primary owner and user_id in admin_users is NULL,
+      // associate admin_users.user_id with the authenticated user's UUID
+      if (!adminRecord && targetEmail === PRIMARY_ADMIN_EMAIL.toLowerCase() && targetUserId) {
+        const { data: ownerRow, error: ownerError } = await client
+          .from('admin_users')
+          .select('id, user_id, email, role, status')
+          .ilike('email', targetEmail)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (!ownerError && ownerRow && !ownerRow.user_id) {
+          try {
+            await client
+              .from('admin_users')
+              .update({ user_id: targetUserId, updated_at: new Date().toISOString() })
+              .eq('id', ownerRow.id);
+
+            adminRecord = { ...ownerRow, user_id: targetUserId };
+          } catch (updateErr) {
+            console.warn('[api/auth] Owner user_id link notice:', updateErr.message);
+          }
+        }
+      }
+
+      // Verify UUID match, active status, and admin role
+      if (
+        adminRecord &&
+        (!targetUserId || adminRecord.user_id === targetUserId) &&
+        (adminRecord.role === 'admin' || adminRecord.role === 'super_admin') &&
+        adminRecord.status === 'active'
+      ) {
+        // Additional email consistency check if provided
+        if (targetEmail && adminRecord.email && adminRecord.email.toLowerCase() !== targetEmail) {
+          return res.status(403).json({ authorized: false, error: 'Account authorization mismatch' });
+        }
+
         return res.status(200).json({
           authorized: true,
-          email: targetEmail,
-          role: data.role,
-          status: data.status,
-          user_id: data.user_id,
+          user_id: adminRecord.user_id,
+          email: adminRecord.email,
+          role: adminRecord.role,
+          status: adminRecord.status,
         });
       }
 
-      // If not in database or inactive
+      // Deny access if check failed
       return res.status(403).json({
         authorized: false,
-        error: 'Access denied. Account is not authorized as an active administrator in database.',
+        error: 'Access denied. Account is not authorized as an active administrator.',
       });
     } catch (err) {
       console.error('[api/auth] verify-admin error:', err);
@@ -161,34 +153,9 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    try {
-      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-      const { username, password, email } = body;
-
-      const loginIdentifier = (email || username || '').trim().toLowerCase();
-
-      if (
-        (loginIdentifier === 'admin' || loginIdentifier === PRIMARY_ADMIN_EMAIL) &&
-        (password === 'LATHA2024' || password === 'admin')
-      ) {
-        const token = jwt.sign(
-          { username: 'admin', email: PRIMARY_ADMIN_EMAIL, role: 'SUPER_ADMIN' },
-          JWT_SECRET,
-          { expiresIn: '7d' }
-        );
-        return res.status(200).json({
-          success: true,
-          token,
-          username: 'admin',
-          email: PRIMARY_ADMIN_EMAIL,
-          role: 'SUPER_ADMIN',
-        });
-      }
-
-      return res.status(401).json({ error: 'Invalid master username or password' });
-    } catch (err) {
-      return res.status(500).json({ error: 'Server authentication error' });
-    }
+    return res.status(401).json({
+      error: 'Legacy login deprecated. Please authenticate securely via Supabase Auth with your administrator credentials.',
+    });
   }
 
   // 4. LEGACY VERIFY: /api/auth/verify
@@ -200,18 +167,11 @@ export default async function handler(req, res) {
       return res.status(401).json({ valid: false, error: 'Token missing' });
     }
 
-    if (token === 'latha_master_token_2024') {
-      return res.status(200).json({
-        valid: true,
-        user: { username: 'admin', email: PRIMARY_ADMIN_EMAIL, role: 'SUPER_ADMIN' },
-      });
-    }
-
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
       return res.status(200).json({
         valid: true,
-        user: { username: decoded.username || 'admin', email: decoded.email || PRIMARY_ADMIN_EMAIL, role: decoded.role || 'SUPER_ADMIN' },
+        user: { username: decoded.username || 'admin', email: decoded.email || PRIMARY_ADMIN_EMAIL, role: decoded.role || 'admin' },
       });
     } catch (err) {
       return res.status(401).json({ valid: false, error: 'Invalid or expired token' });

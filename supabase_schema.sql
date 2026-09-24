@@ -234,17 +234,58 @@ DROP POLICY IF EXISTS "Authenticated users can upload jewellery-images" ON stora
 CREATE POLICY "Authenticated users can upload jewellery-images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'jewellery-images');
 
 -- =========================================================================
--- 12. ADMIN USERS RLS POLICIES & PRIMARY SEED
+-- 12. ADMIN USERS RLS POLICIES & PRIMARY OWNER ASSOCIATION
 -- =========================================================================
+-- Drop any legacy or overly permissive policies
 DROP POLICY IF EXISTS "Allow select for admin check" ON public.admin_users;
-CREATE POLICY "Allow select for admin check" ON public.admin_users FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Public check admin status" ON public.admin_users;
+DROP POLICY IF EXISTS "Users can read own admin record" ON public.admin_users;
 
+-- Secure RLS: Only authenticated users can read their OWN authorization record
+CREATE POLICY "Users can read own admin record"
+ON public.admin_users
+FOR SELECT
+TO authenticated
+USING (user_id = auth.uid());
+
+-- Service role retains administrative management access server-side
 DROP POLICY IF EXISTS "Service role full access admin_users" ON public.admin_users;
-CREATE POLICY "Service role full access admin_users" ON public.admin_users USING (true) WITH CHECK (true);
+CREATE POLICY "Service role full access admin_users"
+ON public.admin_users
+USING (true)
+WITH CHECK (true);
 
--- Seed Primary Administrator: lathajewelleryworks@gmail.com
-INSERT INTO public.admin_users (email, role, status)
-VALUES ('lathajewelleryworks@gmail.com', 'admin', 'active')
+-- Seed / Upsert Primary Administrator (idempotent, safely linking auth user UUID if present)
+INSERT INTO public.admin_users (user_id, email, role, status)
+VALUES (
+    (SELECT id FROM auth.users WHERE lower(email) = lower('lathajewelleryworks@gmail.com') LIMIT 1),
+    'lathajewelleryworks@gmail.com',
+    'admin',
+    'active'
+)
 ON CONFLICT (email) DO UPDATE
-SET role = 'admin', status = 'active', updated_at = NOW();
+SET user_id = COALESCE(
+        public.admin_users.user_id,
+        EXCLUDED.user_id,
+        (SELECT id FROM auth.users WHERE lower(email) = lower('lathajewelleryworks@gmail.com') LIMIT 1)
+    ),
+    role = 'admin',
+    status = 'active',
+    updated_at = NOW();
+
+-- Safely associate user_id if auth.users already contains the user
+UPDATE public.admin_users
+SET
+    user_id = (
+        SELECT id
+        FROM auth.users
+        WHERE lower(email) = lower('lathajewelleryworks@gmail.com')
+        LIMIT 1
+    ),
+    role = 'admin',
+    status = 'active',
+    updated_at = NOW()
+WHERE lower(email) = lower('lathajewelleryworks@gmail.com')
+  AND (user_id IS NULL OR user_id != (SELECT id FROM auth.users WHERE lower(email) = lower('lathajewelleryworks@gmail.com') LIMIT 1));
+
 
