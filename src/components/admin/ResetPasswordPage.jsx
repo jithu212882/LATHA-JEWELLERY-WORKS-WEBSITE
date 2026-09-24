@@ -14,47 +14,72 @@ export default function ResetPasswordPage({ onComplete, onCancel }) {
   const [hasValidSession, setHasValidSession] = useState(null); // null = checking
 
   useEffect(() => {
-    // Check if we have an active recovery session or access token in URL fragment
+    let isSubscribed = true;
+
     async function checkRecoverySession() {
       const hash = window.location.hash || '';
       const search = window.location.search || '';
 
-      if (hash.includes('access_token=') || hash.includes('type=recovery') || search.includes('type=recovery')) {
-        setHasValidSession(true);
+      if (
+        hash.includes('access_token=') ||
+        hash.includes('type=recovery') ||
+        search.includes('type=recovery') ||
+        search.includes('code=')
+      ) {
+        if (isSubscribed) setHasValidSession(true);
         return;
       }
 
       if (supabase) {
         try {
           const { data: { session } } = await supabase.auth.getSession();
-          if (session) {
+          if (session && isSubscribed) {
             setHasValidSession(true);
             return;
           }
         } catch (e) {}
       }
 
-      // If user is already authenticated
-      if (isAuthenticated) {
-        setHasValidSession(true);
-        return;
-      }
-
       // Check after a brief delay to allow Supabase detectSessionInUrl to parse hash
       const timer = setTimeout(async () => {
+        if (!isSubscribed) return;
         if (supabase) {
           const { data: { session } } = await supabase.auth.getSession();
-          setHasValidSession(Boolean(session));
+          const hashNow = window.location.hash || '';
+          const searchNow = window.location.search || '';
+          const valid =
+            Boolean(session) ||
+            hashNow.includes('access_token=') ||
+            hashNow.includes('type=recovery') ||
+            searchNow.includes('type=recovery');
+          setHasValidSession(valid);
         } else {
           setHasValidSession(false);
         }
-      }, 800);
+      }, 1000);
 
       return () => clearTimeout(timer);
     }
 
     checkRecoverySession();
-  }, [isAuthenticated]);
+
+    // Listen for auth state change
+    let authSub = null;
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (!isSubscribed) return;
+        if (event === 'PASSWORD_RECOVERY' || (session && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION'))) {
+          setHasValidSession(true);
+        }
+      });
+      authSub = subscription;
+    }
+
+    return () => {
+      isSubscribed = false;
+      authSub?.unsubscribe();
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -74,6 +99,13 @@ export default function ResetPasswordPage({ onComplete, onCancel }) {
     try {
       await updatePassword(newPassword);
       setSuccess(true);
+      setTimeout(() => {
+        if (onComplete) {
+          onComplete();
+        } else {
+          navigateTo('/admin/login');
+        }
+      }, 2000);
     } catch (err) {
       setError(err.message || 'Failed to update password. Your recovery link may have expired.');
     } finally {
@@ -85,7 +117,7 @@ export default function ResetPasswordPage({ onComplete, onCancel }) {
     if (onComplete) {
       onComplete();
     } else {
-      navigateTo('/admin/dashboard');
+      navigateTo('/admin/login');
     }
   };
 
@@ -126,14 +158,14 @@ export default function ResetPasswordPage({ onComplete, onCancel }) {
                 Password Successfully Updated
               </h3>
               <p className="text-xs text-[#F5F2EB]/70">
-                Your new administrator password is now active. You may proceed directly to the atelier dashboard.
+                Your new administrator password is active. Redirecting to login so you can sign in with your new credentials...
               </p>
             </div>
             <button
               onClick={handleProceed}
               className="w-full py-3.5 bg-accent-gold text-[#121212] font-bold text-xs uppercase tracking-widest rounded-xl hover:bg-supporting-beige transition-colors shadow-lg"
             >
-              Enter Atelier Dashboard
+              Proceed to Admin Login
             </button>
           </div>
         ) : hasValidSession === false ? (

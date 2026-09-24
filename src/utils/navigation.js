@@ -50,7 +50,22 @@ export function matchCategoryByRouteSlug(routeSlug, categories) {
  */
 export function ensureHomeHistoryRoot() {
   if (typeof window === 'undefined') return;
-  const currentPath = window.location.pathname + window.location.search + window.location.hash;
+  const path = window.location.pathname || '';
+  const hash = window.location.hash || '';
+  const search = window.location.search || '';
+
+  // Do NOT tamper with history state on admin routes or when recovery/auth tokens are present
+  if (
+    path.startsWith('/admin') ||
+    hash.includes('access_token') ||
+    hash.includes('type=recovery') ||
+    search.includes('type=recovery') ||
+    search.includes('code=')
+  ) {
+    return;
+  }
+
+  const currentPath = path + search + hash;
   if (currentPath !== '/' && !window.history.state?.hasHomeRoot) {
     try {
       window.history.replaceState({ hasHomeRoot: true, page: 'home' }, '', '/');

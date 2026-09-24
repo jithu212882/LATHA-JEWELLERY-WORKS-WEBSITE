@@ -50,12 +50,22 @@ function parseCurrentRoute() {
   const hash = window.location.hash || '';
   const search = window.location.search || '';
 
-  // 1. Dedicated Admin Paths
+  // 1. Password Recovery Detection (check both pathname and recovery tokens in hash/search)
+  const isPasswordRecovery =
+    path === '/admin/reset-password' ||
+    path === '/admin/reset-password/' ||
+    path.startsWith('/admin/reset-password') ||
+    hash.includes('type=recovery') ||
+    search.includes('type=recovery') ||
+    (hash.includes('access_token=') && hash.includes('recovery'));
+
+  if (isPasswordRecovery) {
+    return { type: 'admin-reset-password' };
+  }
+
+  // 2. Dedicated Admin Paths
   if (path === '/admin/login' || path === '/admin/login/') {
     return { type: 'admin-login' };
-  }
-  if (path === '/admin/reset-password' || path === '/admin/reset-password/') {
-    return { type: 'admin-reset-password' };
   }
   if (
     path === '/admin/dashboard' ||
@@ -66,7 +76,7 @@ function parseCurrentRoute() {
     return { type: 'admin-dashboard' };
   }
 
-  // 2. Legacy admin hash or search flag
+  // 3. Legacy admin hash or search flag
   if (
     hash === '#admin' ||
     hash === '#/admin' ||
@@ -76,7 +86,7 @@ function parseCurrentRoute() {
     return { type: 'admin-legacy' };
   }
 
-  // 3. Public Collections and Product pages
+  // 4. Public Collections and Product pages
   if (path === '/collections' || path === '/collections/') {
     return { type: 'category', categorySlug: 'all' };
   }
@@ -89,7 +99,7 @@ function parseCurrentRoute() {
     return { type: 'category', categorySlug: 'all', productId };
   }
 
-  // 4. Legacy hash collections
+  // 5. Legacy hash collections
   if (hash.startsWith('#/collections/')) {
     const slug = hash.replace('#/collections/', '').trim();
     return { type: 'category', categorySlug: slug || 'all' };
@@ -98,13 +108,23 @@ function parseCurrentRoute() {
     return { type: 'category', categorySlug: 'all' };
   }
 
-  // 5. Default Public Homepage
+  // 6. Default Public Homepage
   return { type: 'home', categorySlug: null };
 }
 
 function MainApp() {
   const { isAuthenticated, isLoading } = useAuth();
   const [route, setRoute] = useState(() => parseCurrentRoute());
+
+  // Ensure browser URL explicitly reflects /admin/reset-password during recovery without losing hash
+  useEffect(() => {
+    if (route.type === 'admin-reset-password') {
+      if (typeof window !== 'undefined' && window.location.pathname !== '/admin/reset-password') {
+        const fullTarget = '/admin/reset-password' + window.location.search + window.location.hash;
+        window.history.replaceState(null, '', fullTarget);
+      }
+    }
+  }, [route.type]);
 
   useEffect(() => {
     const handleRouteChange = () => {
@@ -143,6 +163,11 @@ function MainApp() {
   useEffect(() => {
     if (isLoading) return; // Wait until initial session restore completes
 
+    // NEVER redirect away from reset password page during recovery
+    if (route.type === 'admin-reset-password') {
+      return;
+    }
+
     if (route.type === 'admin-legacy') {
       if (isAuthenticated) {
         navigateTo('/admin/dashboard');
@@ -161,7 +186,7 @@ function MainApp() {
     return (
       <React.Suspense fallback={<AdminLoadingScreen message="Loading Password Recovery..." />}>
         <ResetPasswordPage
-          onComplete={() => navigateTo('/admin/dashboard')}
+          onComplete={() => navigateTo('/admin/login')}
           onCancel={() => navigateTo('/admin/login')}
         />
       </React.Suspense>

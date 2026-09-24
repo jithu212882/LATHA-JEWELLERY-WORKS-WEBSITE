@@ -11,6 +11,22 @@ export function AuthProvider({ children }) {
   const [authError, setAuthError] = useState(null);
 
   /**
+   * Helper to identify if the current browser window is in password recovery mode
+   */
+  const isRecoveryFlow = useCallback(() => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname || '';
+    const hash = window.location.hash || '';
+    const search = window.location.search || '';
+    return (
+      path.startsWith('/admin/reset-password') ||
+      hash.includes('type=recovery') ||
+      search.includes('type=recovery') ||
+      (hash.includes('access_token=') && hash.includes('recovery'))
+    );
+  }, []);
+
+  /**
    * Verifies that the authenticated user is an active administrator in public.admin_users.
    * Conforms strictly with UUID authorization (user_id = auth.uid()) and role/status validation.
    */
@@ -105,6 +121,21 @@ export function AuthProvider({ children }) {
         return;
       }
 
+      // If user landed on password recovery flow, protect the recovery session
+      if (isRecoveryFlow()) {
+        try {
+          const { data: { session: recoverySession } } = await supabase.auth.getSession();
+          if (recoverySession && isMounted) {
+            setSession(recoverySession);
+            setToken(recoverySession.access_token);
+          }
+        } catch (e) {}
+        if (isMounted) {
+          setIsLoading(false);
+        }
+        return;
+      }
+
       try {
         const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
 
@@ -151,7 +182,31 @@ export function AuthProvider({ children }) {
       const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
         if (!isMounted) return;
 
+        // 1. Password recovery event from email link
+        if (event === 'PASSWORD_RECOVERY') {
+          setSession(currentSession);
+          if (currentSession?.access_token) {
+            setToken(currentSession.access_token);
+          }
+          if (typeof window !== 'undefined' && window.location.pathname !== '/admin/reset-password') {
+            const target = '/admin/reset-password' + window.location.search + window.location.hash;
+            window.history.replaceState(null, '', target);
+            window.dispatchEvent(new Event('locationchange'));
+          }
+          return;
+        }
+
+        // 2. Auth events
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          // If in password recovery flow, keep session and DO NOT sign out or redirect
+          if (isRecoveryFlow()) {
+            setSession(currentSession);
+            if (currentSession?.access_token) {
+              setToken(currentSession.access_token);
+            }
+            return;
+          }
+
           if (currentSession?.user) {
             const authResult = await verifyAdminAuthorization(currentSession.user);
             if (authResult.authorized) {
@@ -177,13 +232,6 @@ export function AuthProvider({ children }) {
           setUser(null);
           setToken(null);
           localStorage.removeItem('latha_admin_token');
-        } else if (event === 'PASSWORD_RECOVERY') {
-          // User arrived via password reset email link
-          setSession(currentSession);
-          if (window.location.pathname !== '/admin/reset-password') {
-            window.history.pushState({}, '', '/admin/reset-password');
-            window.dispatchEvent(new Event('locationchange'));
-          }
         }
       });
 
@@ -196,7 +244,7 @@ export function AuthProvider({ children }) {
     return () => {
       isMounted = false;
     };
-  }, [verifyAdminAuthorization]);
+  }, [verifyAdminAuthorization, isRecoveryFlow]);
 
   /**
    * Primary Administrator Login:
@@ -256,7 +304,8 @@ export function AuthProvider({ children }) {
   };
 
   /**
-   * Sends password recovery email via Supabase Auth
+   * Sends password recovery email via Supabase Auth.
+   * Explicitly passes the dynamic origin redirect to /admin/reset-password.
    */
   const sendPasswordReset = async (emailToReset) => {
     setAuthError(null);
@@ -266,10 +315,14 @@ export function AuthProvider({ children }) {
       throw new Error('Supabase client is not configured.');
     }
 
-    const redirectUrl = `${window.location.origin}/admin/reset-password`;
+    // Use current origin dynamically for localhost or production Vercel
+    const origin = (typeof window !== 'undefined' && window.location?.origin)
+      ? window.location.origin
+      : 'https://latha-jewellery-works.vercel.app';
+    const redirectTo = `${origin}/admin/reset-password`;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo,
     });
 
     if (error) {
@@ -280,6 +333,8 @@ export function AuthProvider({ children }) {
     return {
       success: true,
       message: `Password reset instructions sent to ${email}. Please check your inbox and spam folder.`,
+      redirectTo,
+      data,
     };
   };
 
@@ -305,9 +360,19 @@ export function AuthProvider({ children }) {
       throw new Error(error.message);
     }
 
+    // Cleanly terminate the recovery session after updating password
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {}
+
+    setSession(null);
+    setUser(null);
+    setToken(null);
+    localStorage.removeItem('latha_admin_token');
+
     return {
       success: true,
-      message: 'Password updated successfully. You can now access the atelier studio.',
+      message: 'Password updated successfully. Please log in with your new password.',
       user: data.user,
     };
   };
