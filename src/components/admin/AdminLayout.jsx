@@ -64,19 +64,25 @@ export default function AdminLayout({ onClosePublic }) {
             <span className="hidden sm:inline">Public Storefront</span>
           </button>
 
-          <div className="flex items-center gap-2 border-l border-[#2A2A2A] pl-4">
-            <div className="w-8 h-8 rounded-full bg-accent-gold text-[#121212] flex items-center justify-center font-bold text-xs">
-              {user?.username?.[0]?.toUpperCase() || 'A'}
+          <div className="flex items-center gap-3 border-l border-[#2A2A2A] pl-4">
+            <div className="w-8 h-8 rounded-full bg-accent-gold text-[#121212] flex items-center justify-center font-bold text-xs shadow-md shrink-0">
+              {user?.email?.[0]?.toUpperCase() || user?.username?.[0]?.toUpperCase() || 'L'}
             </div>
-            <span className="text-xs font-bold text-[#F9F6F0] hidden sm:inline">
-              {user?.username || 'Admin'}
-            </span>
+            <div className="hidden sm:flex flex-col text-left leading-none">
+              <span className="text-xs font-bold text-[#F9F6F0] truncate max-w-[140px]">
+                {user?.email || user?.username || 'Administrator'}
+              </span>
+              <span className="text-[10px] text-accent-gold/80 font-mono uppercase mt-0.5">
+                {user?.role || 'Admin'}
+              </span>
+            </div>
             <button
               onClick={logout}
-              className="text-[#F5F2EB]/60 hover:text-red-400 p-1"
-              title="Lock Studio"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 hover:bg-red-500/20 hover:text-red-200 transition-colors text-xs font-semibold uppercase tracking-wider"
+              title="Sign Out of Atelier Studio"
             >
-              <span className="material-symbols-outlined text-[18px]">logout</span>
+              <span className="material-symbols-outlined text-[16px]">logout</span>
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
@@ -140,10 +146,10 @@ export default function AdminLayout({ onClosePublic }) {
           <div className="p-4 border-t border-[#2A2A2A]">
             <button
               onClick={logout}
-              className="w-full flex items-center justify-center gap-2 bg-[#181818] border border-[#2A2A2A] text-[#F5F2EB]/80 py-2.5 rounded-xl text-xs uppercase tracking-wider hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-[#181818] border border-[#2A2A2A] text-red-300 py-2.5 rounded-xl text-xs uppercase tracking-wider hover:bg-red-500/20 hover:text-red-200 hover:border-red-500/30 transition-colors font-semibold"
             >
-              <span className="material-symbols-outlined text-[16px]">lock</span>
-              Lock Studio
+              <span className="material-symbols-outlined text-[16px]">logout</span>
+              Sign Out / Lock Studio
             </button>
           </div>
         </aside>

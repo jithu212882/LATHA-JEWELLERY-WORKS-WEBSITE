@@ -124,7 +124,20 @@ CREATE TABLE IF NOT EXISTS public.business_settings (
 );
 
 -- =========================================================================
--- 10. ROW LEVEL SECURITY (RLS) POLICIES
+-- 10. ADMIN USERS TABLE (Database Authorization & RBAC)
+-- =========================================================================
+CREATE TABLE IF NOT EXISTS public.admin_users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    email TEXT NOT NULL UNIQUE,
+    role TEXT NOT NULL DEFAULT 'admin', -- 'admin', 'super_admin'
+    status TEXT NOT NULL DEFAULT 'active', -- 'active', 'inactive', 'suspended'
+    created_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+);
+
+-- =========================================================================
+-- 11. ROW LEVEL SECURITY (RLS) POLICIES
 -- Permissive read for public storefront, write access for service-role/admin
 -- =========================================================================
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
@@ -135,6 +148,7 @@ ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.enquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.site_content ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.business_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read of active store data
 DROP POLICY IF EXISTS "Public can view categories" ON public.categories;
@@ -218,3 +232,19 @@ CREATE POLICY "Public can view jewellery-images" ON storage.objects FOR SELECT U
 
 DROP POLICY IF EXISTS "Authenticated users can upload jewellery-images" ON storage.objects;
 CREATE POLICY "Authenticated users can upload jewellery-images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'jewellery-images');
+
+-- =========================================================================
+-- 12. ADMIN USERS RLS POLICIES & PRIMARY SEED
+-- =========================================================================
+DROP POLICY IF EXISTS "Allow select for admin check" ON public.admin_users;
+CREATE POLICY "Allow select for admin check" ON public.admin_users FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Service role full access admin_users" ON public.admin_users;
+CREATE POLICY "Service role full access admin_users" ON public.admin_users USING (true) WITH CHECK (true);
+
+-- Seed Primary Administrator: lathajewelleryworks@gmail.com
+INSERT INTO public.admin_users (email, role, status)
+VALUES ('lathajewelleryworks@gmail.com', 'admin', 'active')
+ON CONFLICT (email) DO UPDATE
+SET role = 'admin', status = 'active', updated_at = NOW();
+
