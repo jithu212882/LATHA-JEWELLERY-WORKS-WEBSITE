@@ -8,8 +8,8 @@ export default function HeroSection() {
   const heroRef = useRef(null);
   const textRef = useRef(null);
 
-  const activeBanner = banners && banners.length > 0 ? banners[0] : null;
-  const bgImage = activeBanner?.desktop_image || content?.hero_bg || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDAkWUGT7Fgqzp1aQblTwVWqhHMkBayKv-F3xfmcpRLMiJjJWhFNuSlAEQxhdaGCgp3i9WPIbA_ogfSZJf8PaTBfSqBb5Mo8ovhcYyY49R-wklPpAl8IGjuEb3UEvMOzLUHbLo4sdvYCSKKQ8C0kjhWTQZfKP4NoJxoRdLkx--H395QT_t0SImVRFcbznj6O-IJ84xsr5lCBxNUmJ9WcOODNdQxfPcGH9wyIA-Jlyg0Fi-NgYHy2hIUog';
+  const activeBanner = (banners || []).find(b => b.active) || (banners && banners.length > 0 ? banners[0] : null);
+  const bgImage = activeBanner?.desktop_image || activeBanner?.mobile_image || content?.hero_bg || 'https://lh3.googleusercontent.com/aida-public/AB6AXuDAkWUGT7Fgqzp1aQblTwVWqhHMkBayKv-F3xfmcpRLMiJjJWhFNuSlAEQxhdaGCgp3i9WPIbA_ogfSZJf8PaTBfSqBb5Mo8ovhcYyY49R-wklPpAl8IGjuEb3UEvMOzLUHbLo4sdvYCSKKQ8C0kjhWTQZfKP4NoJxoRdLkx--H395QT_t0SImVRFcbznj6O-IJ84xsr5lCBxNUmJ9WcOODNdQxfPcGH9wyIA-Jlyg0Fi-NgYHy2hIUog';
 
   useEffect(() => {
     // GSAP reveal animation with reduced-motion check
@@ -45,7 +45,7 @@ export default function HeroSection() {
 
           {/* Headline */}
           <h1 className="font-headline text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-[#F9F6F0] mb-3 sm:mb-6 leading-[1.2] sm:leading-[1.15] max-w-4xl drop-shadow-sm px-1">
-            {content?.hero_title || (
+            {activeBanner?.title || content?.hero_title || (
               <>
                 Crafting Unique Gold Ornaments <span className="italic font-normal text-accent-gold block sm:inline">Since 1990</span>
               </>
@@ -54,7 +54,7 @@ export default function HeroSection() {
 
           {/* Subtitle */}
           <p className="font-body text-xs sm:text-base md:text-lg text-[#F5F2EB]/85 max-w-2xl mb-5 sm:mb-8 md:mb-10 font-light leading-relaxed px-2">
-            {content?.hero_subtitle || 'Where ancestral heritage meets uncompromising contemporary precision. Bespoke gold craftsmanship tailored to your most cherished milestones.'}
+            {activeBanner?.subtitle || content?.hero_subtitle || 'Where ancestral heritage meets uncompromising contemporary precision. Bespoke gold craftsmanship tailored to your most cherished milestones.'}
           </p>
 
           {/* Mobile-First Full-Width CTAs */}

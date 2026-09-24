@@ -364,11 +364,24 @@ export function DataProvider({ children }) {
     setData(prev => {
       let list = [...(prev.banners || [])];
       if (isNew) {
-        const newId = list.length ? Math.max(...list.map(b => b.id)) + 1 : 1;
-        list.push({ id: newId, ...bannerPayload, display_order: list.length + 1, created_at: new Date().toISOString() });
-      } else if (targetId) {
-        const index = list.findIndex(b => b.id === targetId);
-        if (index !== -1) list[index] = { ...list[index], ...bannerPayload };
+        const newId = list.length ? Math.max(...list.map(b => Number(b.id) || 0)) + 1 : 1;
+        list.push({
+          id: newId,
+          ...bannerPayload,
+          display_order: list.length + 1,
+          active: bannerPayload.active !== undefined ? bannerPayload.active : 1,
+          created_at: new Date().toISOString()
+        });
+      } else {
+        const idToMatch = Number(targetId || bannerPayload.id || 1);
+        const index = list.findIndex(b => Number(b.id) === idToMatch);
+        if (index !== -1) {
+          list[index] = { ...list[index], ...bannerPayload, id: list[index].id };
+        } else if (list.length > 0) {
+          list[0] = { ...list[0], ...bannerPayload };
+        } else {
+          list.push({ id: idToMatch, ...bannerPayload, active: 1, display_order: 1 });
+        }
       }
       try {
         localStorage.setItem('latha_banners', JSON.stringify(list));
@@ -379,7 +392,7 @@ export function DataProvider({ children }) {
 
   const deleteBanner = (id) => {
     setData(prev => {
-      const list = (prev.banners || []).filter(b => b.id !== id);
+      const list = (prev.banners || []).filter(b => Number(b.id) !== Number(id));
       try {
         localStorage.setItem('latha_banners', JSON.stringify(list));
       } catch (e) {}

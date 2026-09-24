@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ImageUploader from './ImageUploader';
 
 export default function BannerManager() {
-  const { banners, refreshData } = useData();
+  const { banners, refreshData, saveBanner, deleteBanner } = useData();
   const { token } = useAuth();
   const [editingBanner, setEditingBanner] = useState(null); // null, 'new', or banner object
   const [saving, setSaving] = useState(false);
@@ -46,6 +46,10 @@ export default function BannerManager() {
   };
 
   const toggleActive = async (banner) => {
+    const nextActive = banner.active ? 0 : 1;
+    if (saveBanner) {
+      saveBanner({ active: nextActive }, false, banner.id);
+    }
     try {
       const res = await fetch(`/api/banners/${banner.id}`, {
         method: 'PUT',
@@ -53,9 +57,9 @@ export default function BannerManager() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ active: banner.active ? 0 : 1 })
+        body: JSON.stringify({ active: nextActive })
       });
-      if (res.ok) await refreshData();
+      if (res.ok && refreshData) await refreshData();
     } catch (err) {
       console.error('Toggle active error:', err);
     }
@@ -63,12 +67,15 @@ export default function BannerManager() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this banner?')) return;
+    if (deleteBanner) {
+      deleteBanner(id);
+    }
     try {
       const res = await fetch(`/api/banners/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
-      if (res.ok) await refreshData();
+      if (res.ok && refreshData) await refreshData();
     } catch (err) {
       console.error('Delete banner error:', err);
     }
@@ -77,8 +84,23 @@ export default function BannerManager() {
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
-    const url = editingBanner === 'new' ? '/api/banners' : `/api/banners/${editingBanner.id}`;
-    const method = editingBanner === 'new' ? 'POST' : 'PUT';
+    const isNew = editingBanner === 'new';
+    const targetId = isNew ? null : (editingBanner?.id || 1);
+
+    const bannerPayload = {
+      ...formData,
+      id: targetId || Date.now(),
+      display_order: formData.display_order || (editingBanner && editingBanner !== 'new' ? editingBanner.display_order : ((banners?.length || 0) + 1))
+    };
+
+    // 1. Immediately persist to state & localStorage
+    if (saveBanner) {
+      saveBanner(bannerPayload, isNew, targetId);
+    }
+
+    // 2. Sync to serverless backend
+    const url = isNew ? '/api/banners' : `/api/banners/${targetId}`;
+    const method = isNew ? 'POST' : 'PUT';
 
     try {
       const res = await fetch(url, {
@@ -87,16 +109,16 @@ export default function BannerManager() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(bannerPayload)
       });
       if (res.ok) {
-        await refreshData();
-        setEditingBanner(null);
+        if (refreshData) await refreshData();
       }
     } catch (err) {
       console.error('Error saving banner:', err);
     } finally {
       setSaving(false);
+      setEditingBanner(null);
     }
   };
 

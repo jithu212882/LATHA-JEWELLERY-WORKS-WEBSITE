@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ImageUploader from './ImageUploader';
 
 export default function ContentManager() {
-  const { content, refreshData } = useData();
+  const { content, refreshData, saveContent } = useData();
   const { token } = useAuth();
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
@@ -29,6 +29,11 @@ export default function ContentManager() {
     setSaving(true);
     setMsg('');
 
+    // 1. Immediately persist to state & localStorage
+    if (saveContent) {
+      saveContent(formData);
+    }
+
     try {
       const res = await fetch('/api/content', {
         method: 'PUT',
@@ -40,7 +45,7 @@ export default function ContentManager() {
       });
 
       if (res.ok) {
-        await refreshData();
+        if (refreshData) await refreshData();
         setMsg('Site content updated successfully across public website!');
       }
     } catch (err) {

@@ -1,11 +1,22 @@
 import fs from 'fs';
 import path from 'path';
 
+let memoryStore = null;
+
 function getStore() {
+  if (memoryStore) return memoryStore;
+  try {
+    const tmpPath = '/tmp/store.json';
+    if (fs.existsSync(tmpPath)) {
+      memoryStore = JSON.parse(fs.readFileSync(tmpPath, 'utf-8'));
+      return memoryStore;
+    }
+  } catch (e) {}
   try {
     const storePath = path.join(process.cwd(), 'server/data/store.json');
     if (fs.existsSync(storePath)) {
-      return JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+      memoryStore = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+      return memoryStore;
     }
   } catch (e) {}
   return {};

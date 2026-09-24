@@ -1,20 +1,35 @@
 import fs from 'fs';
 import path from 'path';
 
+let memoryStore = null;
+
 function getStore() {
+  if (memoryStore) return memoryStore;
+  try {
+    const tmpPath = '/tmp/store.json';
+    if (fs.existsSync(tmpPath)) {
+      memoryStore = JSON.parse(fs.readFileSync(tmpPath, 'utf-8'));
+      return memoryStore;
+    }
+  } catch (e) {}
   try {
     const storePath = path.join(process.cwd(), 'server/data/store.json');
     if (fs.existsSync(storePath)) {
-      return JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+      memoryStore = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+      return memoryStore;
     }
   } catch (e) {}
   return { categories: [], jewellery_models: [], banners: [], site_content: {}, business_settings: {} };
 }
 
 function saveStore(store) {
+  memoryStore = store;
   try {
     const storePath = path.join(process.cwd(), 'server/data/store.json');
     fs.writeFileSync(storePath, JSON.stringify(store, null, 2), 'utf-8');
+  } catch (e) {}
+  try {
+    fs.writeFileSync('/tmp/store.json', JSON.stringify(store, null, 2), 'utf-8');
   } catch (e) {}
 }
 
@@ -28,7 +43,9 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  const matchedPath = req.headers['x-matched-path'] || '';
   const urlPath = new URL(req.url, 'http://localhost').pathname;
+  const fullCheck = `${urlPath} ${matchedPath} ${JSON.stringify(req.query || {})}`;
   const store = getStore();
 
   let body = req.body || {};
@@ -36,16 +53,17 @@ export default async function handler(req, res) {
     try { body = JSON.parse(body); } catch (e) {}
   }
 
-  // Extract ID from pathname or query (e.g. /api/categories/1 or ?id=1)
-  const segments = urlPath.split('/').filter(Boolean);
+  // Extract ID from pathname or query (e.g. /api/categories/1 or ?path=1 or ?id=1)
+  const pathParam = Array.isArray(req.query?.path) ? req.query.path[0] : req.query?.path;
+  const segments = (matchedPath || urlPath).split('/').filter(Boolean);
   const lastSegment = segments[segments.length - 1];
   const parsedId = parseInt(lastSegment);
-  const targetId = !isNaN(parsedId) ? parsedId : (req.query?.id ? parseInt(req.query.id) : null);
+  const targetId = !isNaN(parsedId) ? parsedId : (req.query?.id ? parseInt(req.query.id) : (pathParam && !isNaN(parseInt(pathParam)) ? parseInt(pathParam) : null));
 
   // ==========================================
   // 1. CATEGORIES CRUD (/api/categories)
   // ==========================================
-  if (urlPath.includes('/categories')) {
+  if (fullCheck.includes('categories')) {
     if (!Array.isArray(store.categories)) store.categories = [];
 
     if (req.method === 'GET') {
@@ -99,7 +117,7 @@ export default async function handler(req, res) {
   // ==========================================
   // 2. JEWELLERY MODELS CRUD (/api/jewellery)
   // ==========================================
-  if (urlPath.includes('/jewellery')) {
+  if (fullCheck.includes('jewellery')) {
     if (!Array.isArray(store.jewellery_models)) store.jewellery_models = [];
 
     if (req.method === 'GET') {
@@ -161,12 +179,12 @@ export default async function handler(req, res) {
   // ==========================================
   // 3. BANNERS CRUD (/api/banners)
   // ==========================================
-  if (urlPath.includes('/banners')) {
+  if (fullCheck.includes('banners')) {
     if (!Array.isArray(store.banners)) store.banners = [];
 
     if (req.method === 'GET') {
       if (targetId) {
-        const banner = store.banners.find(b => b.id === targetId);
+        const banner = store.banners.find(b => Number(b.id) === Number(targetId));
         if (!banner) return res.status(404).json({ error: 'Banner not found' });
         return res.status(200).json(banner);
       }
@@ -192,12 +210,22 @@ export default async function handler(req, res) {
     }
 
     if (req.method === 'PUT') {
-      const index = store.banners.findIndex(b => b.id === targetId);
-      if (index === -1) return res.status(404).json({ error: 'Banner not found' });
+      const idToMatch = Number(targetId || body.id || 1);
+      let index = store.banners.findIndex(b => Number(b.id) === idToMatch);
+      if (index === -1) {
+        if (store.banners.length > 0) {
+          index = 0;
+        } else {
+          const created = { id: 1, ...body, active: body.active !== undefined ? (body.active ? 1 : 0) : 1 };
+          store.banners.push(created);
+          saveStore(store);
+          return res.status(200).json(created);
+        }
+      }
       const updated = {
         ...store.banners[index],
         ...body,
-        id: targetId,
+        id: store.banners[index].id,
         active: body.active !== undefined ? (body.active ? 1 : 0) : store.banners[index].active
       };
       store.banners[index] = updated;
@@ -217,7 +245,7 @@ export default async function handler(req, res) {
   // ==========================================
   // 4. SITE CONTENT (/api/content)
   // ==========================================
-  if (urlPath.includes('/content')) {
+  if (fullCheck.includes('content')) {
     if (!store.site_content) store.site_content = {};
     if (req.method === 'GET') {
       return res.status(200).json(store.site_content);
@@ -232,7 +260,7 @@ export default async function handler(req, res) {
   // ==========================================
   // 5. BUSINESS SETTINGS (/api/settings)
   // ==========================================
-  if (urlPath.includes('/settings')) {
+  if (fullCheck.includes('settings')) {
     if (!store.business_settings) store.business_settings = {};
     if (req.method === 'GET') {
       return res.status(200).json(store.business_settings);
