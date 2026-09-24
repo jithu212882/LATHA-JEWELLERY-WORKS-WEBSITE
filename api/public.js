@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fetchFromSupabase, isSupabaseConfigured } from '../server/supabase.js';
 
 let memoryStore = null;
 
@@ -22,29 +23,61 @@ function getStore() {
   return {};
 }
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
 
   const store = getStore();
 
-  const activeCategories = (store.categories || [])
+  let categories = store.categories || [];
+  let models = store.jewellery_models || [];
+  let banners = store.banners || [];
+  let reviews = store.reviews || [];
+  let content = store.site_content || {};
+  let settings = store.business_settings || {};
+  let goldRates = store.gold_rates?.[0] || null;
+
+  if (isSupabaseConfigured()) {
+    try {
+      const [sbCats, sbModels, sbBanners, sbReviews, sbContent, sbSettings, sbRates] = await Promise.all([
+        fetchFromSupabase('categories', 'display_order', true),
+        fetchFromSupabase('jewellery_models', 'display_order', true),
+        fetchFromSupabase('banners', 'display_order', true),
+        fetchFromSupabase('reviews', 'created_at', false),
+        fetchFromSupabase('site_content', 'id', true),
+        fetchFromSupabase('business_settings', 'id', true),
+        fetchFromSupabase('gold_rates', 'id', true)
+      ]);
+
+      if (sbCats && sbCats.length > 0) categories = sbCats;
+      if (sbModels && sbModels.length > 0) models = sbModels;
+      if (sbBanners && sbBanners.length > 0) banners = sbBanners;
+      if (sbReviews && sbReviews.length > 0) reviews = sbReviews;
+      if (sbContent && sbContent.length > 0 && sbContent[0].content) content = sbContent[0].content;
+      if (sbSettings && sbSettings.length > 0 && sbSettings[0].settings) settings = sbSettings[0].settings;
+      if (sbRates && sbRates.length > 0) goldRates = sbRates[0];
+    } catch (e) {
+      console.warn('[Public API] Supabase query notice:', e.message);
+    }
+  }
+
+  const activeCategories = categories
     .filter(c => c.active)
     .sort((a, b) => a.display_order - b.display_order);
 
-  const activeModels = (store.jewellery_models || [])
+  const activeModels = models
     .filter(m => m.active)
     .sort((a, b) => a.display_order - b.display_order);
 
-  const activeBanners = (store.banners || [])
+  const activeBanners = banners
     .filter(b => b.active)
     .sort((a, b) => a.display_order - b.display_order);
 
-  const approvedReviews = (store.reviews || [])
+  const approvedReviews = reviews
     .filter(r => r.status === 'APPROVED')
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  const goldRates = store.gold_rates?.[0] || {
+  const finalGoldRates = goldRates || {
     rate_24k: '13,289',
     rate_22k: '12,182',
     rate_18k: '9,967',
@@ -61,8 +94,8 @@ export default function handler(req, res) {
     jewellery_models: activeModels,
     banners: activeBanners,
     reviews: approvedReviews,
-    gold_rates: goldRates,
-    content: store.site_content || {},
-    settings: store.business_settings || {}
+    gold_rates: finalGoldRates,
+    content,
+    settings
   });
 }

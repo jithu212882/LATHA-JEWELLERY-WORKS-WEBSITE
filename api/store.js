@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fetchFromSupabase, upsertToSupabase, deleteFromSupabase, isSupabaseConfigured } from '../server/supabase.js';
 
 let memoryStore = null;
 
@@ -84,8 +85,16 @@ export default async function handler(req, res) {
     if (!Array.isArray(store.categories)) store.categories = [];
 
     if (req.method === 'GET') {
+      if (isSupabaseConfigured()) {
+        const sbCats = await fetchFromSupabase('categories', 'display_order', true);
+        if (sbCats && sbCats.length > 0) {
+          store.categories = sbCats;
+          saveStore(store);
+        }
+      }
+
       if (targetId) {
-        const cat = store.categories.find(c => c.id === targetId);
+        const cat = store.categories.find(c => Number(c.id) === Number(targetId));
         if (!cat) return res.status(404).json({ error: 'Category not found' });
         return res.status(200).json(cat);
       }
@@ -105,11 +114,16 @@ export default async function handler(req, res) {
       };
       store.categories.push(newCategory);
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await upsertToSupabase('categories', newCategory);
+      }
+
       return res.status(201).json(newCategory);
     }
 
     if (req.method === 'PUT') {
-      const index = store.categories.findIndex(c => c.id === targetId);
+      const index = store.categories.findIndex(c => Number(c.id) === Number(targetId));
       if (index === -1) return res.status(404).json({ error: 'Category not found' });
       const updated = {
         ...store.categories[index],
@@ -119,13 +133,22 @@ export default async function handler(req, res) {
       };
       store.categories[index] = updated;
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await upsertToSupabase('categories', updated);
+      }
+
       return res.status(200).json(updated);
     }
 
     if (req.method === 'DELETE') {
       if (targetId) {
-        store.categories = store.categories.filter(c => c.id !== targetId);
+        store.categories = store.categories.filter(c => Number(c.id) !== Number(targetId));
         saveStore(store);
+
+        if (isSupabaseConfigured()) {
+          await deleteFromSupabase('categories', targetId);
+        }
       }
       return res.status(200).json({ success: true, message: 'Category deleted' });
     }
@@ -138,8 +161,16 @@ export default async function handler(req, res) {
     if (!Array.isArray(store.jewellery_models)) store.jewellery_models = [];
 
     if (req.method === 'GET') {
+      if (isSupabaseConfigured()) {
+        const sbModels = await fetchFromSupabase('jewellery_models', 'display_order', true);
+        if (sbModels && sbModels.length > 0) {
+          store.jewellery_models = sbModels;
+          saveStore(store);
+        }
+      }
+
       if (targetId) {
-        const item = store.jewellery_models.find(m => m.id === targetId);
+        const item = store.jewellery_models.find(m => Number(m.id) === Number(targetId));
         if (!item) return res.status(404).json({ error: 'Jewellery model not found' });
         return res.status(200).json(item);
       }
@@ -163,11 +194,16 @@ export default async function handler(req, res) {
       };
       store.jewellery_models.push(newModel);
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await upsertToSupabase('jewellery_models', newModel);
+      }
+
       return res.status(201).json(newModel);
     }
 
     if (req.method === 'PUT') {
-      const index = store.jewellery_models.findIndex(m => m.id === targetId);
+      const index = store.jewellery_models.findIndex(m => Number(m.id) === Number(targetId));
       if (index === -1) return res.status(404).json({ error: 'Jewellery model not found' });
       const current = store.jewellery_models[index];
       const updated = {
@@ -181,13 +217,22 @@ export default async function handler(req, res) {
       };
       store.jewellery_models[index] = updated;
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await upsertToSupabase('jewellery_models', updated);
+      }
+
       return res.status(200).json(updated);
     }
 
     if (req.method === 'DELETE') {
       if (targetId) {
-        store.jewellery_models = store.jewellery_models.filter(m => m.id !== targetId);
+        store.jewellery_models = store.jewellery_models.filter(m => Number(m.id) !== Number(targetId));
         saveStore(store);
+
+        if (isSupabaseConfigured()) {
+          await deleteFromSupabase('jewellery_models', targetId);
+        }
       }
       return res.status(200).json({ success: true, message: 'Jewellery model deleted' });
     }
@@ -200,6 +245,14 @@ export default async function handler(req, res) {
     if (!Array.isArray(store.banners)) store.banners = [];
 
     if (req.method === 'GET') {
+      if (isSupabaseConfigured()) {
+        const sbBanners = await fetchFromSupabase('banners', 'display_order', true);
+        if (sbBanners && sbBanners.length > 0) {
+          store.banners = sbBanners;
+          saveStore(store);
+        }
+      }
+
       if (targetId) {
         const banner = store.banners.find(b => Number(b.id) === Number(targetId));
         if (!banner) return res.status(404).json({ error: 'Banner not found' });
@@ -223,6 +276,11 @@ export default async function handler(req, res) {
       };
       store.banners.push(newBanner);
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await upsertToSupabase('banners', newBanner);
+      }
+
       return res.status(201).json(newBanner);
     }
 
@@ -236,6 +294,7 @@ export default async function handler(req, res) {
           const created = { id: 1, ...body, active: body.active !== undefined ? (body.active ? 1 : 0) : 1 };
           store.banners.push(created);
           saveStore(store);
+          if (isSupabaseConfigured()) await upsertToSupabase('banners', created);
           return res.status(200).json(created);
         }
       }
@@ -247,13 +306,22 @@ export default async function handler(req, res) {
       };
       store.banners[index] = updated;
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await upsertToSupabase('banners', updated);
+      }
+
       return res.status(200).json(updated);
     }
 
     if (req.method === 'DELETE') {
       if (targetId) {
-        store.banners = store.banners.filter(b => b.id !== targetId);
+        store.banners = store.banners.filter(b => Number(b.id) !== Number(targetId));
         saveStore(store);
+
+        if (isSupabaseConfigured()) {
+          await deleteFromSupabase('banners', targetId);
+        }
       }
       return res.status(200).json({ success: true, message: 'Banner deleted' });
     }
@@ -265,11 +333,23 @@ export default async function handler(req, res) {
   if (fullCheck.includes('content')) {
     if (!store.site_content) store.site_content = {};
     if (req.method === 'GET') {
+      if (isSupabaseConfigured()) {
+        const sbContent = await fetchFromSupabase('site_content', 'id', true);
+        if (sbContent && sbContent.length > 0 && sbContent[0].content) {
+          store.site_content = sbContent[0].content;
+          saveStore(store);
+        }
+      }
       return res.status(200).json(store.site_content);
     }
     if (req.method === 'PUT') {
       store.site_content = { ...store.site_content, ...body };
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await upsertToSupabase('site_content', { id: 1, content: store.site_content, updated_at: new Date().toISOString() });
+      }
+
       return res.status(200).json(store.site_content);
     }
   }
@@ -280,11 +360,23 @@ export default async function handler(req, res) {
   if (fullCheck.includes('settings')) {
     if (!store.business_settings) store.business_settings = {};
     if (req.method === 'GET') {
+      if (isSupabaseConfigured()) {
+        const sbSettings = await fetchFromSupabase('business_settings', 'id', true);
+        if (sbSettings && sbSettings.length > 0 && sbSettings[0].settings) {
+          store.business_settings = sbSettings[0].settings;
+          saveStore(store);
+        }
+      }
       return res.status(200).json(store.business_settings);
     }
     if (req.method === 'PUT') {
       store.business_settings = { ...store.business_settings, ...body };
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await upsertToSupabase('business_settings', { id: 1, settings: store.business_settings, updated_at: new Date().toISOString() });
+      }
+
       return res.status(200).json(store.business_settings);
     }
   }

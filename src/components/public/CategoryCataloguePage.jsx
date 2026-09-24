@@ -101,6 +101,28 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId, 
     return nameMatch || descMatch || catMatch || codeMatch;
   });
 
+  // Progressive Pagination ("Load More" & Virtual Grid)
+  const PAGE_SIZE = 12;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Auto-reset visible count whenever category or search query changes
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [categorySlug, searchQuery]);
+
+  const totalCount = categoryModels.length;
+  const visibleModels = categoryModels.slice(0, visibleCount);
+  const hasMore = visibleCount < totalCount;
+  const remainingCount = Math.max(0, totalCount - visibleCount);
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, totalCount));
+  };
+
+  const handleShowAll = () => {
+    setVisibleCount(totalCount);
+  };
+
   // Required Category Navigation Buttons
   const filterableCategories = [
     { slug: 'all', route: '/collections', name: 'ALL' },
@@ -269,7 +291,7 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId, 
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-            {categoryModels.map((item) => {
+            {visibleModels.map((item) => {
               const waMsg = `Hello Latha Jewellery Works,%0A%0AI am interested in inquiring about your piece: *${encodeURIComponent(
                 item.name
               )}*`;
@@ -340,6 +362,50 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId, 
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Progressive Pagination Controls */}
+        {hasMore && (
+          <div className="mt-10 sm:mt-14 flex flex-col items-center justify-center space-y-4">
+            {/* Atelier Luxury Progress Indicator */}
+            <div className="w-full max-w-xs bg-[#181818] border border-[#2A2A2A] rounded-full h-2 overflow-hidden shadow-inner">
+              <div
+                className="bg-accent-gold h-full transition-all duration-500 rounded-full"
+                style={{ width: `${Math.round((visibleModels.length / totalCount) * 100)}%` }}
+              />
+            </div>
+
+            <p className="text-xs text-[#F5F2EB]/60 font-body">
+              Showing <strong className="text-accent-gold font-bold">{visibleModels.length}</strong> of{' '}
+              <strong className="text-[#F9F6F0] font-bold">{totalCount}</strong> Masterpieces
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <button
+                onClick={handleLoadMore}
+                className="inline-flex items-center gap-2 bg-accent-gold text-[#121212] font-bold px-7 py-3 rounded-xl text-xs uppercase tracking-widest hover:bg-supporting-beige transition-all shadow-xl active:scale-95"
+              >
+                <span className="material-symbols-outlined text-base">expand_more</span>
+                <span>Load More Designs (+{Math.min(PAGE_SIZE, remainingCount)})</span>
+              </button>
+
+              {totalCount > PAGE_SIZE * 2 && (
+                <button
+                  onClick={handleShowAll}
+                  className="inline-flex items-center gap-2 border border-[#2A2A2A] hover:border-accent-gold/40 text-[#F5F2EB]/80 hover:text-accent-gold font-medium px-5 py-3 rounded-xl text-xs uppercase tracking-widest bg-[#181818] transition-all active:scale-95"
+                >
+                  <span>Show All ({totalCount})</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* All Masterpieces Viewed Confirmation */}
+        {!hasMore && totalCount > PAGE_SIZE && (
+          <div className="mt-12 text-center py-4 border-t border-[#2A2A2A]/40 text-xs text-[#F5F2EB]/50 font-body">
+            ✦ You have viewed all <strong className="text-accent-gold">{totalCount}</strong> handcrafted masterpieces in this collection ✦
           </div>
         )}
       </div>

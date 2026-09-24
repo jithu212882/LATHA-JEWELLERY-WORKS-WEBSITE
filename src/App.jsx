@@ -17,8 +17,8 @@ import ContactSection from './components/public/ContactSection';
 import Footer from './components/public/Footer';
 import FloatingWhatsApp from './components/public/FloatingWhatsApp';
 
-import AdminLogin from './components/admin/AdminLogin';
-import AdminLayout from './components/admin/AdminLayout';
+const AdminLogin = React.lazy(() => import('./components/admin/AdminLogin'));
+const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
 import CategoryCataloguePage from './components/public/CategoryCataloguePage';
 
 import { ensureHomeHistoryRoot } from './utils/navigation';
@@ -100,11 +100,18 @@ function MainApp() {
 
       {/* Admin Interface Modal / Overlay */}
       {adminRequested && (
-        isAuthenticated ? (
-          <AdminLayout onClosePublic={() => setAdminRequested(false)} />
-        ) : (
-          <AdminLogin onClose={() => setAdminRequested(false)} />
-        )
+        <React.Suspense fallback={
+          <div className="fixed inset-0 z-[100] bg-[#121212]/95 backdrop-blur-xl flex flex-col items-center justify-center p-4">
+            <div className="w-10 h-10 border-2 border-accent-gold/20 border-t-accent-gold rounded-full animate-spin mb-4" />
+            <span className="font-headline text-accent-gold text-sm tracking-widest uppercase">Opening Atelier Studio...</span>
+          </div>
+        }>
+          {isAuthenticated ? (
+            <AdminLayout onClosePublic={() => setAdminRequested(false)} />
+          ) : (
+            <AdminLogin onClose={() => setAdminRequested(false)} />
+          )}
+        </React.Suspense>
       )}
 
       {/* Public Storefront */}

@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fetchFromSupabase, upsertToSupabase, deleteFromSupabase, isSupabaseConfigured } from '../server/supabase.js';
 
 let memoryStore = null;
 
@@ -37,12 +38,10 @@ function extractTargetId(req) {
   const matchedPath = req.headers['x-matched-path'] || '';
   const urlPath = new URL(req.url, 'http://localhost').pathname;
 
-  // Direct query param ?id=123
   if (req.query?.id && !isNaN(parseInt(req.query.id))) {
     return parseInt(req.query.id);
   }
 
-  // Rewrite query param ?path=123 or ?path=123/status or ['123', 'status']
   const pathParam = Array.isArray(req.query?.path) ? req.query.path.join('/') : (req.query?.path || '');
   if (pathParam) {
     const parts = pathParam.split('/');
@@ -52,7 +51,6 @@ function extractTargetId(req) {
     }
   }
 
-  // URL segments (/api/enquiries/123 or /api/enquiries/123/status)
   const segments = (matchedPath || urlPath).split('/').filter(Boolean);
   for (let i = segments.length - 1; i >= 0; i--) {
     const n = parseInt(segments[i]);
@@ -74,6 +72,15 @@ export default async function handler(req, res) {
 
   const store = getStore();
   if (!Array.isArray(store.enquiries)) store.enquiries = [];
+
+  // Sync from Supabase if configured
+  if (isSupabaseConfigured()) {
+    const sbEnquiries = await fetchFromSupabase('enquiries', 'created_at', false);
+    if (sbEnquiries && sbEnquiries.length > 0) {
+      store.enquiries = sbEnquiries;
+      saveStore(store);
+    }
+  }
 
   const targetId = extractTargetId(req);
 
@@ -108,6 +115,10 @@ export default async function handler(req, res) {
     store.enquiries.push(enquiry);
     saveStore(store);
 
+    if (isSupabaseConfigured()) {
+      await upsertToSupabase('enquiries', enquiry);
+    }
+
     const waMsg = `Hello Latha Jewellery Works,%0A%0A*New Custom Jewellery Enquiry*%0A- *Name:* ${encodeURIComponent(name)}%0A- *Mobile:* ${encodeURIComponent(mobile)}%0A- *Email:* ${encodeURIComponent(email || 'N/A')}%0A- *Type:* ${encodeURIComponent(jewellery_type || 'Custom')}%0A- *Details:* ${encodeURIComponent(requirements || 'N/A')}`;
     const whatsappUrl = `https://wa.me/919487056064?text=${waMsg}`;
 
@@ -121,7 +132,6 @@ export default async function handler(req, res) {
 
     let index = store.enquiries.findIndex(e => Number(e.id) === Number(targetId));
     if (index === -1) {
-      // If not in store yet, initialize entry so update never loses patron data
       const created = {
         id: targetId,
         name: body.name || 'Patron Enquiry',
@@ -132,12 +142,18 @@ export default async function handler(req, res) {
       };
       store.enquiries.push(created);
       saveStore(store);
+      if (isSupabaseConfigured()) await upsertToSupabase('enquiries', created);
       return res.status(200).json(created);
     }
 
     if (body.status) store.enquiries[index].status = body.status;
     if (body.internal_notes !== undefined) store.enquiries[index].internal_notes = body.internal_notes;
     saveStore(store);
+
+    if (isSupabaseConfigured()) {
+      await upsertToSupabase('enquiries', store.enquiries[index]);
+    }
+
     return res.status(200).json(store.enquiries[index]);
   }
 
@@ -145,6 +161,10 @@ export default async function handler(req, res) {
     if (targetId) {
       store.enquiries = store.enquiries.filter(e => Number(e.id) !== Number(targetId));
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await deleteFromSupabase('enquiries', targetId);
+      }
     }
     return res.status(200).json({ success: true, message: 'Enquiry archived/deleted' });
   }

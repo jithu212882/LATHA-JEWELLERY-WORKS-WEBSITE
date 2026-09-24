@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { fetchFromSupabase, upsertToSupabase, deleteFromSupabase, isSupabaseConfigured } from '../server/supabase.js';
 
 let memoryStore = null;
 
@@ -37,12 +38,10 @@ function extractTargetId(req) {
   const matchedPath = req.headers['x-matched-path'] || '';
   const urlPath = new URL(req.url, 'http://localhost').pathname;
 
-  // Direct query param ?id=123
   if (req.query?.id && !isNaN(parseInt(req.query.id))) {
     return parseInt(req.query.id);
   }
 
-  // Rewrite query param ?path=123 or ?path=123/status or ['123', 'status']
   const pathParam = Array.isArray(req.query?.path) ? req.query.path.join('/') : (req.query?.path || '');
   if (pathParam) {
     const parts = pathParam.split('/');
@@ -52,7 +51,6 @@ function extractTargetId(req) {
     }
   }
 
-  // URL segments (/api/reviews/123 or /api/reviews/123/status)
   const segments = (matchedPath || urlPath).split('/').filter(Boolean);
   for (let i = segments.length - 1; i >= 0; i--) {
     const n = parseInt(segments[i]);
@@ -74,6 +72,15 @@ export default async function handler(req, res) {
 
   const store = getStore();
   if (!Array.isArray(store.reviews)) store.reviews = [];
+
+  // Sync from Supabase if configured
+  if (isSupabaseConfigured()) {
+    const sbReviews = await fetchFromSupabase('reviews', 'created_at', false);
+    if (sbReviews && sbReviews.length > 0) {
+      store.reviews = sbReviews;
+      saveStore(store);
+    }
+  }
 
   const matchedPath = req.headers['x-matched-path'] || '';
   const urlPath = new URL(req.url, 'http://localhost').pathname;
@@ -112,6 +119,10 @@ export default async function handler(req, res) {
     store.reviews.push(newReview);
     saveStore(store);
 
+    if (isSupabaseConfigured()) {
+      await upsertToSupabase('reviews', newReview);
+    }
+
     return res.status(201).json({
       success: true,
       message: 'Review submitted for moderation',
@@ -127,7 +138,6 @@ export default async function handler(req, res) {
 
     let index = store.reviews.findIndex(r => Number(r.id) === Number(targetId));
     if (index === -1) {
-      // If review was submitted on another serverless container, initialize it here
       const newReview = {
         id: targetId,
         name: body.name || 'Patron Review',
@@ -140,6 +150,7 @@ export default async function handler(req, res) {
       };
       store.reviews.push(newReview);
       saveStore(store);
+      if (isSupabaseConfigured()) await upsertToSupabase('reviews', newReview);
       return res.status(200).json(newReview);
     }
 
@@ -150,6 +161,11 @@ export default async function handler(req, res) {
       status: body.status || store.reviews[index].status
     };
     saveStore(store);
+
+    if (isSupabaseConfigured()) {
+      await upsertToSupabase('reviews', store.reviews[index]);
+    }
+
     return res.status(200).json(store.reviews[index]);
   }
 
@@ -158,6 +174,10 @@ export default async function handler(req, res) {
     if (targetId) {
       store.reviews = store.reviews.filter(r => Number(r.id) !== Number(targetId));
       saveStore(store);
+
+      if (isSupabaseConfigured()) {
+        await deleteFromSupabase('reviews', targetId);
+      }
     }
     return res.status(200).json({ success: true, message: 'Review deleted' });
   }
