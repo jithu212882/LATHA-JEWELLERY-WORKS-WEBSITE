@@ -1,3 +1,7 @@
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'latha-jewellery-secret-key-2024';
+
 export default function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -20,9 +24,14 @@ export default function handler(req, res) {
       const { username, password } = body;
 
       if (username === 'admin' && (password === 'LATHA2024' || password === 'admin')) {
+        const token = jwt.sign(
+          { username: 'admin', role: 'SUPER_ADMIN' },
+          JWT_SECRET,
+          { expiresIn: '7d' }
+        );
         return res.status(200).json({
           success: true,
-          token: 'latha_master_token_2024',
+          token,
           username: 'admin',
           role: 'SUPER_ADMIN'
         });
@@ -37,14 +46,28 @@ export default function handler(req, res) {
   // 2. VERIFY: /api/auth/verify
   if (urlPath.includes('/verify') || req.query?.subroute === 'verify') {
     const authHeader = req.headers.authorization || '';
-    if (authHeader.includes('latha_master_token_2024') || authHeader.length > 10) {
+    const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : authHeader.trim();
+
+    if (!token) {
+      return res.status(401).json({ valid: false, error: 'Token missing' });
+    }
+
+    if (token === 'latha_master_token_2024') {
       return res.status(200).json({
         valid: true,
         user: { username: 'admin', role: 'SUPER_ADMIN' }
       });
     }
 
-    return res.status(401).json({ error: 'Invalid token' });
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      return res.status(200).json({
+        valid: true,
+        user: { username: decoded.username || 'admin', role: decoded.role || 'SUPER_ADMIN' }
+      });
+    } catch (err) {
+      return res.status(401).json({ valid: false, error: 'Invalid or expired token' });
+    }
   }
 
   return res.status(404).json({ error: 'Auth route not found' });

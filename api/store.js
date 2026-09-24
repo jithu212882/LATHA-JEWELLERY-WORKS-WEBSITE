@@ -53,12 +53,29 @@ export default async function handler(req, res) {
     try { body = JSON.parse(body); } catch (e) {}
   }
 
-  // Extract ID from pathname or query (e.g. /api/categories/1 or ?path=1 or ?id=1)
-  const pathParam = Array.isArray(req.query?.path) ? req.query.path[0] : req.query?.path;
+  // Extract ID from pathname or query
+  let parsedId = NaN;
   const segments = (matchedPath || urlPath).split('/').filter(Boolean);
-  const lastSegment = segments[segments.length - 1];
-  const parsedId = parseInt(lastSegment);
-  const targetId = !isNaN(parsedId) ? parsedId : (req.query?.id ? parseInt(req.query.id) : (pathParam && !isNaN(parseInt(pathParam)) ? parseInt(pathParam) : null));
+  for (let i = segments.length - 1; i >= 0; i--) {
+    const n = parseInt(segments[i]);
+    if (!isNaN(n)) {
+      parsedId = n;
+      break;
+    }
+  }
+  const pathParam = Array.isArray(req.query?.path) ? req.query.path.join('/') : (req.query?.path || '');
+  let queryId = NaN;
+  if (pathParam) {
+    const parts = pathParam.split('/');
+    for (const p of parts) {
+      const n = parseInt(p);
+      if (!isNaN(n)) {
+        queryId = n;
+        break;
+      }
+    }
+  }
+  const targetId = !isNaN(parsedId) ? parsedId : (!isNaN(queryId) ? queryId : (req.query?.id ? parseInt(req.query.id) : null));
 
   // ==========================================
   // 1. CATEGORIES CRUD (/api/categories)
