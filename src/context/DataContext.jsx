@@ -337,10 +337,13 @@ export function DataProvider({ children }) {
           created_at: new Date().toISOString()
         };
         cats.push(newCat);
-      } else if (targetId) {
-        const index = cats.findIndex(c => c.id === targetId);
+      } else {
+        const idToMatch = targetId || catPayload.id;
+        const index = cats.findIndex(c => (idToMatch && Number(c.id) === Number(idToMatch)) || (catPayload.slug && c.slug === catPayload.slug));
         if (index !== -1) {
-          cats[index] = { ...cats[index], ...catPayload };
+          cats[index] = { ...cats[index], ...catPayload, id: cats[index].id };
+        } else if (idToMatch) {
+          cats.push({ id: Number(idToMatch), ...catPayload, active: 1, display_order: cats.length + 1 });
         }
       }
       try {
