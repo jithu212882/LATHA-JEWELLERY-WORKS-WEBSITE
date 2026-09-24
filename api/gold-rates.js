@@ -129,6 +129,35 @@ export default async function handler(req, res) {
   const storeSavedRate = store.gold_rates?.[0] || null;
   let currentRate = memoryRates || storeSavedRate || DEFAULT_SHOP_RATES;
 
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      const { data, error } = await supabase.from('gold_rates').select('*').order('id', { ascending: false }).limit(1);
+      if (!error && data && data.length > 0) {
+        const row = data[0];
+        const p24 = Number(row.price_24k || String(row.rate_24k).replace(/[^0-9.]/g, '') || 13289);
+        const p22 = Number(row.price_22k || String(row.rate_22k).replace(/[^0-9.]/g, '') || 12182);
+        const p18 = Number(row.price_18k || String(row.rate_18k).replace(/[^0-9.]/g, '') || 9967);
+
+        currentRate = {
+          ...row,
+          rate_24k: row.rate_24k || Math.round(p24).toLocaleString('en-IN'),
+          rate_22k: row.rate_22k || Math.round(p22).toLocaleString('en-IN'),
+          rate_18k: row.rate_18k || Math.round(p18).toLocaleString('en-IN'),
+          price_24k: p24,
+          price_22k: p22,
+          price_18k: p18,
+          rate_silver: row.rate_silver || '95',
+          ticker_visible: row.ticker_visible !== undefined ? row.ticker_visible : 1,
+          last_updated: row.last_updated || 'Live Market Rate',
+          source: row.source || 'GoldAPI.io (Live)',
+          status: row.status || 'Connected (Live)',
+          mode: row.mode || 'AUTOMATIC_API'
+        };
+      }
+    } catch (e) {}
+  }
+
   // 1. FETCH LIVE: /api/gold-rates/fetch-live
   if (urlPath.includes('/fetch-live') || sub.includes('fetch-live')) {
     const customKey = req.body?.api_key || req.query?.api_key;

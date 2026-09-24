@@ -77,17 +77,40 @@ export default async function handler(req, res) {
     .filter(r => r.status === 'APPROVED')
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-  const finalGoldRates = goldRates || {
-    rate_24k: '13,289',
-    rate_22k: '12,182',
-    rate_18k: '9,967',
-    rate_silver: '95',
-    ticker_visible: 1,
-    last_updated: '23 Sept 2026, 04:57 pm',
-    source: 'GoldAPI.io (Live)',
-    status: 'Connected (Live)',
-    mode: 'AUTOMATIC_API'
-  };
+  let finalGoldRates = null;
+  if (goldRates) {
+    const p24 = Number(goldRates.price_24k || String(goldRates.rate_24k).replace(/[^0-9.]/g, '') || 13289);
+    const p22 = Number(goldRates.price_22k || String(goldRates.rate_22k).replace(/[^0-9.]/g, '') || 12182);
+    const p18 = Number(goldRates.price_18k || String(goldRates.rate_18k).replace(/[^0-9.]/g, '') || 9967);
+
+    finalGoldRates = {
+      ...goldRates,
+      rate_24k: goldRates.rate_24k || Math.round(p24).toLocaleString('en-IN'),
+      rate_22k: goldRates.rate_22k || Math.round(p22).toLocaleString('en-IN'),
+      rate_18k: goldRates.rate_18k || Math.round(p18).toLocaleString('en-IN'),
+      price_24k: p24,
+      price_22k: p22,
+      price_18k: p18,
+      rate_silver: goldRates.rate_silver || '95',
+      ticker_visible: goldRates.ticker_visible !== undefined ? goldRates.ticker_visible : 1,
+      last_updated: goldRates.last_updated || 'Live Market Rate',
+      source: goldRates.source || 'GoldAPI.io (Live)',
+      status: goldRates.status || 'Connected (Live)',
+      mode: goldRates.mode || 'AUTOMATIC_API'
+    };
+  } else {
+    finalGoldRates = {
+      rate_24k: '13,289',
+      rate_22k: '12,182',
+      rate_18k: '9,967',
+      rate_silver: '95',
+      ticker_visible: 1,
+      last_updated: '23 Sept 2026, 04:57 pm',
+      source: 'GoldAPI.io (Live)',
+      status: 'Connected (Live)',
+      mode: 'AUTOMATIC_API'
+    };
+  }
 
   res.status(200).json({
     categories: activeCategories,
