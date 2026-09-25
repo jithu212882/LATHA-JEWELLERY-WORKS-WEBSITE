@@ -1,5 +1,6 @@
 import React from 'react';
 import { useData } from '../../context/DataContext';
+import { getEmailMailtoUrl } from '../../utils/contactHelpers';
 
 export default function ContactSection() {
   const { settings } = useData();
@@ -8,6 +9,7 @@ export default function ContactSection() {
   const phone = settings?.phone || '9487056064';
   const whatsapp = settings?.whatsapp || '9487056064';
   const email = settings?.email || 'lathajewelleryworks@gmail.com';
+  const emailMailtoUrl = getEmailMailtoUrl(email);
   const address = settings?.address || 'Chathencode to Nadaikkavu Road, Near Government Primary School, Nadaikavu, Tamil Nadu';
   const plusCode = settings?.plus_code || '74VX+7G Nadaikavu, Tamil Nadu';
   const mapsUrl = settings?.google_maps_url || 'https://www.google.com/maps/search/?api=1&query=74VX%2B7G+Nadaikavu%2C+Tamil+Nadu';
@@ -65,7 +67,7 @@ export default function ContactSection() {
               <div>
                 <h4 className="font-headline font-bold text-[#F9F6F0] text-base sm:text-lg">Email</h4>
                 <a
-                  href={`mailto:${email}`}
+                  href={emailMailtoUrl}
                   className="font-body text-xs sm:text-sm text-[#F5F2EB]/70 hover:text-accent-gold transition-colors font-light"
                 >
                   {email}
@@ -102,7 +104,7 @@ export default function ContactSection() {
               <span className="material-symbols-outlined text-[18px]">chat</span> WhatsApp
             </a>
             <a
-              href={`mailto:${email}`}
+              href={emailMailtoUrl}
               className="border border-[#2A2A2A] bg-[#181818] text-[#F9F6F0] px-6 py-3 rounded-xl text-xs uppercase tracking-wider hover:border-accent-gold transition-all flex items-center gap-2"
             >
               <span className="material-symbols-outlined text-[18px]">mail</span> Email Us

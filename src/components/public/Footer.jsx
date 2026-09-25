@@ -1,11 +1,13 @@
 import React from 'react';
 import { useData } from '../../context/DataContext';
 import { navigateTo } from '../../utils/navigation';
+import { getEmailMailtoUrl } from '../../utils/contactHelpers';
 
 export default function Footer() {
   const { settings } = useData();
   const businessName = settings?.business_name || 'Latha Jewellery Works';
   const email = settings?.email || 'lathajewelleryworks@gmail.com';
+  const emailMailtoUrl = getEmailMailtoUrl(email);
 
   return (
     <footer className="w-full bg-[#0D0D0D] border-t border-[#2A2A2A] py-10">
@@ -32,7 +34,7 @@ export default function Footer() {
           <a href="/" onClick={(e) => navigateTo('/', e)} className="hover:text-accent-gold transition-colors">Home</a>
           <a href="/collections" onClick={(e) => navigateTo('/collections', e)} className="hover:text-accent-gold transition-colors">Collections</a>
           <a href="#contact" className="hover:text-accent-gold transition-colors">Location</a>
-          <a href={`mailto:${email}`} className="text-accent-gold hover:underline normal-case font-mono">{email}</a>
+          <a href={emailMailtoUrl} className="text-accent-gold hover:underline normal-case font-mono">{email}</a>
         </div>
       </div>
     </footer>
