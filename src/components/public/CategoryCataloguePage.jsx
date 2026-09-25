@@ -163,22 +163,43 @@ export default function CategoryCataloguePage({ categorySlug, initialProductId, 
       />
 
       <div className="max-w-7xl mx-auto px-3 sm:px-6 md:px-8">
-        {/* Top Navigation & Breadcrumb */}
+        {/* Top Breadcrumb & Close Page Action Bar */}
         <div className="flex items-center justify-between mb-6 pb-4 border-b border-[#2A2A2A]">
+          {/* Left: Breadcrumbs Hierarchy */}
+          <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs sm:text-sm text-[#F5F2EB]/60 uppercase tracking-widest font-sans">
+            <a
+              href="/"
+              onClick={(e) => closeCurrentPageToHome(e)}
+              className="hover:text-accent-gold transition-colors flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[15px] text-accent-gold">home</span>
+              <span>Home</span>
+            </a>
+            <span className="text-[#F5F2EB]/30">/</span>
+            <a
+              href="/collections"
+              onClick={(e) => navigateTo('/collections', e)}
+              className="hover:text-accent-gold transition-colors"
+            >
+              Catalogue
+            </a>
+            <span className="text-[#F5F2EB]/30">/</span>
+            <span className="text-accent-gold font-medium truncate max-w-[150px] sm:max-w-none">
+              {categoryTitle}
+            </span>
+          </nav>
+
+          {/* Right: Sleek Circular Close Button (No wordings, perfect alignment) */}
           <button
             onClick={(e) => closeCurrentPageToHome(e)}
-            className="inline-flex items-center gap-2 text-accent-gold hover:text-[#121212] hover:bg-accent-gold transition-all text-xs sm:text-sm font-semibold uppercase tracking-wider bg-[#181818] border border-accent-gold/50 px-3.5 py-2 rounded-lg shadow-md active:scale-95"
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#181818] border border-[#2A2A2A] hover:border-accent-gold text-accent-gold hover:bg-accent-gold hover:text-[#121212] flex items-center justify-center transition-all shadow-md active:scale-95 group shrink-0"
             title="Close page and return to home"
+            aria-label="Close page"
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
-            <span>Close Page</span>
+            <span className="material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:rotate-90">
+              close
+            </span>
           </button>
-
-          <div className="flex items-center gap-2 text-[10px] sm:text-xs text-[#F5F2EB]/50 uppercase tracking-widest font-sans">
-            <span>Catalogue</span>
-            <span>/</span>
-            <span className="text-accent-gold font-medium truncate max-w-[120px] sm:max-w-none">{categoryTitle}</span>
-          </div>
         </div>
 
         {/* Dedicated Category Header & Search Input */}
