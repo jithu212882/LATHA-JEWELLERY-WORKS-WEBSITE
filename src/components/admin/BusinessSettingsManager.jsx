@@ -17,8 +17,9 @@ export default function BusinessSettingsManager() {
     phone: settings?.phone || '9487056064',
     whatsapp: settings?.whatsapp || '9487056064',
     email: settings?.email || 'lathajewelleryworks@gmail.com',
-    address: settings?.address || 'Chathencode to Nadaikkavu Road, Near Government Primary School, Nadaikkavu, Chathencode P.O.',
-    google_maps_url: settings?.google_maps_url || 'https://maps.google.com/?q=Chathencode+Nadaikkavu+Road+Near+Government+Primary+School+Chathencode',
+    address: settings?.address || 'Chathencode to Nadaikkavu Road, Near Government Primary School, Nadaikavu, Tamil Nadu',
+    plus_code: settings?.plus_code || '74VX+7G Nadaikavu, Tamil Nadu',
+    google_maps_url: settings?.google_maps_url || 'https://www.google.com/maps/search/?api=1&query=74VX%2B7G+Nadaikavu%2C+Tamil+Nadu',
     working_hours: settings?.working_hours || 'Monday – Saturday: 9:30 AM – 8:00 PM',
     sunday_hours: settings?.sunday_hours || 'Sunday: By Appointment Only',
     meta_title: settings?.meta_title || 'Latha Jewellery Works | Timeless Handcrafted Gold & Silver Masterpieces',
@@ -208,7 +209,20 @@ export default function BusinessSettingsManager() {
               />
             </div>
 
-            <div className="md:col-span-2">
+            <div>
+              <label className="block text-xs uppercase tracking-wider text-supporting-beige mb-2 font-medium">
+                Google Maps Plus Code
+              </label>
+              <input
+                type="text"
+                value={formData.plus_code || ''}
+                onChange={(e) => setFormData({ ...formData, plus_code: e.target.value })}
+                className="w-full bg-[#121212] border border-[#2A2A2A] rounded-xl px-4 py-3 text-sm text-[#F9F6F0] focus:border-accent-gold outline-none"
+                placeholder="74VX+7G Nadaikavu, Tamil Nadu"
+              />
+            </div>
+
+            <div>
               <label className="block text-xs uppercase tracking-wider text-supporting-beige mb-2 font-medium">
                 Google Maps / Location Link (URL)
               </label>
@@ -217,7 +231,7 @@ export default function BusinessSettingsManager() {
                 value={formData.google_maps_url}
                 onChange={(e) => setFormData({ ...formData, google_maps_url: e.target.value })}
                 className="w-full bg-[#121212] border border-[#2A2A2A] rounded-xl px-4 py-3 text-sm text-[#F9F6F0] focus:border-accent-gold outline-none"
-                placeholder="https://maps.google.com/..."
+                placeholder="https://www.google.com/maps/search/?api=1&query=..."
               />
             </div>
 

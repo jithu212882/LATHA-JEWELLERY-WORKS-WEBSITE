@@ -77,12 +77,13 @@ export default function SEO({
       'priceRange': '₹₹₹',
       'address': {
         '@type': 'PostalAddress',
-        'streetAddress': 'Main Road, Chathencode',
-        'addressLocality': 'Chathencode',
+        'streetAddress': 'Chathencode to Nadaikkavu Road, Near Government Primary School',
+        'addressLocality': 'Nadaikavu',
         'addressRegion': 'Tamil Nadu',
         'postalCode': '629153',
         'addressCountry': 'IN'
       },
+      'hasMap': 'https://www.google.com/maps/search/?api=1&query=74VX%2B7G+Nadaikavu%2C+Tamil+Nadu',
       'geo': {
         '@type': 'GeoCoordinates',
         'latitude': 8.3245,

@@ -8,8 +8,9 @@ export default function ContactSection() {
   const phone = settings?.phone || '9487056064';
   const whatsapp = settings?.whatsapp || '9487056064';
   const email = settings?.email || 'lathajewelleryworks@gmail.com';
-  const address = settings?.address || 'Chathencode to Nadaikkavu Road, Near Government Primary School, Nadaikkavu, Chathencode P.O.';
-  const mapsUrl = settings?.google_maps_url || 'https://maps.google.com/?q=Chathencode+Nadaikkavu+Road+Near+Government+Primary+School+Chathencode';
+  const address = settings?.address || 'Chathencode to Nadaikkavu Road, Near Government Primary School, Nadaikavu, Tamil Nadu';
+  const plusCode = settings?.plus_code || '74VX+7G Nadaikavu, Tamil Nadu';
+  const mapsUrl = settings?.google_maps_url || 'https://www.google.com/maps/search/?api=1&query=74VX%2B7G+Nadaikavu%2C+Tamil+Nadu';
   const workingHours = settings?.working_hours || 'Monday – Saturday: 9:30 AM – 8:00 PM\nSunday: By Appointment Only';
 
   return (
@@ -36,6 +37,12 @@ export default function ContactSection() {
                 <p className="font-body text-xs sm:text-sm text-[#F5F2EB]/70 font-light leading-relaxed">
                   {address}
                 </p>
+                {plusCode && (
+                  <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#181818] border border-accent-gold/40 text-accent-gold text-xs font-mono">
+                    <span className="material-symbols-outlined text-[15px]">pin_drop</span>
+                    <span>Plus Code: <strong className="text-[#F9F6F0]">{plusCode}</strong></span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -126,14 +133,17 @@ export default function ContactSection() {
                 <h4 className="font-headline font-bold text-[#F9F6F0] text-sm sm:text-base">
                   {businessName}
                 </h4>
-                <p className="text-[11px] text-[#F5F2EB]/60">Chathencode, Nadaikkavu</p>
+                <p className="text-[11px] text-[#F5F2EB]/70 font-mono mt-0.5 flex items-center gap-1">
+                  <span className="text-accent-gold">📍</span> {plusCode}
+                </p>
               </div>
               <a
                 href={mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-accent-gold text-[#121212] font-bold px-4 py-2 rounded-lg text-xs uppercase tracking-wider hover:bg-supporting-beige transition-colors"
+                className="bg-accent-gold text-[#121212] font-bold px-4 py-2 rounded-lg text-xs uppercase tracking-wider hover:bg-supporting-beige transition-colors flex items-center gap-1.5 shrink-0"
               >
+                <span className="material-symbols-outlined text-[16px]">navigation</span>
                 Open Map
               </a>
             </div>
