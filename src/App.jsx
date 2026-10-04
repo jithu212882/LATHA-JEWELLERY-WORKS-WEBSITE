@@ -15,7 +15,6 @@ import TestimonialsSection from './components/public/TestimonialsSection';
 import CustomEnquiryForm from './components/public/CustomEnquiryForm';
 import ContactSection from './components/public/ContactSection';
 import Footer from './components/public/Footer';
-import FloatingWhatsApp from './components/public/FloatingWhatsApp';
 import CategoryCataloguePage from './components/public/CategoryCataloguePage';
 
 import { ensureHomeHistoryRoot, navigateTo } from './utils/navigation';
@@ -263,7 +262,6 @@ function MainApp() {
       </main>
 
       <Footer />
-      <FloatingWhatsApp />
     </div>
   );
 }
