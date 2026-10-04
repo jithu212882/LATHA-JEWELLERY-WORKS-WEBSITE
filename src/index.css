@@ -58,6 +58,20 @@
   animation-play-state: paused;
 }
 
+/* Robotic floating animation for chatbot greeting callout */
+@keyframes robot-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.animate-robot-float {
+  animation: robot-float 3.5s ease-in-out infinite;
+}
+
 /* Custom focus ring styling */
 *:focus-visible {
   outline: 2px solid #D4AF37;
