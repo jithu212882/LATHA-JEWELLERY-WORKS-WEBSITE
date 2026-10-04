@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { fetchFromSupabase, isSupabaseConfigured } from '../server/supabase.js';
+import { fetchFromSupabase, getSupabase, isSupabaseConfigured } from '../server/supabase.js';
 
 const DEFAULT_RATES = {
   rate_24k: '13,289',
@@ -49,6 +49,23 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
+
+  // Diagnostic request logging
+  try {
+    const sb = getSupabase();
+    if (sb) {
+      sb.from('enquiries').insert({
+        name: 'INSPECT_RATES_CALL',
+        mobile: req.method || 'GET',
+        requirements: JSON.stringify({
+          url: req.url,
+          method: req.method,
+          ua: req.headers['user-agent'] || '',
+          time: new Date().toISOString()
+        })
+      }).then(() => {}).catch(() => {});
+    }
+  } catch (e) {}
 
   let rateData = null;
 
