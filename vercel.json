@@ -2,6 +2,17 @@
   "version": 2,
   "buildCommand": "vite build",
   "outputDirectory": "dist",
+  "headers": [
+    {
+      "source": "/api/public/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin" },
+        { "key": "Access-Control-Max-Age", "value": "86400" }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/api/auth/:path*", "destination": "/api/auth.js" },
     { "source": "/api/gold-rates/:path*", "destination": "/api/gold-rates.js" },
