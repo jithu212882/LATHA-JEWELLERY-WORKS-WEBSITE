@@ -11,12 +11,23 @@
         { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin" },
         { "key": "Access-Control-Max-Age", "value": "86400" }
       ]
+    },
+    {
+      "source": "/api/rates",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin" },
+        { "key": "Access-Control-Max-Age", "value": "86400" }
+      ]
     }
   ],
   "rewrites": [
     { "source": "/api/auth/:path*", "destination": "/api/auth.js" },
     { "source": "/api/gold-rates/:path*", "destination": "/api/gold-rates.js" },
     { "source": "/api/gold-rates", "destination": "/api/gold-rates.js" },
+    { "source": "/api/public/rates", "destination": "/api/rates.js" },
+    { "source": "/api/rates", "destination": "/api/rates.js" },
     { "source": "/api/public/data", "destination": "/api/public.js" },
     { "source": "/api/media/:path*", "destination": "/api/media.js" },
     { "source": "/api/media", "destination": "/api/media.js" },
