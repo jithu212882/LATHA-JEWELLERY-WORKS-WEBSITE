@@ -40,22 +40,14 @@ function getLocalStoreRates() {
 export default async function handler(req, res) {
   // 1. Open Cross-Origin Resource Sharing (CORS)
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, HEAD');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, User-Agent');
   res.setHeader('Access-Control-Max-Age', '86400');
   res.setHeader('Content-Type', 'application/json');
 
   // 2. Handle preflight requests
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
-  }
-
-  // 3. Only GET is accepted
-  if (req.method !== 'GET') {
-    return res.status(405).json({
-      success: false,
-      error: 'Method Not Allowed. Only GET requests are accepted.'
-    });
   }
 
   let rateData = null;
@@ -126,11 +118,16 @@ export default async function handler(req, res) {
     rate_24k: str24k,
     rate_18k: str18k,
     rate_silver: strSilver,
+    gold_22k: `₹${str22k}/g`,
+    gold_24k: `₹${str24k}/g`,
+    gold_18k: `₹${str18k}/g`,
     price_22k: valid22,
     price_24k: valid24,
     price_18k: valid18,
     price_silver: pSilver,
     summary: `Today's Gold Rate at Latha Jewellery Works: 22K is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
+    text: `Today's Gold Rate at Latha Jewellery Works: 22K is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
+    message: `Today's Gold Rate at Latha Jewellery Works: 22K is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
     source,
     status,
     mode,
