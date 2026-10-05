@@ -61,7 +61,18 @@ function apiDevMiddleware() {
           return;
         }
 
-        // 3. Live Gold & Silver Rates
+        // 3. Public Storefront Data (Categories, Models, Banners)
+        if (url === '/api/public/data' && req.method === 'GET') {
+          try {
+            const handler = (await import('./api/public.js')).default;
+            await handler(req, res);
+          } catch (err) {
+            res.status(500).json({ error: err.message });
+          }
+          return;
+        }
+
+        // 4. Live Gold & Silver Rates
         if ((url === '/api/rates' || url === '/api/gold-rates' || url === '/api/public/rates') && req.method === 'GET') {
           try {
             const handler = (await import('./api/rates.js')).default;
