@@ -87,3 +87,15 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Hide Botpress standalone FAB launcher so unified AI Assistant selector is displayed */
+.bpChatContainer .bpFabContainer,
+.bpChatContainer .bpFab,
+.bpChatContainer .bpFabWrapper,
+div[class*="bpFabContainer"],
+div[class*="bpFabWrapper"] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
