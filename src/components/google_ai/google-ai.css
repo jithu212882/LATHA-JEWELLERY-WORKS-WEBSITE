@@ -1,0 +1,77 @@
+/* Google AI Studio Atelier Chatbot Styling - Namespaced to prevent conflicts */
+
+.google-ai-chat-glass {
+  background: rgba(18, 19, 26, 0.96);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(197, 160, 89, 0.32);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(197, 160, 89, 0.15);
+}
+
+.google-ai-chat-gold-border {
+  border-color: rgba(197, 160, 89, 0.35);
+}
+
+.google-ai-chat-gold-gradient-text {
+  background: linear-gradient(135deg, #f8f1d8 0%, #d4af37 50%, #aa8024 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.google-ai-chat-gold-button {
+  background: linear-gradient(135deg, #d4af37 0%, #b89130 100%);
+  color: #0b0c10;
+  box-shadow: 0 4px 14px rgba(212, 175, 55, 0.35);
+  transition: all 0.25s ease;
+}
+
+.google-ai-chat-gold-button:hover {
+  background: linear-gradient(135deg, #e5c158 0%, #c5a059 100%);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
+  transform: translateY(-1px);
+}
+
+.google-ai-chat-launcher-btn {
+  background: radial-gradient(circle at 30% 30%, #2a251b 0%, #15161d 100%);
+  border: 1.5px solid #d4af37;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(212, 175, 55, 0.25);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.google-ai-chat-launcher-btn:hover {
+  border-color: #f3e5ab;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8), 0 0 28px rgba(212, 175, 55, 0.45);
+  transform: scale(1.05);
+}
+
+@keyframes google-ai-gold-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.google-ai-chat-shimmer-bg {
+  background: linear-gradient(90deg, rgba(197, 160, 89, 0.05) 25%, rgba(197, 160, 89, 0.18) 50%, rgba(197, 160, 89, 0.05) 75%);
+  background-size: 200% 100%;
+  animation: google-ai-gold-shimmer 2.2s infinite ease-in-out;
+}
+
+.google-ai-chat-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.google-ai-chat-scroll::-webkit-scrollbar-track {
+  background: rgba(14, 15, 20, 0.6);
+}
+
+.google-ai-chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(197, 160, 89, 0.3);
+  border-radius: 9999px;
+}
+
+.google-ai-chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(197, 160, 89, 0.6);
+}

@@ -264,7 +264,7 @@ function MainApp() {
       </main>
 
       <Footer />
-      <CustomAIChatbot />
+      <CustomAIChatbot />\n      <GoogleAIChatbot />
       <BotpressGreetingPopup />
     </div>
   );
