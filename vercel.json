@@ -6,43 +6,155 @@
     {
       "source": "/api/public/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS, HEAD" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin" },
-        { "key": "Access-Control-Max-Age", "value": "86400" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS, HEAD"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+        },
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
+        }
       ]
     },
     {
       "source": "/api/rates",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS, HEAD" },
-        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin" },
-        { "key": "Access-Control-Max-Age", "value": "86400" }
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS, HEAD"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+        },
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
+        }
+      ]
+    },
+    {
+      "source": "/api/custom-ai-chat",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization, X-Requested-With"
+        },
+        {
+          "key": "Access-Control-Max-Age",
+          "value": "86400"
+        }
       ]
     }
   ],
   "rewrites": [
-    { "source": "/api/auth/:path*", "destination": "/api/auth.js" },
-    { "source": "/api/gold-rates/:path*", "destination": "/api/gold-rates.js" },
-    { "source": "/api/gold-rates", "destination": "/api/gold-rates.js" },
-    { "source": "/api/public/rates", "destination": "/api/rates.js" },
-    { "source": "/api/rates", "destination": "/api/rates.js" },
-    { "source": "/api/public/data", "destination": "/api/public.js" },
-    { "source": "/api/media/:path*", "destination": "/api/media.js" },
-    { "source": "/api/media", "destination": "/api/media.js" },
-    { "source": "/api/categories/:path*", "destination": "/api/store.js" },
-    { "source": "/api/categories", "destination": "/api/store.js" },
-    { "source": "/api/jewellery/:path*", "destination": "/api/store.js" },
-    { "source": "/api/jewellery", "destination": "/api/store.js" },
-    { "source": "/api/banners/:path*", "destination": "/api/store.js" },
-    { "source": "/api/banners", "destination": "/api/store.js" },
-    { "source": "/api/content", "destination": "/api/store.js" },
-    { "source": "/api/settings", "destination": "/api/store.js" },
-    { "source": "/api/enquiries/:path*", "destination": "/api/enquiries.js" },
-    { "source": "/api/enquiries", "destination": "/api/enquiries.js" },
-    { "source": "/api/reviews/:path*", "destination": "/api/reviews.js" },
-    { "source": "/api/reviews", "destination": "/api/reviews.js" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/api/auth/:path*",
+      "destination": "/api/auth.js"
+    },
+    {
+      "source": "/api/gold-rates/:path*",
+      "destination": "/api/gold-rates.js"
+    },
+    {
+      "source": "/api/gold-rates",
+      "destination": "/api/gold-rates.js"
+    },
+    {
+      "source": "/api/public/rates",
+      "destination": "/api/rates.js"
+    },
+    {
+      "source": "/api/rates",
+      "destination": "/api/rates.js"
+    },
+    {
+      "source": "/api/custom-ai-chat",
+      "destination": "/api/custom-ai-chat.js"
+    },
+    {
+      "source": "/api/public/data",
+      "destination": "/api/public.js"
+    },
+    {
+      "source": "/api/media/:path*",
+      "destination": "/api/media.js"
+    },
+    {
+      "source": "/api/media",
+      "destination": "/api/media.js"
+    },
+    {
+      "source": "/api/categories/:path*",
+      "destination": "/api/store.js"
+    },
+    {
+      "source": "/api/categories",
+      "destination": "/api/store.js"
+    },
+    {
+      "source": "/api/jewellery/:path*",
+      "destination": "/api/store.js"
+    },
+    {
+      "source": "/api/jewellery",
+      "destination": "/api/store.js"
+    },
+    {
+      "source": "/api/banners/:path*",
+      "destination": "/api/store.js"
+    },
+    {
+      "source": "/api/banners",
+      "destination": "/api/store.js"
+    },
+    {
+      "source": "/api/content",
+      "destination": "/api/store.js"
+    },
+    {
+      "source": "/api/settings",
+      "destination": "/api/store.js"
+    },
+    {
+      "source": "/api/enquiries/:path*",
+      "destination": "/api/enquiries.js"
+    },
+    {
+      "source": "/api/enquiries",
+      "destination": "/api/enquiries.js"
+    },
+    {
+      "source": "/api/reviews/:path*",
+      "destination": "/api/reviews.js"
+    },
+    {
+      "source": "/api/reviews",
+      "destination": "/api/reviews.js"
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
+    }
   ]
 }
