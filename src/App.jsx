@@ -15,7 +15,7 @@ import TestimonialsSection from './components/public/TestimonialsSection';
 import CustomEnquiryForm from './components/public/CustomEnquiryForm';
 import ContactSection from './components/public/ContactSection';
 import Footer from './components/public/Footer';
-import AIAssistantManager from './components/public/AIAssistantManager';
+import BotpressGreetingPopup from './components/public/BotpressGreetingPopup';
 import CategoryCataloguePage from './components/public/CategoryCataloguePage';
 
 import { ensureHomeHistoryRoot, navigateTo } from './utils/navigation';
@@ -263,7 +263,7 @@ function MainApp() {
       </main>
 
       <Footer />
-      <AIAssistantManager />
+      <BotpressGreetingPopup />
     </div>
   );
 }
