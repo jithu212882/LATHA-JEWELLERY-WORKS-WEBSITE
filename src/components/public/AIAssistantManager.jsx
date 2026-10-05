@@ -49,25 +49,41 @@ export default function AIAssistantManager() {
 
     // Hide native Botpress FAB button so only our unified launcher is visible
     const hideBpFab = () => {
-      document.querySelectorAll('.bpFabContainer, .bpFabWrapper, [class*="bpFabContainer"]').forEach(el => {
-        el.style.display = 'none';
-        el.style.opacity = '0';
-        el.style.pointerEvents = 'none';
+      // 1. Regular DOM
+      document.querySelectorAll('.bpChatContainer, [class*="bpFab"], div[id*="bp-"]').forEach(container => {
+        const fab = container.querySelector('.bpFabContainer, .bpFabWrapper, [class*="bpFab"]');
+        if (fab) {
+          fab.style.setProperty('display', 'none', 'important');
+          fab.style.setProperty('visibility', 'hidden', 'important');
+          fab.style.setProperty('opacity', '0', 'important');
+          fab.style.setProperty('pointer-events', 'none', 'important');
+        }
       });
 
+      // 2. Open Shadow Roots (Botpress v5 web components)
       document.querySelectorAll('*').forEach(el => {
         if (el.shadowRoot) {
           el.shadowRoot.querySelectorAll('.bpFabContainer, .bpFabWrapper, [class*="bpFab"]').forEach(fab => {
-            fab.style.display = 'none';
-            fab.style.opacity = '0';
-            fab.style.pointerEvents = 'none';
+            fab.style.setProperty('display', 'none', 'important');
+            fab.style.setProperty('visibility', 'hidden', 'important');
+            fab.style.setProperty('opacity', '0', 'important');
+            fab.style.setProperty('pointer-events', 'none', 'important');
           });
+
+          if (!el.shadowRoot.querySelector('#hide-fab-style')) {
+            const s = document.createElement('style');
+            s.id = 'hide-fab-style';
+            s.textContent = '.bpFabContainer, .bpFabWrapper, .bpFab, [class*="bpFab"] { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; }';
+            el.shadowRoot.appendChild(s);
+          }
         }
       });
     };
 
     hideBpFab();
-    const fabInterval = setInterval(hideBpFab, 1000);
+    const fabInterval = setInterval(hideBpFab, 500);
+    const observer = new MutationObserver(hideBpFab);
+    observer.observe(document.body, { childList: true, subtree: true });
 
     // Close selector when clicking outside
     const handleOutsideClick = (e) => {
@@ -81,6 +97,7 @@ export default function AIAssistantManager() {
       clearTimeout(timer);
       clearInterval(checkBotpress);
       clearInterval(fabInterval);
+      observer.disconnect();
       document.removeEventListener('mousedown', handleOutsideClick);
     };
   }, []);
