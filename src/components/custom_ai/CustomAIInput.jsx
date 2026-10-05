@@ -5,15 +5,18 @@ export default function CustomAIInput({ onSend, disabled, placeholder = 'Ask abo
   const inputRef = useRef(null);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!text.trim() || disabled) return;
-    onSend(text.trim());
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    const trimmed = (text || '').trim();
+    if (!trimmed || disabled) return;
+    onSend(trimmed);
     setText('');
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
       handleSubmit(e);
     }
   };
@@ -35,7 +38,7 @@ export default function CustomAIInput({ onSend, disabled, placeholder = 'Ask abo
         type="submit"
         disabled={!text.trim() || disabled}
         aria-label="Send message"
-        className="w-10 h-10 rounded-xl bg-accent-gold hover:bg-[#c49f2c] text-[#121212] font-bold flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_2px_10px_rgba(212,175,55,0.2)] shrink-0"
+        className="w-10 h-10 rounded-xl bg-accent-gold hover:bg-[#c49f2c] text-[#121212] font-bold flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_2px_10px_rgba(212,175,55,0.2)] shrink-0 cursor-pointer"
       >
         <span className="material-symbols-outlined text-[19px]">
           send

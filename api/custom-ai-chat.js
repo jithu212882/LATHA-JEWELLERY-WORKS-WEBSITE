@@ -70,7 +70,7 @@ function generateGroundedFallback(userMessage, context) {
     return `${context.goldRateContext}\n\nPlease note that gold rates change daily in response to bullion market movements. You are welcome to contact our master goldsmiths at +91 9487056064 for exact custom design quotes.`;
   }
 
-  if (q.includes('hello') || q.includes('hi') || q.includes('hey') || q.includes('vanakkam') || q.includes('namaste')) {
+  if (/\b(hello|hi|hey|vanakkam|namaste)\b/i.test(q)) {
     return "Welcome to Latha Jewellery Works! Established in 1990 in Chathencode, we handcraft authentic 22K (916) hallmarked gold ornaments, traditional bridal heirlooms, and silver pieces. How may I assist you today? You can ask about today's live gold rates, our jewellery collections, store timings, or custom designs.";
   }
 
@@ -117,7 +117,7 @@ export default async function handler(req, res) {
       try { body = JSON.parse(body); } catch (e) {}
     }
 
-    const userMessage = (body?.message || '').trim();
+    const userMessage = (typeof body?.message === 'string' ? body.message : '').trim();
     if (!userMessage) {
       return res.status(400).json({ error: 'Message cannot be empty.' });
     }
@@ -185,10 +185,12 @@ CRITICAL RULES:
     });
 
   } catch (error) {
-    console.error('[CustomAI] API Error:', error);
-    return res.status(500).json({
-      error: 'Failed to process chat message',
-      details: error.message
+    console.error('[CustomAI] API Error caught in handler:', error);
+    return res.status(200).json({
+      success: true,
+      reply: "Thank you for reaching out to Latha Jewellery Works. For immediate assistance regarding our handcrafted gold collections or today's live rates, please connect directly with our atelier at +91 9487056064.",
+      provider: 'safety_fallback',
+      grounded: true
     });
   }
 }

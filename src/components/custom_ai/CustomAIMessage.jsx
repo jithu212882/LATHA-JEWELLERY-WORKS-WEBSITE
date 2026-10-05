@@ -1,12 +1,27 @@
 import React from 'react';
 
 export default function CustomAIMessage({ message }) {
-  const isUser = message.sender === 'user';
-  const timeStr = message.timestamp
-    ? new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    : '';
+  if (!message || typeof message !== 'object') {
+    return null;
+  }
 
-  const hasWhatsAppIntent = !isUser && (message.text.includes('+91 9487056064') || message.text.includes('WhatsApp'));
+  const isUser = message.sender === 'user';
+  const rawText = typeof message.text === 'string'
+    ? message.text
+    : (message.text != null ? String(message.text) : '');
+
+  let timeStr = '';
+  try {
+    if (message.timestamp) {
+      timeStr = new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  } catch (e) {
+    timeStr = '';
+  }
+
+  const hasWhatsAppIntent = !isUser && Boolean(
+    rawText && (rawText.includes('+91 9487056064') || rawText.includes('WhatsApp'))
+  );
 
   return (
     <div className={`flex w-full ${isUser ? 'justify-end' : 'justify-start'} mb-3`}>
@@ -36,7 +51,7 @@ export default function CustomAIMessage({ message }) {
           )}
 
           <div className="whitespace-pre-line break-words">
-            {message.text}
+            {rawText || "I'm here to assist you with any questions about Latha Jewellery Works."}
           </div>
 
           {hasWhatsAppIntent && (

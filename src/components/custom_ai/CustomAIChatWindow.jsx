@@ -12,17 +12,24 @@ const QUICK_PROMPTS = [
 export default function CustomAIChatWindow({
   isOpen,
   onClose,
-  messages,
-  isLoading,
+  messages = [],
+  isLoading = false,
   onSend
 }) {
   const messagesEndRef = useRef(null);
 
+  // Defensively sanitize messages array: flat list of valid objects only
+  const safeMessages = (Array.isArray(messages) ? messages.flat() : []).filter(
+    (m) => m && typeof m === 'object' && typeof m.id !== 'undefined'
+  );
+
   useEffect(() => {
     if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      try {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      } catch (e) {}
     }
-  }, [messages, isLoading, isOpen]);
+  }, [safeMessages.length, isLoading, isOpen]);
 
   if (!isOpen) return null;
 
@@ -52,7 +59,7 @@ export default function CustomAIChatWindow({
         <button
           onClick={onClose}
           aria-label="Close Concierge"
-          className="w-7 h-7 rounded-lg bg-[#242424] hover:bg-[#333333] border border-[#3A3A3A] text-[#F5F2EB]/70 hover:text-white flex items-center justify-center transition-colors"
+          className="w-7 h-7 rounded-lg bg-[#242424] hover:bg-[#333333] border border-[#3A3A3A] text-[#F5F2EB]/70 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
         >
           <span className="material-symbols-outlined text-[16px]">close</span>
         </button>
@@ -71,13 +78,13 @@ export default function CustomAIChatWindow({
         </div>
 
         {/* Quick Suggestion Chips */}
-        {messages.length <= 1 && (
+        {safeMessages.length <= 1 && (
           <div className="grid grid-cols-2 gap-1.5 mb-3">
             {QUICK_PROMPTS.map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => onSend(prompt.replace(/[\u{1F300}-\u{1F6FF}]/gu, '').trim())}
-                className="text-left text-[11px] p-2 rounded-lg bg-[#1E1E1E] hover:bg-[#282828] border border-[#333333] hover:border-accent-gold/50 text-[#F5F2EB]/80 hover:text-accent-gold transition-all leading-snug"
+                className="text-left text-[11px] p-2 rounded-lg bg-[#1E1E1E] hover:bg-[#282828] border border-[#333333] hover:border-accent-gold/50 text-[#F5F2EB]/80 hover:text-accent-gold transition-all leading-snug cursor-pointer"
               >
                 {prompt}
               </button>
@@ -86,7 +93,7 @@ export default function CustomAIChatWindow({
         )}
 
         {/* Rendered Messages */}
-        {messages.map((msg) => (
+        {safeMessages.map((msg) => (
           <CustomAIMessage key={msg.id} message={msg} />
         ))}
 

@@ -1,6 +1,7 @@
-import React, { waste, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import CustomAIChatButton from './CustomAIChatButton';
 import CustomAIChatWindow from './CustomAIChatWindow';
+import CustomAIChatErrorBoundary from './CustomAIChatErrorBoundary';
 import { sendChatMessage } from '../../services/customAIService';
 
 const INITIAL_WELCOME = {
@@ -10,7 +11,10 @@ const INITIAL_WELCOME = {
   timestamp: new Date().toISOString()
 };
 
-export default function CustomAIChatbot() {
+const DEFAULT_ERROR_TEXT =
+  "I'm unable to process that request right now. Please try again or contact Latha Jewellery Works directly on WhatsApp at +91 9487056064.";
+
+function CustomAIChatbotInner() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([INITIAL_WELCOME]);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,44 +36,61 @@ export default function CustomAIChatbot() {
   };
 
   const handleSend = async (userText) => {
-    if (!userText || !userText.trim() || isLoading) return;
+    const cleanUserText = typeof userText === 'string' ? userText.trim() : '';
+    if (!cleanUserText || isLoading) return;
 
     const userMessage = {
       id: 'user-' + Date.now(),
       sender: 'user',
-      text: userText.trim(),
+      text: cleanUserText,
       timestamp: new Date().toISOString()
     };
 
-    setMessages((prev) => [prev, userMessage]);
+    // Safely append user message (flat array safeguard)
+    setMessages((prev) => {
+      const currentList = Array.isArray(prev) ? prev.flat() : [];
+      return [...currentList, userMessage];
+    });
+
     setIsLoading(true);
 
     try {
-      const result = await sendChatMessage(userText.trim(), messages);
+      const currentSnapshot = Array.isArray(messages) ? messages.flat() : [];
+      const result = await sendChatMessage(cleanUserText, currentSnapshot);
+
+      const replyText = (result && typeof result.reply === 'string' && result.reply.trim())
+        ? result.reply.trim()
+        : DEFAULT_ERROR_TEXT;
+
       const botMessage = {
         id: 'bot-' + Date.now(),
         sender: 'assistant',
-        text: result.reply,
+        text: replyText,
         timestamp: new Date().toISOString(),
-        isGrounded: result.grounded
+        isGrounded: Boolean(result?.grounded)
       };
 
-      setMessages((prev) => [...prev, botMessage]);
+      setMessages((prev) => {
+        const currentList = Array.isArray(prev) ? prev.flat() : [];
+        return [...currentList, botMessage];
+      });
 
       if (!isOpen) {
         setUnreadCount((c) => c + 1);
       }
     } catch (err) {
-      console.error('[CustomAIChatbot] Send error:', err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: 'bot-err-' + Date.now(),
-          sender: 'assistant',
-          text: 'We are momentarily unable to reach the atelier database. Please contact us on WhatsApp at +91 9487056064 for immediate assistance.',
-          timestamp: new Date().toISOString()
-        }
-      ]);
+      console.error('[CustomAIChatbot] Send error caught:', err);
+      const fallbackBotMessage = {
+        id: 'bot-err-' + Date.now(),
+        sender: 'assistant',
+        text: DEFAULT_ERROR_TEXT,
+        timestamp: new Date().toISOString()
+      };
+
+      setMessages((prev) => {
+        const currentList = Array.isArray(prev) ? prev.flat() : [];
+        return [...currentList, fallbackBotMessage];
+      });
     } finally {
       setIsLoading(false);
     }
@@ -92,5 +113,13 @@ export default function CustomAIChatbot() {
         onSend={handleSend}
       />
     </>
+  );
+}
+
+export default function CustomAIChatbot() {
+  return (
+    <CustomAIChatErrorBoundary>
+      <CustomAIChatbotInner />
+    </CustomAIChatErrorBoundary>
   );
 }
