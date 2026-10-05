@@ -549,4 +549,35 @@ router.put('/settings', authenticateToken, (req, res) => {
   res.json(store.business_settings);
 });
 
+
+// ==========================================
+// 11. AI CONCIERGE CHATBOT ENDPOINTS
+// ==========================================
+router.get('/rates', async (req, res) => {
+  try {
+    const handler = (await import('../../api/rates.js')).default;
+    return await handler(req, res);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/google-ai-chat', async (req, res) => {
+  try {
+    const handler = (await import('../../api/google-ai-chat.js')).default;
+    return await handler(req, res);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/custom-ai-chat', async (req, res) => {
+  try {
+    const handler = (await import('../../api/custom-ai-chat.js')).default;
+    return await handler(req, res);
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;

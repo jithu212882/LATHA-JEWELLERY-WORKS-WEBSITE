@@ -7,6 +7,7 @@
 import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
 import path from 'path';
+import { fetchFromSupabase, isSupabaseConfigured } from '../server/supabase.js';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || null;
 
@@ -39,7 +40,24 @@ const VERIFIED_STORE_INFO = {
 /**
  * Retrieves current verified live rates from local store cache or default verified values.
  */
-function getVerifiedRates() {
+async function getVerifiedRates() {
+  if (isSupabaseConfigured()) {
+    try {
+      const sbRates = await fetchFromSupabase('gold_rates', 'id', false);
+      if (sbRates && sbRates.length > 0) {
+        const r = sbRates[0];
+        return {
+          rate_22k: r.rate_22k || String(r.price_22k || '12,182'),
+          rate_24k: r.rate_24k || String(r.price_24k || '13,289'),
+          rate_18k: r.rate_18k || String(r.price_18k || '9,967'),
+          rate_silver: r.rate_silver ? String(r.rate_silver) : '95'
+        };
+      }
+    } catch (e) {
+      console.warn('[GoogleAI] Supabase live rate fetch notice:', e.message);
+    }
+  }
+
   try {
     const tmpPath = '/tmp/store.json';
     if (fs.existsSync(tmpPath)) {
@@ -57,9 +75,9 @@ function getVerifiedRates() {
   } catch (e) {}
 
   return {
-    rate_22k: '12,256',
-    rate_24k: '13,370',
-    rate_18k: '10,027',
+    rate_22k: '12,182',
+    rate_24k: '13,289',
+    rate_18k: '9,967',
     rate_silver: '95'
   };
 }
@@ -131,7 +149,7 @@ export default async function handler(req, res) {
     }
 
     const trimmedMessage = message.trim();
-    const currentRates = getVerifiedRates();
+    const currentRates = await getVerifiedRates();
 
     // Check if Gemini API Key is configured
     if (!GEMINI_API_KEY) {
@@ -233,7 +251,7 @@ CRITICAL RULES:
 
   } catch (error) {
     console.error('[GoogleAI] Unexpected handler error:', error.message);
-    const rates = getVerifiedRates();
+    const rates = await getVerifiedRates();
     return res.status(200).json({
       success: true,
       reply: "Thank you for contacting Latha Jewellery Works. For immediate assistance with our 22K hallmarked collections or today's live gold rates, please connect with our atelier directly at +91 9487056064.",
