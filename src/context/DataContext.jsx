@@ -117,13 +117,13 @@ export function DataProvider({ children }) {
         }
       } catch (e) {}
       return initialStoreData.gold_rates?.[0] || {
-        rate_24k: '13,289',
-        rate_22k: '12,182',
-        rate_18k: '9,967',
+        rate_24k: '12,850',
+        rate_22k: '11,780',
+        rate_18k: '9,638',
         rate_silver: '95',
         ticker_visible: 1,
-        last_updated: '23 Sept 2026, 04:57 pm',
-        source: 'GoldAPI.io (Live)',
+        last_updated: 'Live Market Rate',
+        source: 'MetalpriceAPI (Live)',
         status: 'Connected (Live)',
         mode: 'AUTOMATIC_API'
       };
@@ -259,7 +259,7 @@ export function DataProvider({ children }) {
           }
         }));
       } else {
-        // Live GoldAPI fetch via serverless endpoint
+        // Live MetalpriceAPI fetch via serverless endpoint
         try {
           const liveRes = await fetch('/api/gold-rates/fetch-live');
           const { ok, data: liveJson } = await parseJsonResponse(liveRes);

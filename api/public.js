@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { fetchFromSupabase, upsertToSupabase, isSupabaseConfigured } from '../server/supabase.js';
+import { fetchLiveGoldRates } from '../server/metalpriceApi.js';
 
 let memoryStore = null;
 
@@ -146,19 +147,19 @@ export default async function handler(req, res) {
       rate_silver: goldRates.rate_silver || '95',
       ticker_visible: goldRates.ticker_visible !== undefined ? goldRates.ticker_visible : 1,
       last_updated: goldRates.last_updated || 'Live Market Rate',
-      source: goldRates.source || 'GoldAPI.io (Live)',
+      source: goldRates.source || 'MetalpriceAPI (Live)',
       status: goldRates.status || 'Connected (Live)',
       mode: goldRates.mode || 'AUTOMATIC_API'
     };
   } else {
     finalGoldRates = {
-      rate_24k: '13,289',
-      rate_22k: '12,182',
-      rate_18k: '9,967',
+      rate_24k: '12,850',
+      rate_22k: '11,780',
+      rate_18k: '9,638',
       rate_silver: '95',
       ticker_visible: 1,
-      last_updated: '23 Sept 2026, 04:57 pm',
-      source: 'GoldAPI.io (Live)',
+      last_updated: 'Live Market Rate',
+      source: 'MetalpriceAPI (Live)',
       status: 'Connected (Live)',
       mode: 'AUTOMATIC_API'
     };

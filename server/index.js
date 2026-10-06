@@ -4,7 +4,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import apiRouter from './routes/api.js';
-import { updateGoldRatesFromAPI } from './goldApi.js';
+import { updateGoldRatesFromAPI } from './metalpriceApi.js';
 import { initDeliveryService } from './deliveryService.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -33,12 +33,12 @@ app.listen(PORT, async () => {
   // Ingest sample delivery dataset on server start
   initDeliveryService();
   
-  // Initial GoldAPI.io auto fetch on server boot
-  updateGoldRatesFromAPI().catch(err => console.error('GoldAPI boot sync error:', err));
+  // Initial MetalpriceAPI auto fetch on server boot
+  updateGoldRatesFromAPI().catch(err => console.error('MetalpriceAPI boot sync error:', err));
   
   // Scheduled periodic gold rate update every 6 hours (21,600,000 ms)
   setInterval(() => {
-    console.log('⏰ Running scheduled GoldAPI.io rate update...');
-    updateGoldRatesFromAPI().catch(err => console.error('GoldAPI scheduled sync error:', err));
+    console.log('⏰ Running scheduled MetalpriceAPI rate update...');
+    updateGoldRatesFromAPI().catch(err => console.error('MetalpriceAPI scheduled sync error:', err));
   }, 6 * 60 * 60 * 1000);
 });

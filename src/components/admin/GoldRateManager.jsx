@@ -32,13 +32,13 @@ export default function GoldRateManager() {
     }
   }, [gold_rates?.rate_24k, gold_rates?.rate_22k, gold_rates?.rate_18k, gold_rates?.rate_silver]);
 
-  // Trigger Live GoldAPI.io Fetch
+  // Trigger Live MetalpriceAPI Fetch
   const handleFetchLive = async () => {
     setFetching(true);
     setStatusMsg('');
     setErrorMsg('');
 
-    const apiKey = testApiKey.trim() || 'goldapi-07b38ebf247585a302d0df580bc43d17-io';
+    const apiKey = testApiKey.trim() || 'd18ebc22362256e0497a2d1080d18648';
 
     // 1. Try serverless backend endpoint first
     try {
@@ -69,21 +69,21 @@ export default function GoldRateManager() {
       }
     } catch (e) {}
 
-    // 2. Direct client-side GoldAPI.io fetch fallback (Guarantees instant update on Vercel)
+    // 2. Direct client-side MetalpriceAPI fetch fallback (Guarantees instant update on Vercel)
     try {
-      const apiRes = await fetch('https://www.goldapi.io/api/price/XAU/INR', {
-        method: 'GET',
-        headers: {
-          'x-access-token': apiKey,
-          'Content-Type': 'application/json'
-        }
-      });
+      const apiRes = await fetch(`https://api.metalpriceapi.com/v1/latest?api_key=${apiKey}&base=INR&currencies=XAU,XAG`);
 
       if (apiRes.ok) {
         const data = await apiRes.json();
-        const p24 = Number(data.price_gram_24k || data.melt_price_per_gram?.['24k'] || data.price_per_unit?.gram || (data.price ? data.price / 31.1034768 : 0));
-        const p22 = Number(data.price_gram_22k || data.melt_price_per_gram?.['22k'] || (p24 ? p24 * (22 / 24) : 0));
-        const p18 = Number(data.price_gram_18k || data.melt_price_per_gram?.['18k'] || (p24 ? p24 * (18 / 24) : 0));
+        const xauInInr = Number(data.rates?.INRXAU || (data.rates?.XAU ? (1 / data.rates.XAU) : 0));
+        const p24 = xauInInr > 0 ? (xauInInr / 31.1034768) : 0;
+        const p22 = p24 * (22 / 24);
+        const p18 = p24 * (18 / 24);
+
+        let pSilver = 95;
+        if (data.rates?.INRXAG) {
+          pSilver = Math.round(Number(data.rates.INRXAG) / 31.1034768);
+        }
 
         if (p24 >= 4000 && p24 < 30000 && p22 >= 3500 && p22 < 30000 && p18 > 0) {
           const formatted24k = Math.round(p24).toLocaleString('en-IN');
@@ -103,11 +103,11 @@ export default function GoldRateManager() {
             raw_24k: Math.round(p24),
             raw_22k: Math.round(p22),
             raw_18k: Math.round(p18),
-            rate_silver: gold_rates?.rate_silver || '95',
+            rate_silver: String(pSilver),
             ticker_visible: 1,
             last_updated: timestampStr,
             last_successful_update: timestampStr,
-            source: 'GoldAPI.io (Live)',
+            source: 'MetalpriceAPI (Live)',
             status: 'Connected (Live)',
             mode: 'AUTOMATIC_API'
           };
@@ -117,13 +117,13 @@ export default function GoldRateManager() {
           setManual22k(formatted22k);
           setManual18k(formatted18k);
 
-          setStatusMsg(`Successfully fetched live rates from GoldAPI.io! (24K: ₹${formatted24k}/g, 22K: ₹${formatted22k}/g, 18K: ₹${formatted18k}/g)`);
+          setStatusMsg(`Successfully fetched live rates from MetalpriceAPI! (24K: ₹${formatted24k}/g, 22K: ₹${formatted22k}/g, 18K: ₹${formatted18k}/g)`);
           setFetching(false);
           return;
         }
       }
     } catch (err) {
-      console.error('Client GoldAPI fallback error:', err);
+      console.error('Client MetalpriceAPI fallback error:', err);
     }
 
     setStatusMsg('Active Indian retail gold rates synchronized successfully.');
@@ -203,7 +203,7 @@ export default function GoldRateManager() {
 
       if (res.ok && json.rates) {
         if (saveGoldRates) saveGoldRates({ ...json.rates, mode: 'AUTOMATIC_API' });
-        setStatusMsg('Restored automatic GoldAPI.io market rate mode.');
+        setStatusMsg('Restored automatic MetalpriceAPI market rate mode.');
         setFetching(false);
         return;
       }
@@ -219,7 +219,7 @@ export default function GoldRateManager() {
       <div className="flex justify-between items-end border-b border-[#2A2A2A] pb-6">
         <div>
           <span className="text-xs text-accent-gold uppercase tracking-widest font-bold">
-            Bullion Pricing Engine (GoldAPI.io)
+            Bullion Pricing Engine (MetalpriceAPI)
           </span>
           <h1 className="font-headline text-3xl sm:text-4xl text-[#F9F6F0] font-bold mt-1">
             Gold Rate Management
@@ -263,7 +263,7 @@ export default function GoldRateManager() {
               Central Gold Price Source
             </span>
             <h2 className="font-headline text-2xl font-bold text-[#F9F6F0]">
-              {gold_rates?.source || 'GoldAPI.io (XAU/INR)'}
+              {gold_rates?.source || 'MetalpriceAPI (XAU/INR)'}
             </h2>
           </div>
 
@@ -275,7 +275,7 @@ export default function GoldRateManager() {
             <span className={`material-symbols-outlined text-[18px] ${fetching ? 'animate-spin' : ''}`}>
               sync
             </span>
-            <span>{fetching ? 'Connecting GoldAPI.io...' : 'Fetch Live GoldAPI.io Rates Now'}</span>
+            <span>{fetching ? 'Connecting MetalpriceAPI...' : 'Fetch Live MetalpriceAPI Rates Now'}</span>
           </button>
         </div>
 
@@ -335,7 +335,7 @@ export default function GoldRateManager() {
               Optional Emergency Manual Override
             </h3>
             <p className="font-body text-xs text-[#F5F2EB]/60 mt-1">
-              Use only in emergencies if GoldAPI.io is offline. Default source is automatic GoldAPI.io market rates.
+              Use only in emergencies if MetalpriceAPI is offline. Default source is automatic MetalpriceAPI market rates.
             </p>
           </div>
 

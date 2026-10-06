@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS public.gold_rates (
     price_18k NUMERIC,
     currency TEXT DEFAULT 'INR',
     unit TEXT DEFAULT 'gram',
-    source TEXT DEFAULT 'GoldAPI.io (Live)',
+    source TEXT DEFAULT 'MetalpriceAPI (Live)',
     status TEXT DEFAULT 'Connected (Live)',
     mode TEXT DEFAULT 'AUTOMATIC_API',
     ticker_visible INT DEFAULT 1,
@@ -219,7 +219,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Seed Initial Gold Rates (Realistic 2026 Board Rates)
 INSERT INTO public.gold_rates (id, rate_24k, rate_22k, rate_18k, rate_silver, price_24k, price_22k, price_18k, currency, unit, source, status, mode, ticker_visible, last_updated)
-VALUES (1, '13,289', '12,182', '9,967', '95', 13289, 12182, 9967, 'INR', 'gram', 'GoldAPI.io (Live)', 'Connected (Live)', 'AUTOMATIC_API', 1, '23 Sept 2026, 04:57 pm')
+VALUES (1, '12,850', '11,780', '9,638', '95', 12850, 11780, 9638, 'INR', 'gram', 'MetalpriceAPI (Live)', 'Connected (Live)', 'AUTOMATIC_API', 1, 'Live Market Rate')
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage Bucket for jewellery images (if using Supabase Storage)

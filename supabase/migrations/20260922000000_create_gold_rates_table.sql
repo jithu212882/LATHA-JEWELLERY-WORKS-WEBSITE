@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS public.gold_rates (
   price_18k NUMERIC(12,2) NOT NULL,
   currency TEXT NOT NULL DEFAULT 'INR',
   unit TEXT NOT NULL DEFAULT 'gram',
-  source TEXT NOT NULL DEFAULT 'GoldAPI',
+  source TEXT NOT NULL DEFAULT 'MetalpriceAPI',
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

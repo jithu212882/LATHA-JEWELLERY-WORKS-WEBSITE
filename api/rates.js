@@ -1,17 +1,18 @@
 import fs from 'fs';
 import path from 'path';
 import { fetchFromSupabase, getSupabase, isSupabaseConfigured } from '../server/supabase.js';
+import { fetchLiveGoldRates } from '../server/metalpriceApi.js';
 
 const DEFAULT_RATES = {
-  rate_24k: '13,289',
-  rate_22k: '12,182',
-  rate_18k: '9,967',
+  rate_24k: '12,850',
+  rate_22k: '11,780',
+  rate_18k: '9,638',
   rate_silver: '95',
-  price_24k: 13289,
-  price_22k: 12182,
-  price_18k: 9967,
+  price_24k: 12850,
+  price_22k: 11780,
+  price_18k: 9638,
   price_silver: 95,
-  source: 'GoldAPI.io (Live)',
+  source: 'MetalpriceAPI (Live)',
   status: 'Connected (Live)',
   mode: 'AUTOMATIC_API',
   last_updated: 'Live Market Rate'
@@ -69,8 +70,18 @@ export default async function handler(req, res) {
 
   let rateData = null;
 
+  // 3. Try live MetalpriceAPI first (uses 15-minute in-memory cache)
+  try {
+    const liveRates = await fetchLiveGoldRates();
+    if (liveRates && liveRates.price_24k) {
+      rateData = liveRates;
+    }
+  } catch (e) {
+    console.warn('[Rates API] MetalpriceAPI fetch notice:', e.message);
+  }
+
   // 4. Try fetching latest rates from Supabase database
-  if (isSupabaseConfigured()) {
+  if (!rateData && isSupabaseConfigured()) {
     try {
       const sbRates = await fetchFromSupabase('gold_rates', 'id', false); // order by id desc
       if (sbRates && sbRates.length > 0) {
@@ -87,13 +98,13 @@ export default async function handler(req, res) {
   }
 
   // 6. Normalize numeric values
-  const p24 = Number(rateData.price_24k || String(rateData.rate_24k).replace(/[^0-9.]/g, '') || 13289);
+  const p24 = Number(rateData.price_24k || String(rateData.rate_24k).replace(/[^0-9.]/g, '') || 12850);
   const p22 = Number(rateData.price_22k || String(rateData.rate_22k).replace(/[^0-9.]/g, '') || Math.round(p24 * (22 / 24)));
   const p18 = Number(rateData.price_18k || String(rateData.rate_18k).replace(/[^0-9.]/g, '') || Math.round(p24 * (18 / 24)));
   const pSilver = Number(rateData.rate_silver ? String(rateData.rate_silver).replace(/[^0-9.]/g, '') : 95) || 95;
 
   // Ensure reasonable bounds (between 4,000 and 30,000 for gold per gram)
-  const valid24 = p24 >= 4000 && p24 < 30000 ? p24 : 13289;
+  const valid24 = p24 >= 4000 && p24 < 30000 ? p24 : 12850;
   const valid22 = p22 >= 3500 && p22 < 30000 ? p22 : Math.round(valid24 * (22 / 24));
   const valid18 = p18 >= 3000 && p18 < 30000 ? p18 : Math.round(valid24 * (18 / 24));
 
@@ -104,11 +115,11 @@ export default async function handler(req, res) {
   const strSilver = String(rateData.rate_silver || pSilver);
 
   const lastUpdated = rateData.last_updated || 'Live Market Rate';
-  const source = rateData.source || 'GoldAPI.io (Live)';
+  const source = rateData.source || 'MetalpriceAPI (Live)';
   const status = rateData.status || 'Connected (Live)';
   const mode = rateData.mode || 'AUTOMATIC_API';
 
-  // 7. Structured JSON response optimized for Botpress and API consumers
+  // 7. Structured JSON response optimized for Botpress, Ask Latha AI, and API consumers
   return res.status(200).json({
     success: true,
     currency: 'INR',
@@ -142,9 +153,9 @@ export default async function handler(req, res) {
     price_24k: valid24,
     price_18k: valid18,
     price_silver: pSilver,
-    summary: `Today's Gold Rate at Latha Jewellery Works: 22K is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
-    text: `Today's Gold Rate at Latha Jewellery Works: 22K is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
-    message: `Today's Gold Rate at Latha Jewellery Works: 22K is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
+    summary: `Today's Gold Rate at Latha Jewellery Works: 22K (916 Hallmarked) is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
+    text: `Today's Gold Rate at Latha Jewellery Works: 22K (916 Hallmarked) is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
+    message: `Today's Gold Rate at Latha Jewellery Works: 22K (916 Hallmarked) is ₹${str22k}/g, 24K is ₹${str24k}/g, 18K is ₹${str18k}/g, and Silver is ₹${strSilver}/g.`,
     source,
     status,
     mode,

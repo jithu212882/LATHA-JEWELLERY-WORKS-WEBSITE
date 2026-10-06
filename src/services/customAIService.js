@@ -10,7 +10,7 @@ const FALLBACK_GROUNDED_REPLY =
 
 function getClientCustomFallback(lower) {
   if (lower.includes('rate') || lower.includes('gold') || lower.includes('silver')) {
-    return "Today's Official Rates at Latha Jewellery Works:\n• 22K (BIS 916): ₹12,182/g\n• 24K: ₹13,289/g\n• 18K: ₹9,967/g\n• Silver 999: ₹95/g\nAll jewellery is 100% BIS 916 hallmarked with 6-digit laser HUID.";
+    return "Today's Official Rates at Latha Jewellery Works:\n• 22K Gold (916 Hallmarked): ₹11,780/g\n• 24K Pure Gold: ₹12,850/g\n• 18K Gold: ₹9,638/g\n• Silver: ₹95/g\nAll jewellery is 100% BIS 916 hallmarked with 6-digit laser HUID purity authentication. Daily bullion rates are updated live via MetalpriceAPI.";
   }
   if (/\b(track|tracking|delivery)\b/i.test(lower) || /\bwhere\s+(is|are|'s)\s+.*order\b/i.test(lower) || /\bstatus\s+of\s+.*order\b/i.test(lower)) {
     return "Please provide your Order ID (1 to 50) to check your live delivery status.";

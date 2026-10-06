@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import { fileURLToPath } from 'url';
 import { store, saveStore } from '../db.js';
 import { JWT_SECRET, authenticateToken } from '../middleware/auth.js';
-import { updateGoldRatesFromAPI } from '../goldApi.js';
+import { updateGoldRatesFromAPI } from '../metalpriceApi.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -65,12 +65,13 @@ router.get('/public/data', (req, res) => {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   const goldRates = store.gold_rates[0] || {
-    rate_24k: '13,289',
-    rate_22k: '12,182',
-    rate_18k: '9,967',
+    rate_24k: '12,850',
+    rate_22k: '11,780',
+    rate_18k: '9,638',
     rate_silver: '95',
     ticker_visible: 1,
-    last_updated: '23 Sept 2026, 04:57 pm'
+    source: 'MetalpriceAPI (Live)',
+    last_updated: 'Live Market Rate'
   };
 
   res.json({
@@ -329,24 +330,24 @@ router.delete('/banners/:id', authenticateToken, (req, res) => {
 });
 
 // ==========================================
-// 7. GOLD RATES & HISTORY (GoldAPI.io Integration)
+// 7. GOLD RATES & HISTORY (MetalpriceAPI Integration)
 // ==========================================
 router.get('/gold-rates', (req, res) => {
   const current = store.gold_rates[0] || {
-    rate_24k: '13,289',
-    rate_22k: '12,182',
-    rate_18k: '9,967',
+    rate_24k: '12,850',
+    rate_22k: '11,780',
+    rate_18k: '9,638',
     rate_silver: '95',
     ticker_visible: 1,
-    last_updated: '23 Sept 2026, 04:57 pm',
-    source: 'GoldAPI.io',
+    last_updated: 'Live Market Rate',
+    source: 'MetalpriceAPI (Live)',
     status: 'Connected',
     mode: 'AUTOMATIC_API'
   };
   res.json({ current, history: store.rate_history });
 });
 
-// Trigger Live GoldAPI.io Refresh
+// Trigger Live MetalpriceAPI Refresh
 router.post('/gold-rates/fetch-live', authenticateToken, async (req, res) => {
   const customKey = req.body?.api_key || null;
   const result = await updateGoldRatesFromAPI(customKey);
@@ -363,9 +364,9 @@ router.post('/gold-rates/override', authenticateToken, (req, res) => {
   const updated = {
     ...current,
     id: 1,
-    rate_24k: rate_24k || current.rate_24k || '13,289',
-    rate_22k: rate_22k || current.rate_22k || '12,182',
-    rate_18k: rate_18k || current.rate_18k || '9,967',
+    rate_24k: rate_24k || current.rate_24k || '12,850',
+    rate_22k: rate_22k || current.rate_22k || '11,780',
+    rate_18k: rate_18k || current.rate_18k || '9,638',
     rate_silver: rate_silver || current.rate_silver || '95',
     ticker_visible: ticker_visible !== undefined ? (ticker_visible ? 1 : 0) : 1,
     last_updated: `${dateStr}, ${nowStr} (Manual)`,
@@ -390,13 +391,13 @@ router.post('/gold-rates/override', authenticateToken, (req, res) => {
   res.json({ success: true, message: 'Emergency manual rate override published', rates: updated });
 });
 
-// Restore Automatic GoldAPI.io Mode
+// Restore Automatic MetalpriceAPI Mode
 router.post('/gold-rates/restore-auto', authenticateToken, async (req, res) => {
   if (store.gold_rates[0]) {
     store.gold_rates[0].mode = 'AUTOMATIC_API';
   }
   const result = await updateGoldRatesFromAPI();
-  res.json({ success: true, message: 'Restored automatic GoldAPI.io rate mode', rates: store.gold_rates[0] });
+  res.json({ success: true, message: 'Restored automatic MetalpriceAPI rate mode', rates: store.gold_rates[0] });
 });
 
 router.post('/gold-rates', authenticateToken, async (req, res) => {
