@@ -2,6 +2,11 @@
   "version": 2,
   "buildCommand": "vite build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/custom-ai-chat.js": {
+      "includeFiles": "talabat_delivery_sample.csv"
+    }
+  },
   "headers": [
     {
       "source": "/api/public/(.*)",

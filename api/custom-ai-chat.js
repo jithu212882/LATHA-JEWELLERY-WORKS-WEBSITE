@@ -1,4 +1,5 @@
 import { buildChatContext } from '../server/knowledge/retriever.js';
+import { handleDeliveryTracking } from '../server/deliveryService.js';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || null;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || null;
@@ -64,6 +65,11 @@ async function callOpenAICompatible(apiKey, baseUrl, model, systemPrompt, userMe
 }
 
 function generateGroundedFallback(userMessage, context) {
+  const deliveryReply = handleDeliveryTracking(userMessage);
+  if (deliveryReply) {
+    return deliveryReply;
+  }
+
   const q = (userMessage || '').toLowerCase();
 
   if (context.needsGoldRate && context.goldRateContext) {
@@ -120,6 +126,18 @@ export default async function handler(req, res) {
     const userMessage = (typeof body?.message === 'string' ? body.message : '').trim();
     if (!userMessage) {
       return res.status(400).json({ error: 'Message cannot be empty.' });
+    }
+
+    // 1. Check Talabat delivery tracking intent first
+    const deliveryReply = handleDeliveryTracking(userMessage);
+    if (deliveryReply) {
+      return res.status(200).json({
+        success: true,
+        reply: deliveryReply,
+        provider: 'delivery_tracker',
+        grounded: true,
+        timestamp: new Date().toISOString()
+      });
     }
 
     const context = await buildChatContext(userMessage);

@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import apiRouter from './routes/api.js';
 import { updateGoldRatesFromAPI } from './goldApi.js';
+import { initDeliveryService } from './deliveryService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +30,9 @@ app.get('/api/health', (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`✨ Latha Jewellery Works Server running on http://localhost:${PORT}`);
+  // Ingest sample delivery dataset on server start
+  initDeliveryService();
+  
   // Initial GoldAPI.io auto fetch on server boot
   updateGoldRatesFromAPI().catch(err => console.error('GoldAPI boot sync error:', err));
   

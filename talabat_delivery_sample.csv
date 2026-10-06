@@ -1,0 +1,51 @@
+Order_ID,User_ID,Item_Name,Quantity,Total_Price,Order_Time,Delivery_Time,Delivery_Duration_Minutes,City,Order_Status,Driver_Vehicle,Traffic_Level
+1,U3522,Fried Chicken,3,273.72,2025-06-16 08:32:00,2025-06-16 09:11:00,39,Alexandria,Delivered,Motorbike,High
+2,U9214,Sandwich,3,365.82,2025-06-03 21:27:00,2025-06-03 22:00:00,33,Zagazig,Delivered,Motorbike,Low
+3,U7307,Koshary,3,401.94,2025-06-01 14:48:00,2025-06-01 15:26:00,38,Assiut,In Transit,Car,Medium
+4,U3612,Sushi,2,221.18,2025-06-13 02:30:00,2025-06-13 03:22:00,52,Mansoura,Delivered,Car,Low
+5,U3492,Koshary,5,355.55,2025-06-06 09:48:00,2025-06-06 10:32:00,44,Mansoura,Delivered,Motorbike,High
+6,U7439,Sushi,3,205.44,2025-06-04 12:16:00,2025-06-04 12:45:00,29,Mansoura,Delivered,Bicycle,Medium
+7,U8948,Sushi,1,133.94,2025-06-11 04:09:00,2025-06-11 04:49:00,40,Cairo,Delivered,Bicycle,Low
+8,U8672,Shawarma,5,404.8,2025-06-12 18:37:00,2025-06-12 19:18:00,41,Mansoura,Delivered,Bicycle,High
+9,U2205,Pizza,1,101.03,2025-06-01 22:18:00,2025-06-01 23:05:00,47,Mansoura,Delivered,Motorbike,Low
+10,U7411,Pizza,1,130.05,2025-06-09 00:18:00,2025-06-09 01:04:00,46,Cairo,Delivered,Bicycle,Low
+11,U7405,Sushi,2,296.24,2025-06-04 22:11:00,2025-06-04 22:43:00,32,Assiut,Delivered,Car,Low
+12,U8337,Burger,1,111.55,2025-06-02 16:33:00,2025-06-02 17:04:00,31,Tanta,Delivered,Car,High
+13,U5398,Burger,1,39.45,2025-06-02 04:17:00,2025-06-02 04:37:00,20,Giza,Cancelled,Bicycle,Low
+14,U9001,Sushi,1,116.96,2025-06-08 03:35:00,2025-06-08 04:03:00,28,Tanta,Delivered,Bicycle,Low
+15,U8797,Burger,4,562.72,2025-06-06 13:21:00,2025-06-06 13:57:00,36,Cairo,Cancelled,Motorbike,Medium
+16,U4706,Salad,1,65.31,2025-06-05 20:23:00,2025-06-05 21:17:00,54,Alexandria,Delivered,Motorbike,Low
+17,U9985,Pizza,1,39.1,2025-06-14 10:24:00,2025-06-14 11:18:00,54,Zagazig,Delivered,Motorbike,Medium
+18,U2654,Koshary,1,34.94,2025-06-03 02:34:00,2025-06-03 03:09:00,35,Alexandria,Delivered,Car,Low
+19,U3339,Salad,5,251.0,2025-06-08 23:17:00,2025-06-08 23:54:00,37,Assiut,Delivered,Motorbike,Low
+20,U4958,Shawarma,5,511.4,2025-06-15 18:14:00,2025-06-15 18:42:00,28,Assiut,Delivered,Car,High
+21,U4475,Sandwich,2,168.84,2025-06-12 07:02:00,2025-06-12 07:40:00,38,Giza,Delivered,Motorbike,High
+22,U9036,Pizza,4,316.44,2025-06-07 14:17:00,2025-06-07 15:02:00,45,Cairo,In Transit,Car,Medium
+23,U5581,Sushi,1,103.71,2025-06-06 01:02:00,2025-06-06 01:42:00,40,Alexandria,In Transit,Car,Low
+24,U2186,Salad,1,126.03,2025-06-03 20:43:00,2025-06-03 21:09:00,26,Assiut,Delivered,Motorbike,Low
+25,U1250,Shawarma,2,65.88,2025-06-08 18:30:00,2025-06-08 19:11:00,41,Tanta,Delivered,Bicycle,High
+26,U9226,Shawarma,3,352.89,2025-06-03 23:29:00,2025-06-04 00:24:00,55,Assiut,Delivered,Car,Low
+27,U6560,Fried Chicken,2,99.36,2025-06-05 21:51:00,2025-06-05 22:21:00,30,Assiut,Delivered,Bicycle,Low
+28,U6714,Shawarma,4,473.88,2025-06-12 14:36:00,2025-06-12 15:23:00,47,Giza,Delivered,Car,Medium
+29,U9034,Salad,5,308.2,2025-06-06 19:31:00,2025-06-06 20:20:00,49,Assiut,Cancelled,Car,High
+30,U6352,Koshary,3,350.37,2025-06-02 06:29:00,2025-06-02 07:20:00,51,Cairo,Delivered,Bicycle,Low
+31,U3527,Pasta,1,135.15,2025-06-10 00:57:00,2025-06-10 01:44:00,47,Tanta,Delivered,Bicycle,Low
+32,U5680,Koshary,3,383.04,2025-06-07 05:15:00,2025-06-07 05:54:00,39,Assiut,Delivered,Motorbike,Low
+33,U7501,Salad,3,297.96,2025-06-12 22:50:00,2025-06-12 23:15:00,25,Alexandria,Delivered,Bicycle,Low
+34,U5249,Sushi,5,224.85,2025-06-02 11:34:00,2025-06-02 12:08:00,34,Mansoura,Delivered,Motorbike,Medium
+35,U2503,Pizza,3,193.32,2025-06-04 05:35:00,2025-06-04 06:15:00,40,Assiut,Delivered,Car,Low
+36,U2121,Koshary,4,175.92,2025-06-09 18:56:00,2025-06-09 19:24:00,28,Zagazig,Delivered,Motorbike,High
+37,U8163,Pasta,4,334.44,2025-06-07 07:00:00,2025-06-07 07:53:00,53,Giza,Delivered,Car,High
+38,U7014,Salad,4,517.08,2025-06-13 11:44:00,2025-06-13 12:17:00,33,Mansoura,Delivered,Bicycle,Medium
+39,U7194,Sushi,3,358.56,2025-06-14 10:41:00,2025-06-14 11:15:00,34,Zagazig,In Transit,Car,Medium
+40,U9507,Pizza,3,147.3,2025-06-01 16:10:00,2025-06-01 16:31:00,21,Giza,Delivered,Car,High
+41,U4192,Koshary,3,97.05,2025-06-03 02:18:00,2025-06-03 02:52:00,34,Mansoura,Cancelled,Car,Low
+42,U9682,Pizza,5,357.85,2025-06-02 21:22:00,2025-06-02 22:02:00,40,Tanta,Delivered,Car,Low
+43,U7627,Pasta,1,83.75,2025-06-12 07:46:00,2025-06-12 08:19:00,33,Assiut,Delivered,Car,High
+44,U4731,Shawarma,2,253.98,2025-06-03 10:50:00,2025-06-03 11:36:00,46,Tanta,Delivered,Motorbike,Medium
+45,U2786,Burger,2,186.48,2025-06-12 23:31:00,2025-06-12 23:56:00,25,Giza,Delivered,Car,Low
+46,U2840,Koshary,1,113.28,2025-06-04 08:20:00,2025-06-04 09:11:00,51,Zagazig,Delivered,Car,High
+47,U6356,Shawarma,1,79.01,2025-06-07 17:11:00,2025-06-07 17:56:00,45,Tanta,Delivered,Car,High
+48,U6759,Fried Chicken,2,130.8,2025-06-03 14:05:00,2025-06-03 14:49:00,44,Assiut,Delivered,Motorbike,Medium
+49,U4435,Koshary,4,302.68,2025-06-06 15:05:00,2025-06-06 15:54:00,49,Mansoura,Delivered,Motorbike,Medium
+50,U2969,Shawarma,4,239.84,2025-06-06 09:09:00,2025-06-06 10:07:00,58,Giza,Delivered,Motorbike,High

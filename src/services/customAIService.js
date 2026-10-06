@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Frontend client service for Latha Jewellery Works Custom AI Chatbot.
  * Communicates strictly with the secure backend endpoint /api/custom-ai-chat.
  * Never exposes AI credentials or secret keys to the browser.
@@ -12,7 +12,10 @@ function getClientCustomFallback(lower) {
   if (lower.includes('rate') || lower.includes('gold') || lower.includes('silver')) {
     return "Today's Official Rates at Latha Jewellery Works:\n• 22K (BIS 916): ₹12,182/g\n• 24K: ₹13,289/g\n• 18K: ₹9,967/g\n• Silver 999: ₹95/g\nAll jewellery is 100% BIS 916 hallmarked with 6-digit laser HUID.";
   }
-  if (lower.includes('custom') || lower.includes('bespoke') || lower.includes('order')) {
+  if (/\b(track|tracking|delivery)\b/i.test(lower) || /\bwhere\s+(is|are|'s)\s+.*order\b/i.test(lower) || /\bstatus\s+of\s+.*order\b/i.test(lower)) {
+    return "Please provide your Order ID (1 to 50) to check your live delivery status.";
+  }
+  if (lower.includes('custom') || lower.includes('bespoke') || (lower.includes('order') && !lower.includes('track') && !lower.includes('where'))) {
     return "At Latha Jewellery Works, our generational karigars specialize in bespoke bridal and temple ornaments. Bring any reference picture or heirloom piece, and we will hand-craft it to your desired purity (22K BIS 916) and weight.";
   }
   if (lower.includes('location') || lower.includes('where') || lower.includes('address') || lower.includes('timing') || lower.includes('hour')) {
