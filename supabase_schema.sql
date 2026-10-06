@@ -219,7 +219,7 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Seed Initial Gold Rates (Realistic 2026 Board Rates)
 INSERT INTO public.gold_rates (id, rate_24k, rate_22k, rate_18k, rate_silver, price_24k, price_22k, price_18k, currency, unit, source, status, mode, ticker_visible, last_updated)
-VALUES (1, '12,850', '11,780', '9,638', '95', 12850, 11780, 9638, 'INR', 'gram', 'MetalpriceAPI (Live)', 'Connected (Live)', 'AUTOMATIC_API', 1, 'Live Market Rate')
+VALUES (1, '14,370', '13,256', '11,027', '95', 14370, 13256, 11027, 'INR', 'gram', 'Latha Atelier Board Rate', 'Connected (Live)', 'AUTOMATIC_API', 1, 'Live Market Rate')
 ON CONFLICT (id) DO NOTHING;
 
 -- Storage Bucket for jewellery images (if using Supabase Storage)

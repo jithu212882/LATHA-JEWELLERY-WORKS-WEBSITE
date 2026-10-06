@@ -140,11 +140,12 @@ export default async function handler(req, res) {
       });
     }
 
-    const context = await buildChatContext(userMessage);
+    const activeRates = body?.activeRates || body?.gold_rates || null;
+    const context = await buildChatContext(userMessage, activeRates);
 
     let contextParts = [];
     if (context.goldRateContext) {
-      contextParts.push(`[LATEST VALIDATED GOLD RATES]: ${context.goldRateContext}`);
+      contextParts.push(`[LATEST VALIDATED GOLD RATES]:\n${context.goldRateContext}`);
     }
     if (context.knowledgeSnippets) {
       contextParts.push(`[RELEVANT LATHA JEWELLERY KNOWLEDGE]:\n${context.knowledgeSnippets}`);
@@ -152,12 +153,23 @@ export default async function handler(req, res) {
 
     const contextText = contextParts.length > 0 ? contextParts.join('\n\n') : 'No specific knowledge chunk matched.';
 
+    let liveRatesDirective = '';
+    if (context.currentRates && context.currentRates.rate_22k) {
+      liveRatesDirective = `
+ACTIVE LIVE RATES AT LATHA JEWELLERY WORKS (MATCHING TOP TICKER BANNER):
+- 22K Gold (916 Hallmarked): ₹${context.currentRates.rate_22k}/g
+- 24K Pure Gold: ₹${context.currentRates.rate_24k}/g
+- 18K Gold: ₹${context.currentRates.rate_18k}/g
+- Silver: ₹${context.currentRates.rate_silver}/g
+Whenever the customer asks for current, today's, or live rates, you MUST state these EXACT active prices so both the website ticker banner and the chatbot show identical rates. NEVER invent or use different numbers.`;
+    }
+
     const systemPrompt = `You are the Atelier Concierge for Latha Jewellery Works (Est. 1990 in Chathencode, Tamil Nadu).
 You provide helpful, elegant, and strictly grounded customer support for website visitors.
 
 CRITICAL RULES:
 1. ONLY answer using the verified business facts and validated gold rates provided in the context below.
-2. If the user asks for gold rates, use ONLY the verified rates in the context. NEVER invent, guess, or extrapolate gold or silver prices.
+2. If the user asks for gold rates, use ONLY the verified rates in the context. NEVER invent, guess, or extrapolate gold or silver prices.${liveRatesDirective}
 3. If the requested information is not available in the context, clearly and politely say that you do not have verified details on that, and guide the customer to contact Latha Jewellery Works directly on WhatsApp/Phone at +91 9487056064.
 4. The website is a digital catalogue showroom, NOT an online checkout store. For purchasing or custom orders, advise customers to enquire or message on WhatsApp.
 5. Keep your tone polite, professional, luxurious, and concise. Avoid robotic cliches, markdown tables, or excessive emojis.`;

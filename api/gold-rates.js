@@ -11,13 +11,13 @@ let memoryRates = null;
 
 const DEFAULT_SHOP_RATES = {
   id: 1,
-  rate_24k: '12,850',
-  rate_22k: '11,780',
-  rate_18k: '9,638',
+  rate_24k: '14,370',
+  rate_22k: '13,256',
+  rate_18k: '11,027',
   rate_silver: '95',
   ticker_visible: 1,
   last_updated: 'Live Market Rate',
-  source: 'MetalpriceAPI (Live)',
+  source: 'Latha Atelier Board Rate',
   status: 'Connected (Live)',
   mode: 'AUTOMATIC_API'
 };
@@ -81,9 +81,9 @@ export default async function handler(req, res) {
       const { data, error } = await supabase.from('gold_rates').select('*').order('id', { ascending: false }).limit(1);
       if (!error && data && data.length > 0) {
         const row = data[0];
-        const p24 = Number(row.price_24k || String(row.rate_24k).replace(/[^0-9.]/g, '') || 12850);
-        const p22 = Number(row.price_22k || String(row.rate_22k).replace(/[^0-9.]/g, '') || 11780);
-        const p18 = Number(row.price_18k || String(row.rate_18k).replace(/[^0-9.]/g, '') || 9638);
+        const p24 = Number(row.price_24k || String(row.rate_24k).replace(/[^0-9.]/g, '') || 14370);
+        const p22 = Number(row.price_22k || String(row.rate_22k).replace(/[^0-9.]/g, '') || 13256);
+        const p18 = Number(row.price_18k || String(row.rate_18k).replace(/[^0-9.]/g, '') || 11027);
 
         currentRate = {
           ...row,

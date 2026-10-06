@@ -132,9 +132,9 @@ export default async function handler(req, res) {
 
   let finalGoldRates = null;
   if (goldRates) {
-    const p24 = Number(goldRates.price_24k || String(goldRates.rate_24k).replace(/[^0-9.]/g, '') || 13289);
-    const p22 = Number(goldRates.price_22k || String(goldRates.rate_22k).replace(/[^0-9.]/g, '') || 12182);
-    const p18 = Number(goldRates.price_18k || String(goldRates.rate_18k).replace(/[^0-9.]/g, '') || 9967);
+    const p24 = Number(goldRates.price_24k || String(goldRates.rate_24k).replace(/[^0-9.]/g, '') || 14370);
+    const p22 = Number(goldRates.price_22k || String(goldRates.rate_22k).replace(/[^0-9.]/g, '') || 13256);
+    const p18 = Number(goldRates.price_18k || String(goldRates.rate_18k).replace(/[^0-9.]/g, '') || 11027);
 
     finalGoldRates = {
       ...goldRates,
@@ -147,19 +147,19 @@ export default async function handler(req, res) {
       rate_silver: goldRates.rate_silver || '95',
       ticker_visible: goldRates.ticker_visible !== undefined ? goldRates.ticker_visible : 1,
       last_updated: goldRates.last_updated || 'Live Market Rate',
-      source: goldRates.source || 'MetalpriceAPI (Live)',
+      source: goldRates.source || 'Active Board Rate',
       status: goldRates.status || 'Connected (Live)',
       mode: goldRates.mode || 'AUTOMATIC_API'
     };
   } else {
     finalGoldRates = {
-      rate_24k: '12,850',
-      rate_22k: '11,780',
-      rate_18k: '9,638',
+      rate_24k: '14,370',
+      rate_22k: '13,256',
+      rate_18k: '11,027',
       rate_silver: '95',
       ticker_visible: 1,
       last_updated: 'Live Market Rate',
-      source: 'MetalpriceAPI (Live)',
+      source: 'Active Board Rate',
       status: 'Connected (Live)',
       mode: 'AUTOMATIC_API'
     };

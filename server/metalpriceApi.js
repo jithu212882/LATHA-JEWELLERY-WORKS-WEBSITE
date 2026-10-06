@@ -46,12 +46,7 @@ export async function fetchLiveGoldRates(forceRefresh = false) {
     const p22 = p24 * (22 / 24);
     const p18 = p24 * (18 / 24);
 
-    let pSilver = 95;
-    if (data.rates.INRXAG) {
-      pSilver = Math.round(Number(data.rates.INRXAG) / 31.1034768);
-    } else if (data.rates.XAG) {
-      pSilver = Math.round((1 / Number(data.rates.XAG)) / 31.1034768);
-    }
+    let pSilver = Number(store?.gold_rates?.[0]?.rate_silver || 95);
 
     const fmt = (num) => Math.round(num).toLocaleString('en-IN');
     const now = new Date();
@@ -106,25 +101,25 @@ export async function fetchLiveGoldRates(forceRefresh = false) {
       return store.gold_rates[0];
     }
 
-    // Default fallback calculation based on latest INR market rate
+    // Default fallback calculation based on latest active board rate
     return {
       id: 1,
-      rate_24k: '12,850',
-      rate_22k: '11,780',
-      rate_18k: '9,638',
+      rate_24k: '14,370',
+      rate_22k: '13,256',
+      rate_18k: '11,027',
       rate_silver: '95',
-      price_24k: 12850,
-      price_22k: 11780,
-      price_18k: 9638,
+      price_24k: 14370,
+      price_22k: 13256,
+      price_18k: 11027,
       price_silver: 95,
       ticker_visible: 1,
       currency: 'INR',
       unit: 'gram',
-      source: 'MetalpriceAPI (Live)',
+      source: 'Latha Atelier Board Rate',
       status: 'Connected (Live)',
       mode: 'AUTOMATIC_API',
       last_updated: 'Live Market Rate',
-      summary: "Today's Official Rates at Latha Jewellery Works: 22K (916 Hallmarked) is ₹11,780/g, 24K is ₹12,850/g, 18K is ₹9,638/g, and Silver is ₹95/g."
+      summary: "Today's Official Rates at Latha Jewellery Works: 22K (916 Hallmarked) is ₹13,256/g, 24K is ₹14,370/g, 18K is ₹11,027/g, and Silver is ₹95/g."
     };
   }
 }
@@ -170,11 +165,11 @@ export async function updateGoldRatesFromAPI(customApiKey = null) {
   } catch (err) {
     console.error('❌ Error updating gold rates from MetalpriceAPI:', err);
     const fallbackRates = store?.gold_rates?.[0] || {
-      rate_24k: '12,850',
-      rate_22k: '11,780',
-      rate_18k: '9,638',
+      rate_24k: '14,370',
+      rate_22k: '13,256',
+      rate_18k: '11,027',
       rate_silver: '95',
-      source: 'MetalpriceAPI (Live)'
+      source: 'Latha Atelier Board Rate'
     };
     return {
       success: false,

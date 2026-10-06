@@ -4,16 +4,6 @@ import { KNOWLEDGE_CHUNKS } from './lathaKnowledgeData.js';
 import { fetchFromSupabase, isSupabaseConfigured } from '../supabase.js';
 import { fetchLiveGoldRates } from '../metalpriceApi.js';
 
-const DEFAULT_RATES = {
-  rate_24k: '12,850',
-  rate_22k: '11,780',
-  rate_18k: '9,638',
-  rate_silver: '95',
-  source: 'MetalpriceAPI (Live)',
-  status: 'Connected (Live)',
-  last_updated: 'Live Market Rate'
-};
-
 const STOP_WORDS = new Set([
   'the', 'and', 'for', 'are', 'can', 'what', 'how', 'with', 'this', 'that',
   'from', 'have', 'tell', 'sell', 'will', 'your', 'you', 'was', 'not', 'but',
@@ -40,20 +30,25 @@ function getLocalStoreRates() {
   return null;
 }
 
-export async function getVerifiedGoldRates() {
+/**
+ * Retrieves the authoritative gold and silver rates.
+ * Prioritizes the active rates passed directly from the website ticker / DataContext.
+ * If not supplied, inspects the local data store (store.json), Supabase, or live rate service.
+ */
+export async function getVerifiedGoldRates(activeRates = null) {
   let rateData = null;
 
-  // 1. Pull directly from MetalpriceAPI service (15-minute in-memory cache)
-  try {
-    const liveRates = await fetchLiveGoldRates();
-    if (liveRates && liveRates.price_24k) {
-      rateData = liveRates;
-    }
-  } catch (e) {
-    console.warn('[Retriever] MetalpriceAPI live fetch notice:', e.message);
+  // 1. If active rates were passed directly from the client ticker (DataContext)
+  if (activeRates && (activeRates.rate_22k || activeRates.rate_24k || activeRates.price_22k || activeRates.price_24k)) {
+    rateData = activeRates;
   }
 
-  // 2. Fallback to Supabase if MetalpriceAPI threw
+  // 2. Otherwise check the shared store that feeds the UI and ticker
+  if (!rateData) {
+    rateData = getLocalStoreRates();
+  }
+
+  // 3. Fallback to Supabase if configured
   if (!rateData && isSupabaseConfigured()) {
     try {
       const sbRates = await fetchFromSupabase('gold_rates', 'id', false);
@@ -65,21 +60,41 @@ export async function getVerifiedGoldRates() {
     }
   }
 
-  // 3. Fallback to local store or defaults
+  // 4. Fallback to live MetalpriceAPI service
   if (!rateData) {
-    rateData = getLocalStoreRates() || DEFAULT_RATES;
+    try {
+      const liveRates = await fetchLiveGoldRates();
+      if (liveRates && (liveRates.rate_22k || liveRates.price_24k)) {
+        rateData = liveRates;
+      }
+    } catch (e) {
+      console.warn('[Retriever] MetalpriceAPI live fetch notice:', e.message);
+    }
   }
 
-  const p24 = Number(rateData.price_24k || String(rateData.rate_24k).replace(/[^0-9.]/g, '') || 12850);
-  const p22 = Number(rateData.price_22k || String(rateData.rate_22k).replace(/[^0-9.]/g, '') || Math.round(p24 * (22 / 24)));
-  const p18 = Number(rateData.price_18k || String(rateData.rate_18k).replace(/[^0-9.]/g, '') || Math.round(p24 * (18 / 24)));
-  const pSilver = Number(rateData.rate_silver ? String(rateData.rate_silver).replace(/[^0-9.]/g, '') : 95) || 95;
+  // If completely unavailable, return safe dynamic object without guessing
+  if (!rateData) {
+    return {
+      rate_22k: null,
+      rate_24k: null,
+      rate_18k: null,
+      rate_silver: null,
+      last_updated: 'Live Market Rate',
+      source: 'Latha Jewellery Works',
+      summary: "Live gold and silver rates are currently updating. Please refer to our website top ticker banner or contact our atelier directly on WhatsApp at +91 9487056064 for the exact moment-to-moment rate."
+    };
+  }
 
-  const fmt = (num) => Math.round(num).toLocaleString('en-IN');
-  const str24k = rateData.rate_24k || fmt(p24);
-  const str22k = rateData.rate_22k || fmt(p22);
-  const str18k = rateData.rate_18k || fmt(p18);
-  const strSilver = String(rateData.rate_silver || pSilver);
+  const p24 = Number(rateData.price_24k || String(rateData.rate_24k || '').replace(/[^0-9.]/g, '') || 0);
+  const p22 = Number(rateData.price_22k || String(rateData.rate_22k || '').replace(/[^0-9.]/g, '') || (p24 ? Math.round(p24 * (22 / 24)) : 0));
+  const p18 = Number(rateData.price_18k || String(rateData.rate_18k || '').replace(/[^0-9.]/g, '') || (p24 ? Math.round(p24 * (18 / 24)) : 0));
+  const pSilver = Number(rateData.rate_silver ? String(rateData.rate_silver).replace(/[^0-9.]/g, '') : (rateData.price_silver || 95)) || 95;
+
+  const fmt = (num) => (num && !isNaN(num)) ? Math.round(num).toLocaleString('en-IN') : '';
+  const str24k = rateData.rate_24k || (p24 ? fmt(p24) : '14,370');
+  const str22k = rateData.rate_22k || (p22 ? fmt(p22) : '13,256');
+  const str18k = rateData.rate_18k || (p18 ? fmt(p18) : '11,027');
+  const strSilver = String(rateData.rate_silver || pSilver || '95');
 
   const conciergeSummary = `Today's official live gold rates at Latha Jewellery Works:
 • 22K Gold (916 Hallmarked): ₹${str22k}/g
@@ -87,7 +102,7 @@ export async function getVerifiedGoldRates() {
 • 18K Gold: ₹${str18k}/g
 • Silver: ₹${strSilver}/g
 
-All our ornaments are 100% BIS 916 hallmarked with 6-digit laser HUID purity authentication. Daily bullion rates are updated live via MetalpriceAPI.`;
+All our ornaments are 100% BIS 916 hallmarked with 6-digit laser HUID purity authentication. Daily bullion rates are updated live to match our atelier board rates.`;
 
   return {
     rate_22k: str22k,
@@ -95,7 +110,7 @@ All our ornaments are 100% BIS 916 hallmarked with 6-digit laser HUID purity aut
     rate_18k: str18k,
     rate_silver: strSilver,
     last_updated: rateData.last_updated || 'Live Market Rate',
-    source: rateData.source || 'MetalpriceAPI (Live)',
+    source: rateData.source || 'Active Board Rate',
     summary: conciergeSummary
   };
 }
@@ -149,13 +164,14 @@ export function retrieveRelevantKnowledge(query, limit = 2) {
     .map(item => item.chunk);
 }
 
-export async function buildChatContext(userMessage) {
+export async function buildChatContext(userMessage, activeRates = null) {
   const needsGoldRate = isGoldRateIntent(userMessage);
   let goldRateContext = null;
+  let currentRates = null;
 
   if (needsGoldRate) {
-    const rates = await getVerifiedGoldRates();
-    goldRateContext = rates.summary;
+    currentRates = await getVerifiedGoldRates(activeRates);
+    goldRateContext = currentRates?.summary || null;
   }
 
   const relevantChunks = retrieveRelevantKnowledge(userMessage, 2);
@@ -164,6 +180,7 @@ export async function buildChatContext(userMessage) {
   return {
     needsGoldRate,
     goldRateContext,
+    currentRates,
     knowledgeSnippets,
     hasRelevantData: Boolean(goldRateContext || knowledgeSnippets)
   };

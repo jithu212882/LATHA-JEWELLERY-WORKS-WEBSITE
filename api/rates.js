@@ -4,15 +4,15 @@ import { fetchFromSupabase, getSupabase, isSupabaseConfigured } from '../server/
 import { fetchLiveGoldRates } from '../server/metalpriceApi.js';
 
 const DEFAULT_RATES = {
-  rate_24k: '12,850',
-  rate_22k: '11,780',
-  rate_18k: '9,638',
+  rate_24k: '14,370',
+  rate_22k: '13,256',
+  rate_18k: '11,027',
   rate_silver: '95',
-  price_24k: 12850,
-  price_22k: 11780,
-  price_18k: 9638,
+  price_24k: 14370,
+  price_22k: 13256,
+  price_18k: 11027,
   price_silver: 95,
-  source: 'MetalpriceAPI (Live)',
+  source: 'Latha Atelier Board Rate',
   status: 'Connected (Live)',
   mode: 'AUTOMATIC_API',
   last_updated: 'Live Market Rate'
@@ -98,13 +98,13 @@ export default async function handler(req, res) {
   }
 
   // 6. Normalize numeric values
-  const p24 = Number(rateData.price_24k || String(rateData.rate_24k).replace(/[^0-9.]/g, '') || 12850);
+  const p24 = Number(rateData.price_24k || String(rateData.rate_24k).replace(/[^0-9.]/g, '') || 14370);
   const p22 = Number(rateData.price_22k || String(rateData.rate_22k).replace(/[^0-9.]/g, '') || Math.round(p24 * (22 / 24)));
   const p18 = Number(rateData.price_18k || String(rateData.rate_18k).replace(/[^0-9.]/g, '') || Math.round(p24 * (18 / 24)));
   const pSilver = Number(rateData.rate_silver ? String(rateData.rate_silver).replace(/[^0-9.]/g, '') : 95) || 95;
 
   // Ensure reasonable bounds (between 4,000 and 30,000 for gold per gram)
-  const valid24 = p24 >= 4000 && p24 < 30000 ? p24 : 12850;
+  const valid24 = p24 >= 4000 && p24 < 30000 ? p24 : 14370;
   const valid22 = p22 >= 3500 && p22 < 30000 ? p22 : Math.round(valid24 * (22 / 24));
   const valid18 = p18 >= 3000 && p18 < 30000 ? p18 : Math.round(valid24 * (18 / 24));
 

@@ -8,9 +8,12 @@
 const FALLBACK_GROUNDED_REPLY =
   "Welcome to Latha Jewellery Works. For custom bridal jewellery, live gold rates, or old gold exchange, our atelier is gladly available at +91 9487056064 (Phone/WhatsApp).";
 
-function getClientCustomFallback(lower) {
+function getClientCustomFallback(lower, activeRates = null) {
   if (lower.includes('rate') || lower.includes('gold') || lower.includes('silver')) {
-    return "Today's Official Rates at Latha Jewellery Works:\n• 22K Gold (916 Hallmarked): ₹11,780/g\n• 24K Pure Gold: ₹12,850/g\n• 18K Gold: ₹9,638/g\n• Silver: ₹95/g\nAll jewellery is 100% BIS 916 hallmarked with 6-digit laser HUID purity authentication. Daily bullion rates are updated live via MetalpriceAPI.";
+    if (activeRates && (activeRates.rate_22k || activeRates.rate_24k)) {
+      return `Today's Official Rates at Latha Jewellery Works:\n• 22K Gold (916 Hallmarked): ₹${activeRates.rate_22k}/g\n• 24K Pure Gold: ₹${activeRates.rate_24k}/g\n• 18K Gold: ₹${activeRates.rate_18k || '11,027'}/g\n• Silver: ₹${activeRates.rate_silver || '95'}/g\n\nAll jewellery is 100% BIS 916 hallmarked with 6-digit laser HUID purity authentication. Daily bullion rates are updated live to match our atelier board rates.`;
+    }
+    return "For today's official live gold rates (22K, 24K, 18K, and Silver), please check our live rate ticker banner at the top of the page or contact our atelier directly on WhatsApp at +91 9487056064.";
   }
   if (/\b(track|tracking|delivery)\b/i.test(lower) || /\bwhere\s+(is|are|'s)\s+.*order\b/i.test(lower) || /\bstatus\s+of\s+.*order\b/i.test(lower)) {
     return "Please provide your Order ID (1 to 50) to check your live delivery status.";
@@ -24,7 +27,7 @@ function getClientCustomFallback(lower) {
   return FALLBACK_GROUNDED_REPLY;
 }
 
-export async function sendChatMessage(message, history = []) {
+export async function sendChatMessage(message, history = [], activeRates = null) {
   try {
     const cleanMessage = typeof message === 'string' ? message.trim().slice(0, 1000) : '';
     if (!cleanMessage) {
@@ -59,7 +62,8 @@ export async function sendChatMessage(message, history = []) {
         },
         body: JSON.stringify({
           message: cleanMessage,
-          history: cleanHistory
+          history: cleanHistory,
+          activeRates: activeRates
         }),
         signal: controller.signal
       });
@@ -85,7 +89,7 @@ export async function sendChatMessage(message, history = []) {
 
     return {
       success: true,
-      reply: (data && typeof data.reply === 'string') ? data.reply : getClientCustomFallback(lower),
+      reply: (data && typeof data.reply === 'string') ? data.reply : getClientCustomFallback(lower, activeRates),
       provider: 'client_grounded_fallback',
       grounded: true
     };
@@ -94,7 +98,7 @@ export async function sendChatMessage(message, history = []) {
     const lower = typeof message === 'string' ? message.toLowerCase() : '';
     return {
       success: true,
-      reply: getClientCustomFallback(lower),
+      reply: getClientCustomFallback(lower, activeRates),
       provider: 'offline_grounded_fallback',
       grounded: true
     };

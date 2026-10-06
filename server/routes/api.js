@@ -65,12 +65,12 @@ router.get('/public/data', (req, res) => {
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   const goldRates = store.gold_rates[0] || {
-    rate_24k: '12,850',
-    rate_22k: '11,780',
-    rate_18k: '9,638',
+    rate_24k: '14,370',
+    rate_22k: '13,256',
+    rate_18k: '11,027',
     rate_silver: '95',
     ticker_visible: 1,
-    source: 'MetalpriceAPI (Live)',
+    source: 'Latha Atelier Board Rate',
     last_updated: 'Live Market Rate'
   };
 
@@ -334,13 +334,13 @@ router.delete('/banners/:id', authenticateToken, (req, res) => {
 // ==========================================
 router.get('/gold-rates', (req, res) => {
   const current = store.gold_rates[0] || {
-    rate_24k: '12,850',
-    rate_22k: '11,780',
-    rate_18k: '9,638',
+    rate_24k: '14,370',
+    rate_22k: '13,256',
+    rate_18k: '11,027',
     rate_silver: '95',
     ticker_visible: 1,
     last_updated: 'Live Market Rate',
-    source: 'MetalpriceAPI (Live)',
+    source: 'Latha Atelier Board Rate',
     status: 'Connected',
     mode: 'AUTOMATIC_API'
   };
@@ -364,9 +364,9 @@ router.post('/gold-rates/override', authenticateToken, (req, res) => {
   const updated = {
     ...current,
     id: 1,
-    rate_24k: rate_24k || current.rate_24k || '12,850',
-    rate_22k: rate_22k || current.rate_22k || '11,780',
-    rate_18k: rate_18k || current.rate_18k || '9,638',
+    rate_24k: rate_24k || current.rate_24k || '14,370',
+    rate_22k: rate_22k || current.rate_22k || '13,256',
+    rate_18k: rate_18k || current.rate_18k || '11,027',
     rate_silver: rate_silver || current.rate_silver || '95',
     ticker_visible: ticker_visible !== undefined ? (ticker_visible ? 1 : 0) : 1,
     last_updated: `${dateStr}, ${nowStr} (Manual)`,

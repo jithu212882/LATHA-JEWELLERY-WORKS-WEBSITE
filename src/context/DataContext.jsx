@@ -117,13 +117,13 @@ export function DataProvider({ children }) {
         }
       } catch (e) {}
       return initialStoreData.gold_rates?.[0] || {
-        rate_24k: '12,850',
-        rate_22k: '11,780',
-        rate_18k: '9,638',
+        rate_24k: '14,370',
+        rate_22k: '13,256',
+        rate_18k: '11,027',
         rate_silver: '95',
         ticker_visible: 1,
         last_updated: 'Live Market Rate',
-        source: 'MetalpriceAPI (Live)',
+        source: 'Latha Atelier Board Rate',
         status: 'Connected (Live)',
         mode: 'AUTOMATIC_API'
       };
@@ -138,16 +138,44 @@ export function DataProvider({ children }) {
   const fetchPublicData = async () => {
     let serverRates = null;
     try {
+      // 1. Fetch from /api/public/rates (authoritative live rate endpoint)
+      try {
+        const ratesRes = await fetch('/api/public/rates');
+        const { ok: ratesOk, data: ratesJson } = await parseJsonResponse(ratesRes);
+        if (ratesOk && ratesJson && (ratesJson.rates || ratesJson.rate_24k)) {
+          const live24 = ratesJson.rates?.['24k'] || ratesJson.rate_24k;
+          const live22 = ratesJson.rates?.['22k'] || ratesJson.rate_22k;
+          const live18 = ratesJson.rates?.['18k'] || ratesJson.rate_18k;
+          const liveSilver = ratesJson.rates?.['silver'] || ratesJson.rate_silver;
+          if (live24) {
+            serverRates = {
+              rate_24k: live24,
+              rate_22k: live22,
+              rate_18k: live18,
+              rate_silver: liveSilver,
+              price_24k: ratesJson.prices?.['24k'] || ratesJson.price_24k,
+              price_22k: ratesJson.prices?.['22k'] || ratesJson.price_22k,
+              price_18k: ratesJson.prices?.['18k'] || ratesJson.price_18k,
+              price_silver: ratesJson.prices?.['silver'] || ratesJson.price_silver,
+              source: ratesJson.source || 'Active Board Rate',
+              status: ratesJson.status || 'Connected (Live)',
+              mode: ratesJson.mode || 'AUTOMATIC_API',
+              last_updated: ratesJson.last_updated || 'Live Market Rate',
+              ticker_visible: 1
+            };
+          }
+        }
+      } catch (rateErr) {
+        console.warn('[DataContext] /api/public/rates fetch notice:', rateErr.message);
+      }
+
       const res = await fetch('/api/public/data');
       const { ok, data: json } = await parseJsonResponse(res);
       if (ok && json) {
-        if (json.gold_rates) {
+        if (!serverRates && json.gold_rates) {
           const num24 = Number(String(json.gold_rates.rate_24k).replace(/[^0-9.]/g, ''));
           if (num24 >= 4000 && num24 < 30000) {
-            serverRates = {
-              rate_18k: '9,967',
-              ...json.gold_rates
-            };
+            serverRates = json.gold_rates;
           }
         }
 
@@ -237,20 +265,8 @@ export function DataProvider({ children }) {
         }
       }));
     } else {
-      // Check Supabase
-      const supabaseRates = await fetchSupabaseGoldRates();
-      if (supabaseRates) {
-        setData(prev => ({
-          ...prev,
-          gold_rates: {
-            ...prev.gold_rates,
-            ...supabaseRates,
-          }
-        }));
-        try {
-          localStorage.setItem('latha_live_gold_rates', JSON.stringify(supabaseRates));
-        } catch (e) {}
-      } else if (serverRates) {
+      // Prioritize live serverRates from /api/public/rates
+      if (serverRates) {
         setData(prev => ({
           ...prev,
           gold_rates: {
@@ -258,7 +274,23 @@ export function DataProvider({ children }) {
             ...serverRates,
           }
         }));
+        try {
+          localStorage.setItem('latha_live_gold_rates', JSON.stringify(serverRates));
+        } catch (e) {}
       } else {
+        const supabaseRates = await fetchSupabaseGoldRates();
+        if (supabaseRates) {
+          setData(prev => ({
+            ...prev,
+            gold_rates: {
+              ...prev.gold_rates,
+              ...supabaseRates,
+            }
+          }));
+          try {
+            localStorage.setItem('latha_live_gold_rates', JSON.stringify(supabaseRates));
+          } catch (e) {}
+        }
         // Live MetalpriceAPI fetch via serverless endpoint
         try {
           const liveRes = await fetch('/api/gold-rates/fetch-live');

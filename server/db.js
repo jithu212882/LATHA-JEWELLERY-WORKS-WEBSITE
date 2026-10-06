@@ -197,13 +197,13 @@ function seedInitialData() {
   if (store.gold_rates.length === 0) {
     store.gold_rates = [{
       id: 1,
-      rate_24k: '12,850',
-      rate_22k: '11,780',
-      rate_18k: '9,638',
+      rate_24k: '14,370',
+      rate_22k: '13,256',
+      rate_18k: '11,027',
       rate_silver: '95',
       ticker_visible: 1,
       last_updated: 'Live Market Rate',
-      source: 'MetalpriceAPI (Live)',
+      source: 'Latha Atelier Board Rate',
       status: 'Connected (Live)',
       mode: 'AUTOMATIC_API'
     }];

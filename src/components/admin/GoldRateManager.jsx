@@ -12,9 +12,9 @@ export default function GoldRateManager() {
   const [errorMsg, setErrorMsg] = useState('');
   const [testApiKey, setTestApiKey] = useState('');
 
-  const [manual24k, setManual24k] = useState(gold_rates?.rate_24k || '13,289');
-  const [manual22k, setManual22k] = useState(gold_rates?.rate_22k || '12,182');
-  const [manual18k, setManual18k] = useState(gold_rates?.rate_18k || '9,967');
+  const [manual24k, setManual24k] = useState(gold_rates?.rate_24k || '14,370');
+  const [manual22k, setManual22k] = useState(gold_rates?.rate_22k || '13,256');
+  const [manual18k, setManual18k] = useState(gold_rates?.rate_18k || '11,027');
   const [manualSilver, setManualSilver] = useState(gold_rates?.rate_silver || '95');
 
   const isManualMode = gold_rates?.mode === 'MANUAL_OVERRIDE';
@@ -286,7 +286,7 @@ export default function GoldRateManager() {
               24K Gold Rate
             </span>
             <span className="font-headline text-2xl sm:text-3xl font-bold text-[#F9F6F0]">
-              ₹{gold_rates?.rate_24k || '13,289'}
+              ₹{gold_rates?.rate_24k || '14,370'}
             </span>
             <span className="text-[10px] text-[#F5F2EB]/50 block mt-1">Per Gram</span>
           </div>
@@ -296,7 +296,7 @@ export default function GoldRateManager() {
               22K Gold Rate
             </span>
             <span className="font-headline text-2xl sm:text-3xl font-bold text-accent-gold">
-              ₹{gold_rates?.rate_22k || '12,182'}
+              ₹{gold_rates?.rate_22k || '13,256'}
             </span>
             <span className="text-[10px] text-[#F5F2EB]/50 block mt-1">Per Gram</span>
           </div>
@@ -306,7 +306,7 @@ export default function GoldRateManager() {
               18K Gold Rate
             </span>
             <span className="font-headline text-2xl sm:text-3xl font-bold text-[#F9F6F0]">
-              ₹{gold_rates?.rate_18k || '9,967'}
+              ₹{gold_rates?.rate_18k || '11,027'}
             </span>
             <span className="text-[10px] text-[#F5F2EB]/50 block mt-1">Per Gram</span>
           </div>

@@ -7,9 +7,9 @@ export default function LiveRateTicker() {
   if (!gold_rates || gold_rates.ticker_visible === 0) return null;
 
   const rateItems = [
-    { label: '22K GOLD', rate: gold_rates.rate_22k || '12,182', unit: '/g' },
-    { label: '24K GOLD', rate: gold_rates.rate_24k || '13,289', unit: '/g' },
-    { label: '18K GOLD', rate: gold_rates.rate_18k || '9,967', unit: '/g' },
+    { label: '22K GOLD', rate: gold_rates.rate_22k || '13,256', unit: '/g' },
+    { label: '24K GOLD', rate: gold_rates.rate_24k || '14,370', unit: '/g' },
+    { label: '18K GOLD', rate: gold_rates.rate_18k || '11,027', unit: '/g' },
     { label: 'SILVER', rate: gold_rates.rate_silver || '95', unit: '/g' }
   ];
 

@@ -3,6 +3,7 @@ import CustomAIChatButton from './CustomAIChatButton';
 import CustomAIChatWindow from './CustomAIChatWindow';
 import CustomAIChatErrorBoundary from './CustomAIChatErrorBoundary';
 import { sendChatMessage } from '../../services/customAIService';
+import { useData } from '../../context/DataContext';
 
 const INITIAL_WELCOME = {
   id: 'welcome-1',
@@ -15,6 +16,7 @@ const DEFAULT_ERROR_TEXT =
   "I'm unable to process that request right now. Please try again or contact Latha Jewellery Works directly on WhatsApp at +91 9487056064.";
 
 function CustomAIChatbotInner() {
+  const { gold_rates } = useData();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([INITIAL_WELCOME]);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,7 +58,7 @@ function CustomAIChatbotInner() {
 
     try {
       const currentSnapshot = Array.isArray(messages) ? messages.flat() : [];
-      const result = await sendChatMessage(cleanUserText, currentSnapshot);
+      const result = await sendChatMessage(cleanUserText, currentSnapshot, gold_rates);
 
       const replyText = (result && typeof result.reply === 'string' && result.reply.trim())
         ? result.reply.trim()
