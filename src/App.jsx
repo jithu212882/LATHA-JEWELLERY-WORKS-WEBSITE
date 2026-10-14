@@ -15,9 +15,7 @@ import TestimonialsSection from './components/public/TestimonialsSection';
 import CustomEnquiryForm from './components/public/CustomEnquiryForm';
 import ContactSection from './components/public/ContactSection';
 import Footer from './components/public/Footer';
-import BotpressGreetingPopup from './components/public/BotpressGreetingPopup';
 import CustomAIChatbot from './components/custom_ai/CustomAIChatbot';
-import GoogleAIChatbot from './components/google_ai/GoogleAIChatbot';
 import CategoryCataloguePage from './components/public/CategoryCataloguePage';
 
 import { ensureHomeHistoryRoot, navigateTo } from './utils/navigation';
@@ -266,8 +264,6 @@ function MainApp() {
 
       <Footer />
       <CustomAIChatbot />
-      <GoogleAIChatbot />
-      <BotpressGreetingPopup />
     </div>
   );
 }

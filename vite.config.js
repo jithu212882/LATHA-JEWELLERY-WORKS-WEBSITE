@@ -1,4 +1,4 @@
-﻿import { defineConfig } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || 'https://lnxyazycqsstclgqawtv.supabase.co';
@@ -28,22 +28,6 @@ function apiDevMiddleware() {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url ? req.url.split('?')[0] : '';
         adaptResponse(res);
-
-        // 1. Google AI Studio Chatbot
-        if (url === '/api/google-ai-chat' && req.method === 'POST') {
-          let body = '';
-          req.on('data', chunk => { body += chunk; });
-          req.on('end', async () => {
-            try {
-              req.body = body ? JSON.parse(body) : {};
-              const handler = (await import('./api/google-ai-chat.js')).default;
-              await handler(req, res);
-            } catch (err) {
-              res.status(500).json({ error: err.message });
-            }
-          });
-          return;
-        }
 
         // 2. Custom AI Concierge Chatbot
         if (url === '/api/custom-ai-chat' && req.method === 'POST') {

@@ -8,15 +8,15 @@ import { useData } from '../../context/DataContext';
 const INITIAL_WELCOME = {
   id: 'welcome-1',
   sender: 'assistant',
-  text: "Vanakkam! Welcome to Latha Jewellery Works (Est. 1990). I am your Atelier AI Concierge. How may I assist you with our collections, custom craftsmanship, or today's live gold rates?",
+  text: "Vanakkam! Welcome to Latha Jewellery Works (Established 1990 in Nadaikavu, Tamil Nadu). I am your Atelier Concierge.\n\nHow may I assist you today? You can ask about today's live 22K/24K/18K bullion rates, our handcrafted bridal and temple collections, custom design orders, or store visiting hours.",
   timestamp: new Date().toISOString()
 };
 
 const DEFAULT_ERROR_TEXT =
-  "I'm unable to process that request right now. Please try again or contact Latha Jewellery Works directly on WhatsApp at +91 9487056064.";
+  "I'm unable to process that request right now. Please try again or connect directly with our master goldsmiths on WhatsApp at +91 9487056064.";
 
 function CustomAIChatbotInner() {
-  const { gold_rates } = useData();
+  const { gold_rates, categories, jewellery_models } = useData();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([INITIAL_WELCOME]);
   const [isLoading, setIsLoading] = useState(false);

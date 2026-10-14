@@ -1,13 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { KNOWLEDGE_CHUNKS } from './lathaKnowledgeData.js';
+import { KNOWLEDGE_CHUNKS, VERIFIED_PRODUCTS, VERIFIED_CATEGORIES, STORE_METADATA } from './lathaKnowledgeData.js';
 import { fetchFromSupabase, isSupabaseConfigured } from '../supabase.js';
 import { fetchLiveGoldRates } from '../metalpriceApi.js';
 
 const STOP_WORDS = new Set([
   'the', 'and', 'for', 'are', 'can', 'what', 'how', 'with', 'this', 'that',
   'from', 'have', 'tell', 'sell', 'will', 'your', 'you', 'was', 'not', 'but',
-  'any', 'our', 'all', 'give', 'want', 'need', 'know', 'does'
+  'any', 'our', 'all', 'give', 'want', 'need', 'know', 'does', 'show', 'please'
 ]);
 
 function getLocalStoreRates() {
@@ -96,13 +96,13 @@ export async function getVerifiedGoldRates(activeRates = null) {
   const str18k = rateData.rate_18k || (p18 ? fmt(p18) : '11,027');
   const strSilver = String(rateData.rate_silver || pSilver || '95');
 
-  const conciergeSummary = `Today's official live gold rates at Latha Jewellery Works:
-• 22K Gold (916 Hallmarked): ₹${str22k}/g
-• 24K Pure Gold: ₹${str24k}/g
-• 18K Gold: ₹${str18k}/g
+  const conciergeSummary = `Today's official live bullion rates at Latha Jewellery Works:
+• 22K Standard Gold (BIS 916): ₹${str22k}/g
+• 24K Pure Bullion Gold: ₹${str24k}/g
+• 18K Diamond Gold: ₹${str18k}/g
 • Silver: ₹${strSilver}/g
 
-All our ornaments are 100% BIS 916 hallmarked with 6-digit laser HUID purity authentication. Daily bullion rates are updated live to match our atelier board rates.`;
+All our ornaments are 100% BIS 916 hallmarked with official 6-digit laser HUID purity authentication. Daily bullion rates are updated live to match our atelier board rates.`;
 
   return {
     rate_22k: str22k,
@@ -121,12 +121,60 @@ export function isGoldRateIntent(query) {
     'gold rate', 'gold price', 'rate', 'price per gram', '22k', '24k', '18k',
     'silver rate', 'silver price', 'today rate', 'today price', 'gram rate',
     'how much for gold', 'today gold', '22k price', '24k price', 'live rate',
-    'current rate', 'gold cost', 'price of gold'
+    'current rate', 'gold cost', 'price of gold', 'bullion'
   ];
   return keywords.some(k => q.includes(k));
 }
 
-export function retrieveRelevantKnowledge(query, limit = 2) {
+/**
+ * Searches verified products by user query tokens
+ */
+export function searchVerifiedProducts(query, limit = 3) {
+  if (!query || typeof query !== 'string') return [];
+  const q = query.toLowerCase();
+
+  const scored = VERIFIED_PRODUCTS.map(prod => {
+    let score = 0;
+    const nameLower = prod.name.toLowerCase();
+    const catLower = prod.category.toLowerCase();
+    const descLower = prod.description.toLowerCase();
+
+    // Exact name match
+    if (q.includes(nameLower)) score += 10;
+    if (nameLower.includes(q)) score += 6;
+
+    // Check keywords
+    for (const kw of prod.keywords) {
+      if (q.includes(kw)) score += 3;
+    }
+
+    if (q.includes(catLower)) score += 2;
+    if (descLower.includes(q)) score += 1;
+
+    return { product: prod, score };
+  });
+
+  return scored
+    .filter(item => item.score >= 3)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit)
+    .map(item => item.product);
+}
+
+/**
+ * Matches categories by user query tokens
+ */
+export function searchVerifiedCategories(query) {
+  if (!query || typeof query !== 'string') return [];
+  const q = query.toLowerCase();
+
+  return VERIFIED_CATEGORIES.filter(cat => {
+    if (q.includes(cat.name.toLowerCase())) return true;
+    return cat.keywords.some(kw => q.includes(kw));
+  });
+}
+
+export function retrieveRelevantKnowledge(query, limit = 3) {
   if (!query || typeof query !== 'string') return [];
 
   const rawTokens = query
@@ -158,7 +206,7 @@ export function retrieveRelevantKnowledge(query, limit = 2) {
   });
 
   return scoredChunks
-    .filter(item => item.score >= 2) // Require at least a keyword or title match
+    .filter(item => item.score >= 2)
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map(item => item.chunk);
@@ -169,19 +217,42 @@ export async function buildChatContext(userMessage, activeRates = null) {
   let goldRateContext = null;
   let currentRates = null;
 
-  if (needsGoldRate) {
+  // Always fetch authoritative rates if gold rates or pricing calculation requested
+  if (needsGoldRate || /(price|cost|estimate|quote|how much)/i.test(userMessage)) {
     currentRates = await getVerifiedGoldRates(activeRates);
     goldRateContext = currentRates?.summary || null;
   }
 
-  const relevantChunks = retrieveRelevantKnowledge(userMessage, 2);
-  const knowledgeSnippets = relevantChunks.map(c => `[${c.title}]: ${c.content}`).join('\n\n');
+  const matchedProducts = searchVerifiedProducts(userMessage, 3);
+  const matchedCategories = searchVerifiedCategories(userMessage);
+  const relevantChunks = retrieveRelevantKnowledge(userMessage, 3);
+
+  let productContext = null;
+  if (matchedProducts.length > 0) {
+    productContext = matchedProducts.map(p =>
+      `• [${p.name}](${p.route}) — Category: [${p.category}](${p.categoryRoute}) | Minimum Weight: ${p.minWeight} | Purity: ${p.purity}\n  Details: ${p.description}`
+    ).join('\n\n');
+  }
+
+  let categoryContext = null;
+  if (matchedCategories.length > 0) {
+    categoryContext = matchedCategories.map(c =>
+      `• [${c.name}](${c.route}): ${c.description}`
+    ).join('\n');
+  }
+
+  const knowledgeSnippets = relevantChunks.map(c => `[${c.title}]:\n${c.content}`).join('\n\n');
 
   return {
     needsGoldRate,
     goldRateContext,
     currentRates,
+    matchedProducts,
+    matchedCategories,
+    productContext,
+    categoryContext,
     knowledgeSnippets,
-    hasRelevantData: Boolean(goldRateContext || knowledgeSnippets)
+    storeInfo: STORE_METADATA,
+    hasRelevantData: Boolean(goldRateContext || productContext || categoryContext || knowledgeSnippets)
   };
 }

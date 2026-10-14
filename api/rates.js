@@ -119,7 +119,7 @@ export default async function handler(req, res) {
   const status = rateData.status || 'Connected (Live)';
   const mode = rateData.mode || 'AUTOMATIC_API';
 
-  // 7. Structured JSON response optimized for Botpress, Ask Latha AI, and API consumers
+  // 7. Structured JSON response optimized for Latha Atelier Concierge and API consumers
   return res.status(200).json({
     success: true,
     currency: 'INR',

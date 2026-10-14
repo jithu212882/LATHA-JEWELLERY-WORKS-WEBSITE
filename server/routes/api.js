@@ -563,15 +563,6 @@ router.get('/rates', async (req, res) => {
   }
 });
 
-router.post('/google-ai-chat', async (req, res) => {
-  try {
-    const handler = (await import('../../api/google-ai-chat.js')).default;
-    return await handler(req, res);
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
-  }
-});
-
 router.post('/custom-ai-chat', async (req, res) => {
   try {
     const handler = (await import('../../api/custom-ai-chat.js')).default;

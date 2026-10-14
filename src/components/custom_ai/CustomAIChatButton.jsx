@@ -2,11 +2,11 @@ import React from 'react';
 
 export default function CustomAIChatButton({ onClick, isOpen, unreadCount = 0 }) {
   return (
-    <div className="fixed bottom-5 left-4 sm:left-6 z-[95] flex items-center gap-3">
+    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[95] flex items-center gap-3 pb-[env(safe-area-inset-bottom)]">
       <button
         onClick={onClick}
         aria-label={isOpen ? 'Close Latha Atelier Concierge' : 'Open Latha Atelier Concierge'}
-        className="group relative flex items-center gap-2.5 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full bg-[#181818]/95 hover:bg-[#202020] border border-accent-gold/60 hover:border-accent-gold shadow-[0_8px_30px_rgba(0,0,0,0.8),0_0_15px_rgba(212,175,55,0.18)] transition-all duration-300 hover:scale-105 active:scale-95 text-left select-none backdrop-blur-md cursor-pointer"
+        className="group relative flex items-center gap-2.5 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full bg-[#181818]/95 hover:bg-[#202020] border border-accent-gold/60 hover:border-accent-gold shadow-[0_10px_35px_rgba(0,0,0,0.8),0_0_20px_rgba(212,175,55,0.22)] transition-all duration-300 hover:scale-105 active:scale-95 text-left select-none backdrop-blur-md cursor-pointer"
       >
         {/* Atelier Crest Icon */}
         <div className="relative w-8 h-8 rounded-full bg-gradient-to-br from-accent-gold to-[#8C6D23] flex items-center justify-center text-[#121212] font-bold shadow-sm shrink-0">
@@ -31,7 +31,7 @@ export default function CustomAIChatButton({ onClick, isOpen, unreadCount = 0 })
 
         {/* Unread indicator */}
         {!isOpen && unreadCount > 0 && (
-          <span className="ml-0.5 px-1.5 py-0.5 text-[10px] font-bold bg-accent-gold text-[#121212] rounded-full">
+          <span className="ml-0.5 px-1.5 py-0.5 text-[10px] font-bold bg-accent-gold text-[#121212] rounded-full animate-bounce">
             {unreadCount}
           </span>
         )}
